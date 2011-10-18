@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portaudio_test", "portaudio_test\portaudio_test.vcxproj", "{03363117-8FAE-4AAD-BCFA-CEB266CA5841}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03363117-8FAE-4AAD-BCFA-CEB266CA5841}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03363117-8FAE-4AAD-BCFA-CEB266CA5841}.Debug|Win32.Build.0 = Debug|Win32
+		{03363117-8FAE-4AAD-BCFA-CEB266CA5841}.Release|Win32.ActiveCfg = Release|Win32
+		{03363117-8FAE-4AAD-BCFA-CEB266CA5841}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
