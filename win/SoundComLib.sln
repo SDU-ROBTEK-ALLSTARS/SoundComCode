@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundComLib", "projects\Sou
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portaudio", "projects\portaudio\portaudio.vcxproj", "{05FBB8BA-2723-40DE-89D1-57C1339D6423}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "patest_sine", "projects\patest_sine\patest_sine.vcxproj", "{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -36,6 +38,15 @@ Global
 		{05FBB8BA-2723-40DE-89D1-57C1339D6423}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
 		{05FBB8BA-2723-40DE-89D1-57C1339D6423}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
 		{05FBB8BA-2723-40DE-89D1-57C1339D6423}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Debug|Win32.Build.0 = Debug|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Debug|x64.ActiveCfg = Debug|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Release|Win32.ActiveCfg = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Release|Win32.Build.0 = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.Release|x64.ActiveCfg = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
