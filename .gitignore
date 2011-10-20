@@ -50,13 +50,7 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 
 #Project files
-[Bb]uild/
-
-#Subversion files
-.svn
+#[Bb]uild/          << Kim: wants to keep /build/ dirs. Is that so bad?
 
 # Office Temp Files
 ~$*
-
-#NuGet
-packages/
