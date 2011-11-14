@@ -19,7 +19,7 @@ private:
 		unsigned char dataByte;
 		bool receivedFlag;
 	};
-	struct datalist receivedList[4];
+	struct datalist receivedList[8];
 
 	void frameAccepted(Frame);
 	void frameDiscarded();
@@ -117,7 +117,7 @@ void DataLinkLayer::fatalError()
 //=====
 void DataLinkLayer::clearReceivedList()
 {
-	for(int i=0;i<4;i++)
+	for(int i=0;i<8;i++)
 	{
 		receivedList[i].dataByte = 0;
 		receivedList[i].receivedFlag = 0;
@@ -127,9 +127,8 @@ void DataLinkLayer::clearReceivedList()
 void DataLinkLayer::checkList()
 {
 	#ifdef DEBUG
-	DEBUG_OUT << "Frame accepted" << std::endl;
 	DEBUG_OUT << "Current list entries: " << std::endl;
-	for(int i=0;i<4;i++)
+	for(int i=0;i<8;i++)
 	{
 	DEBUG_OUT << i << " - ";
 	for(int j=7;j>=0;j--)
@@ -142,11 +141,11 @@ void DataLinkLayer::checkList()
 	#endif
 
 	int request = 0;
-	for(int i=0;i<4;i++)
+	for(int i=0;i<8;i++)
 	{
 		request |= ((bool)receivedList[i].receivedFlag<<i);
 	}
-	if(request == 0x0F)
+	if(request == 0xFF)
 	{
 		passDataUpwards();
 	}
@@ -160,7 +159,7 @@ void DataLinkLayer::passDataUpwards()
 {
 	#ifdef DEBUG
 	DEBUG_OUT << "PUT IN DATAGRAM BUFFER:";
-	for(int i=0;i<4;i++)
+	for(int i=0;i<8;i++)
 	{
 		for(int j=7;j>=0;j--)
 			DEBUG_OUT << (bool)(receivedList[i].dataByte&(1<<j));
@@ -168,20 +167,20 @@ void DataLinkLayer::passDataUpwards()
 	}
 	DEBUG_OUT << std::endl;
 	#endif
-	encode(MY_ADDRESS<<4,~0);
+	encode(MY_ADDRESS<<3,~0);
 }
 //=====
 void DataLinkLayer::requestResend(int request)
 {
 	char data;
-	for(int j=0;j<4;j++)
+	for(int j=0;j<8;j++)
 		if(!(bool)(request&(1<<j)))
 		{
-			data |= 3<<(j*2);
+			data |= 1<<j;
 			#ifdef DEBUG
 			DEBUG_OUT << "Requesting resend frame " << j << std::endl;
 			#endif
 		}
-	encode(MY_ADDRESS<<4,~data);
+	encode(MY_ADDRESS<<3,~data);
 }
 #endif /* DATALINKLAYER_H_ */

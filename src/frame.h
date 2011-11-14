@@ -84,14 +84,14 @@ void Frame::makeParity()
 	nibbles[3][2] = byte1 & (1<<1);
 	nibbles[3][3] = byte1 & (1<<0);
 
-	parityByte[0] = nibbles[0][0]+nibbles[0][1]+nibbles[0][2]+nibbles[0][3];
-	parityByte[1] = nibbles[1][0]+nibbles[1][1]+nibbles[1][2]+nibbles[1][3];
-	parityByte[2] = nibbles[2][0]+nibbles[2][1]+nibbles[2][2]+nibbles[2][3];
-	parityByte[3] = nibbles[3][0]+nibbles[3][1]+nibbles[3][2]+nibbles[3][3];
-	parityByte[4] = nibbles[0][0]+nibbles[1][0]+nibbles[2][0]+nibbles[3][0];
-	parityByte[5] = nibbles[0][1]+nibbles[1][1]+nibbles[2][1]+nibbles[3][1];
-	parityByte[6] = nibbles[0][2]+nibbles[1][2]+nibbles[2][2]+nibbles[3][2];
-	parityByte[7] = nibbles[0][3]+nibbles[1][3]+nibbles[2][3]+nibbles[3][3];
+	parityByte[0] = nibbles[0][0]^nibbles[0][1]^nibbles[0][2]^nibbles[0][3];
+	parityByte[1] = nibbles[1][0]^nibbles[1][1]^nibbles[1][2]^nibbles[1][3];
+	parityByte[2] = nibbles[2][0]^nibbles[2][1]^nibbles[2][2]^nibbles[2][3];
+	parityByte[3] = nibbles[3][0]^nibbles[3][1]^nibbles[3][2]^nibbles[3][3];
+	parityByte[4] = nibbles[0][0]^nibbles[1][0]^nibbles[2][0]^nibbles[3][0];
+	parityByte[5] = nibbles[0][1]^nibbles[1][1]^nibbles[2][1]^nibbles[3][1];
+	parityByte[6] = nibbles[0][2]^nibbles[1][2]^nibbles[2][2]^nibbles[3][2];
+	parityByte[7] = nibbles[0][3]^nibbles[1][3]^nibbles[2][3]^nibbles[3][3];
 	byte0 = (unsigned char)(parityByte[0]<<7)|(parityByte[1]<<6)|(parityByte[2]<<5)|(parityByte[3]<<4)|
 			(parityByte[4]<<3)|(parityByte[5]<<2)|(parityByte[6]<<1)|(parityByte[7]);
 	#ifdef DEBUG
@@ -131,14 +131,14 @@ int Frame::checkParity()
 	nibbles[3][2] = byte1 & (1<<1);
 	nibbles[3][3] = byte1 & (1<<0);
 
-	parityByte[0] = nibbles[0][0]+nibbles[0][1]+nibbles[0][2]+nibbles[0][3];
-	parityByte[1] = nibbles[1][0]+nibbles[1][1]+nibbles[1][2]+nibbles[1][3];
-	parityByte[2] = nibbles[2][0]+nibbles[2][1]+nibbles[2][2]+nibbles[2][3];
-	parityByte[3] = nibbles[3][0]+nibbles[3][1]+nibbles[3][2]+nibbles[3][3];
-	parityByte[4] = nibbles[0][0]+nibbles[1][0]+nibbles[2][0]+nibbles[3][0];
-	parityByte[5] = nibbles[0][1]+nibbles[1][1]+nibbles[2][1]+nibbles[3][1];
-	parityByte[6] = nibbles[0][2]+nibbles[1][2]+nibbles[2][2]+nibbles[3][2];
-	parityByte[7] = nibbles[0][3]+nibbles[1][3]+nibbles[2][3]+nibbles[3][3];
+	parityByte[0] = nibbles[0][0]^nibbles[0][1]^nibbles[0][2]^nibbles[0][3];
+	parityByte[1] = nibbles[1][0]^nibbles[1][1]^nibbles[1][2]^nibbles[1][3];
+	parityByte[2] = nibbles[2][0]^nibbles[2][1]^nibbles[2][2]^nibbles[2][3];
+	parityByte[3] = nibbles[3][0]^nibbles[3][1]^nibbles[3][2]^nibbles[3][3];
+	parityByte[4] = nibbles[0][0]^nibbles[1][0]^nibbles[2][0]^nibbles[3][0];
+	parityByte[5] = nibbles[0][1]^nibbles[1][1]^nibbles[2][1]^nibbles[3][1];
+	parityByte[6] = nibbles[0][2]^nibbles[1][2]^nibbles[2][2]^nibbles[3][2];
+	parityByte[7] = nibbles[0][3]^nibbles[1][3]^nibbles[2][3]^nibbles[3][3];
 	unsigned char test = (parityByte[0]<<7)|(parityByte[1]<<6)|(parityByte[2]<<5)|(parityByte[3]<<4)|
 			(parityByte[4]<<3)|(parityByte[5]<<2)|(parityByte[6]<<1)|(parityByte[7]);
 	#ifdef DEBUG
