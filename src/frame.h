@@ -20,7 +20,6 @@ public:
 
 	int type;
 	int receiver;
-	int sender;
 	int sequence;
 	int data;
 	int parity;
@@ -39,10 +38,9 @@ Frame::Frame(unsigned char b2,unsigned char b1)
 {
 	byte2 = b2;
 	byte1 = data = b1;
-	type = (byte2 >> 6);
-	receiver = (byte2 >> 4)&3;
-	sender = (byte2 >> 2)&3;
-	sequence = (byte2)&3;
+	type = (byte2 >> 6)&3;
+	receiver = (byte2 >> 3)&7;
+	sequence = (byte2)&7;
 	makeParity();
 	#ifdef DEBUG
 	DEBUG_OUT << "constructing frame...";
@@ -55,10 +53,9 @@ Frame::Frame(unsigned char b2,unsigned char b1,unsigned char b0)
 	byte2 = b2;
 	byte1 = data = b1;
 	byte0 = parity = b0;
-	type = (byte2 >> 6);
-	receiver = (byte2 >> 4)&3;
-	sender = (byte2 >> 2)&3;
-	sequence = (byte2)&3;
+	type = (byte2 >> 6)&3;
+	receiver = (byte2 >> 3)&7;
+	sequence = (byte2)&7;
 	#ifdef DEBUG
 	DEBUG_OUT << "constructing frame...";
 	coutHeader();
@@ -175,7 +172,6 @@ void Frame::coutHeader()
 {
 	DEBUG_OUT << "Type: " << type << " ";
 	DEBUG_OUT << "Receiver: " << receiver << " ";
-	DEBUG_OUT << "Sender: " << sender << " ";
 	DEBUG_OUT << "Sequence: " << sequence << std::endl;
 	DEBUG_OUT << "Data contents: ";
 	for(int i=7;i>=0;i--)

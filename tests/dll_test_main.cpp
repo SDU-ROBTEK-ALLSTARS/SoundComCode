@@ -7,7 +7,7 @@
 //============================================================================
 #define		DEBUG
 #define 	DEBUG_OUT		std::cout
-#define 	MY_ADDRESS		0
+#define 	MY_ADDRESS		7
 #include 	<iostream>
 #include 	"dataLinkLayer.h"
 
@@ -18,10 +18,10 @@ int main()
 	DataLinkLayer dll;
 
 	//Construct frames
-	Frame input1(196,200);
-	Frame input2(197,128);
-	Frame input3(198,75);
-	Frame input4(199,255);
+	Frame input1(248,200);
+	Frame input2(249,128);
+	Frame input3(250,75);
+	Frame input4(251,255);
 
 	//Decode four frames and check list
 	dll.decode(input1);
