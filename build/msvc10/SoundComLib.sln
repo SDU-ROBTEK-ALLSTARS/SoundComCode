@@ -10,6 +10,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "portaudio", "projects\porta
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "patest_sine", "projects\patest_sine\patest_sine.vcxproj", "{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boosttest_circbuff", "projects\boosttest_circbuff\boosttest_circbuff.vcxproj", "{09601285-B48B-4A1E-A7A3-2860B9DFAF65}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{05AC6C66-AD55-4058-832B-B6CFC6487003}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{87E35F1F-0F01-4033-8F0B-3207D2C91DAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -47,8 +53,22 @@ Global
 		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
 		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
 		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Debug|Win32.ActiveCfg = Debug|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Debug|Win32.Build.0 = Debug|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Debug|x64.ActiveCfg = Debug|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Release|Win32.ActiveCfg = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Release|Win32.Build.0 = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.Release|x64.ActiveCfg = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{09601285-B48B-4A1E-A7A3-2860B9DFAF65} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
+		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
+		{05FBB8BA-2723-40DE-89D1-57C1339D6423} = {87E35F1F-0F01-4033-8F0B-3207D2C91DAF}
 	EndGlobalSection
 EndGlobal
