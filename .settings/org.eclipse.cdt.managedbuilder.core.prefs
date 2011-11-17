@@ -1,0 +1,14 @@
+#Thu Nov 17 20:09:44 CET 2011
+eclipse.preferences.version=1
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/CPATH/delimiter=\:
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/CPATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/CPLUS_INCLUDE_PATH/delimiter=\:
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/CPLUS_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/C_INCLUDE_PATH/delimiter=\:
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/C_INCLUDE_PATH/operation=remove
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/append=true
+environment/buildEnvironmentInclude/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/appendContributed=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/LIBRARY_PATH/delimiter=\:
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/LIBRARY_PATH/operation=remove
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/append=true
+environment/buildEnvironmentLibrary/cdt.managedbuild.toolchain.gnu.macosx.base.873950237/appendContributed=true
