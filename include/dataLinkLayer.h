@@ -9,72 +9,105 @@
 #define DATALINKLAYER_H_
 //=====     INCLUDES     =====
 #include "frame.h"
+#include <stdio.h>
+#include <time.h>
+//=====     DECLARATIONS     =====
+struct datalist
+{
+	unsigned char dataByte;
+	bool receivedFlag;
+};
 
 //=====     CLASS DECLARATION     =====
 class DataLinkLayer
 {
 private:
-	struct datalist
-	{
-		unsigned char dataByte;
-		bool receivedFlag;
-	};
-	struct datalist receivedList[8];
-
-	void frameAccepted(Frame);
-	void frameDiscarded();
-	void tokenOffered();
-	void fatalError();
-	void clearReceivedList();
-	void passDataUpwards();
-	void requestResend(int);
-
 public:
-	DataLinkLayer();
-	int decode(Frame);
-	void encode(unsigned char,unsigned char);
-	void checkList();
+	struct datalist receivedList[8];			//list of received data
+	time_t tokenReceiveClock;					//system time when token was received
+	bool hasToken;								//1 means have token, 0 means have no token
+	int nextStation;
+
+	void makeFrame(unsigned char,unsigned char);//process data from datagram buffer and put in frame buffer
+	void acceptFrame(Frame);					//inserts frame in list
+	void discardFrame();						//discards frame (by doing nothing)
+	void fatalError();							//reports critical error
+
+	void tokenOffered();						//receives token
+	void checkToken();							//returns 0 if token is OK and 1 if time to pass token
+	void offerToken();							//offer token to next station
+	void passToken();							//passes token to accepting station
+
+	void checkReceivedList();					//check if list is complete
+	void clearReceivedList();					//clears list of received data
+
+	void passDataUpwards();						//writes data into buffer
+	void requestResend(int);					//requests resending of data missing in list
+
+//public:
+	DataLinkLayer();							//constructor
+	int processFrame(Frame);					//process data from frame buffer and put in datagram buffer
+
 };
 
 //=====     CLASS IMPLEMENTATION     =====
 DataLinkLayer::DataLinkLayer()
 {
 	clearReceivedList();
+	#ifdef STARTS_WITH_TOKEN
+	tokenOffered();
+	#endif
 }
 //=====
-int DataLinkLayer::decode(Frame incoming)
+int DataLinkLayer::processFrame(Frame incoming)
 {
 	if( (incoming.receiver == MY_ADDRESS)  &&  (incoming.checkParity()==0)  )
 		//if frame is for me and parity is ok
 	{
-		if(incoming.type == 3)
+		switch(incoming.type)
+		{
+		case 3:
 			//if frame type is dataframe
 		{
-			frameAccepted(incoming);
-			return 0;
+			acceptFrame(incoming);
+			break;
 		}
-		else if(incoming.type == 2)
+		case 2:
+			//if frame is station accepting token
+		{
+			passToken();
+			break;
+		}
+		case 1:
 			//if frame is station offering token
 		{
 			tokenOffered();
-			return 0;
+			break;
 		}
-		else
+		case 0:
+			//if frame is reply from receiver
+		{
+
+			break;
+		}
+		default:
 			//impossible frame type
 		{
 			fatalError();
+			break;
+		}
 		}
 	}
 	else
 		//frame is not for me or parity was foobah
 	{
-		frameDiscarded();
+		discardFrame();
 		return 0;
 	}
 	return 0;
 }
 //=====
-void DataLinkLayer::encode(unsigned char header,unsigned  char data)
+void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 {
 	Frame output(header,data);
 	#ifdef DEBUG
@@ -84,7 +117,7 @@ void DataLinkLayer::encode(unsigned char header,unsigned  char data)
 
 }
 //=====
-void DataLinkLayer::frameAccepted(Frame incoming)
+void DataLinkLayer::acceptFrame(Frame incoming)
 {
 	receivedList[incoming.sequence].dataByte = incoming.data;
 	receivedList[incoming.sequence].receivedFlag = 1;
@@ -94,24 +127,73 @@ void DataLinkLayer::frameAccepted(Frame incoming)
 	#endif
 }
 //=====
-void DataLinkLayer::frameDiscarded()
+void DataLinkLayer::discardFrame()
 {
 	#ifdef DEBUG
 	DEBUG_OUT << "Frame discarded" << std::endl;
 	#endif
 }
 //=====
-void DataLinkLayer::tokenOffered()
-{
-	#ifdef DEBUG
-	DEBUG_OUT << "Token offered" << std::endl;
-	#endif
-}
-//=====
 void DataLinkLayer::fatalError()
 {
 	#ifdef DEBUG
-	DEBUG_OUT << "Fatal error - ohh shit!" << std::endl;
+	DEBUG_OUT << "A fatal error has occured!" << std::endl;
+	#endif
+}
+void DataLinkLayer::tokenOffered()
+{
+	time ( &tokenReceiveClock );
+	hasToken = 1;
+	nextStation = MY_ADDRESS;
+	#ifdef DEBUG
+	DEBUG_OUT << "Token offered" << std::endl;
+	std::cout << "Token received " << ctime (&tokenReceiveClock) << std::endl;
+	#endif
+}
+//=====
+void DataLinkLayer::checkToken()
+{
+	if(hasToken==1)
+	{
+		time_t nowClock;
+		time ( &nowClock );
+		if((nowClock-tokenReceiveClock)>MAX_TIME_WITH_TOKEN)
+		{
+			#ifdef DEBUG
+			DEBUG_OUT << "Token expired" << std::endl;
+			#endif
+			offerToken();
+		}
+		else
+		{
+			#ifdef DEBUG
+			std::cout << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-tokenReceiveClock))
+				  << " seconds" << std::endl;
+			#endif
+		}
+	}
+	else
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "checkToken called without token" << std::endl;
+		#endif
+	}
+}
+//=====
+void DataLinkLayer::offerToken()
+{
+	nextStation++;
+	if(nextStation>7)
+		nextStation = 0;
+	 makeFrame((1<<6)|(nextStation<<3),0);
+}
+//=====
+void DataLinkLayer::passToken()
+{
+	//TODO: Her kunne inds¾ttes et tjek pŒ om den rette station har modtaget...
+	hasToken = 0;
+	#ifdef DEBUG
+	DEBUG_OUT << "Token was passed" << std::endl;
 	#endif
 }
 //=====
@@ -124,7 +206,7 @@ void DataLinkLayer::clearReceivedList()
 	}
 }
 //=====
-void DataLinkLayer::checkList()
+void DataLinkLayer::checkReceivedList()
 {
 	#ifdef DEBUG
 	DEBUG_OUT << "Current list entries: " << std::endl;
@@ -167,7 +249,7 @@ void DataLinkLayer::passDataUpwards()
 	}
 	DEBUG_OUT << std::endl;
 	#endif
-	encode(MY_ADDRESS<<3,~0);
+	makeFrame(MY_ADDRESS<<3,~0);
 }
 //=====
 void DataLinkLayer::requestResend(int request)
@@ -181,6 +263,6 @@ void DataLinkLayer::requestResend(int request)
 			DEBUG_OUT << "Requesting resend frame " << j << std::endl;
 			#endif
 		}
-	encode(MY_ADDRESS<<3,~data);
+	makeFrame(MY_ADDRESS<<3,~data);
 }
 #endif /* DATALINKLAYER_H_ */
