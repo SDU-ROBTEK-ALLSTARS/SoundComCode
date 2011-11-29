@@ -35,11 +35,6 @@ public:
 	//g
 	~Transport();
 
-	//
-	int setClientPort(unsigned char);
-
-	//
-	int setServerPort(unsigned char);
 
 	//
 	void encode(unsigned char destServerPort/*, data*/);
@@ -52,7 +47,7 @@ public:
 
 private:
 	// We allow different client and server ports. Which is used depends on traffic direction.
-	// The port number is 8 bit long.
+	// The port number is 8 bits long.
 	unsigned char clientPort;
 	unsigned char serverPort;
 

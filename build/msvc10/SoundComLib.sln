@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{87E35F1F-0F0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transport-test", "projects\transport-test\transport-test.vcxproj", "{68CE8169-21BB-4C90-8691-384B33C6654F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dll-test", "projects\dll-test\dll-test.vcxproj", "{17440F6F-C00C-48BB-8156-8CBA483AC565}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -73,6 +75,15 @@ Global
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Debug|Win32.ActiveCfg = Debug|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Debug|Win32.Build.0 = Debug|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Debug|x64.ActiveCfg = Debug|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Release|Win32.ActiveCfg = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Release|Win32.Build.0 = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.Release|x64.ActiveCfg = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
+		{17440F6F-C00C-48BB-8156-8CBA483AC565}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,5 +93,6 @@ Global
 		{09601285-B48B-4A1E-A7A3-2860B9DFAF65} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
 		{E655EE42-2DC5-4DB3-8DB3-108C3E64859B} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
 		{68CE8169-21BB-4C90-8691-384B33C6654F} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
+		{17440F6F-C00C-48BB-8156-8CBA483AC565} = {05AC6C66-AD55-4058-832B-B6CFC6487003}
 	EndGlobalSection
 EndGlobal
