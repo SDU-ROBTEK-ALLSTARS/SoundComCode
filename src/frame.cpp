@@ -87,12 +87,12 @@ void Frame::makeParity()
 	byte0 = (unsigned char)(parityByte[0]<<7)|(parityByte[1]<<6)|(parityByte[2]<<5)|(parityByte[3]<<4)|
 			(parityByte[4]<<3)|(parityByte[5]<<2)|(parityByte[6]<<1)|(parityByte[7]);
 
-	#ifdef DEBUG
-	DEBUG_OUT << "Generated parity byte: ";
-	for(int k=0;k<8;k++)
-		DEBUG_OUT << parityByte[k];
-	DEBUG_OUT << " = " << (int)byte0 << std::endl;
-	#endif
+//	#ifdef DEBUG
+//	DEBUG_OUT << "Generated parity byte: ";
+//	for(int k=0;k<8;k++)
+//		DEBUG_OUT << parityByte[k];
+//	DEBUG_OUT << " = " << (int)byte0 << std::endl;
+//	#endif
 }
 //=====
 int Frame::checkParity()

@@ -52,29 +52,38 @@ int main()
 	boost::circular_buffer< Frame > uscbi(BUFFERSIZE);   //upwards input
 	boost::circular_buffer< unsigned int > uscbo(BUFFERSIZE);   //upwards output
 
+#ifdef DEBUG
+DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------" << std::endl;
+#endif
+
 	//fill input buffers
 	while( !inputup.eof() )
 	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Buffering frame from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
+		#endif
 		inputup >> byte1 >> byte2 >> byte3;
 		uscbi.push_back(Frame(byte1,byte2,byte3));
-		#ifdef DEBUG
-		DEBUG_OUT << "Buffering from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
-		#endif
 	}	
 	while( !inputdown.eof() )
 	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Buffering datagram byte from file...";
+		for(int i=7;i>=0;i--)
+			DEBUG_OUT << (bool)(byte1 & (1<<i));
+		DEBUG_OUT << std::endl;
+		#endif
 		inputdown >> byte1;
 		dscbi.push_back(byte1);
-		#ifdef DEBUG
-		DEBUG_OUT << "Buffering from file..." << byte1 << std::endl;
-		#endif
 	}
 
 	//instantiate data link layer
 	DataLinkLayer dll;
 
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
+	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 
 	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
 	while(true)
