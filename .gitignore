@@ -49,8 +49,14 @@ _ReSharper*/
 *.resharper
 [Tt]est[Rr]esult*
 
-#Project files
-#[Bb]uild/          << Kim: wants to keep /build/ dirs. Is that so bad?
+#Other project files
+/*.project
+/*.cproject
+/.settings
+/[Dd]efault
 
 # Office Temp Files
 ~$*
+
+#etc
+/*.dat

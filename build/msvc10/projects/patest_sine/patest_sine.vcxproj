@@ -11,12 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tests\patest_sine.c" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\portaudio\portaudio.vcxproj">
       <Project>{05fbb8ba-2723-40de-89d1-57c1339d6423}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\lib\portaudio\test\patest_sine.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E655EE42-2DC5-4DB3-8DB3-108C3E64859B}</ProjectGuid>
