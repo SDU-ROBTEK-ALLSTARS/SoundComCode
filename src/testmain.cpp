@@ -59,21 +59,22 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	//fill input buffers
 	while( !inputup.eof() )
 	{
+		inputup >> byte1 >> byte2 >> byte3;
 		#ifdef DEBUG
 		DEBUG_OUT << "Buffering frame from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
 		#endif
-		inputup >> byte1 >> byte2 >> byte3;
 		uscbi.push_back(Frame(byte1,byte2,byte3));
 	}	
 	while( !inputdown.eof() )
 	{
+		inputdown >> byte1;
 		#ifdef DEBUG
 		DEBUG_OUT << "Buffering datagram byte from file...";
 		for(int i=7;i>=0;i--)
 			DEBUG_OUT << (bool)(byte1 & (1<<i));
 		DEBUG_OUT << std::endl;
 		#endif
-		inputdown >> byte1;
+
 		dscbi.push_back(byte1);
 	}
 
@@ -84,6 +85,7 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
 	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
 
 	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
 	while(true)

@@ -47,7 +47,7 @@ void DataLinkLayer::encode(
 
 	currentReceiver = 2;
 	nextInSendSequence = 0;
-
+//TODO: endDatagram() skal POP - OR - PUSH - timestampReply
 	//process datagrams
 	while(1)
 	{
@@ -91,6 +91,8 @@ void DataLinkLayer::decode(
 	#ifdef DEBUG
 	DEBUG_OUT << "Popping from framebuffer..." << std::endl;
 	#endif
+
+	//TODO: ved tom buffer, tjek timestampOK
 
 	//process frames
 	while(!frameUp->empty())

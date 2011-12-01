@@ -195,7 +195,7 @@ void Frame::coutHeader()
 	DEBUG_OUT << " " << "parity: ";
 	for(int i=7;i>=0;i--)
 		DEBUG_OUT << (bool)(byte0 & (1<<i));
-	DEBUG_OUT << std::endl;
+	DEBUG_OUT  << "(" << (int)byte0 << ")" << std::endl;
 }
 #endif
 
