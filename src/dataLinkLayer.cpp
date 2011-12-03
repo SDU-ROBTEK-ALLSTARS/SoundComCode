@@ -23,6 +23,9 @@ DataLinkLayer::DataLinkLayer()
 	#endif
 	clearFrameReceiveList();
 	clearFrameSendList();
+	awaitsReply = 0;
+	nextInSendSequence = 0;
+	receiverNeedsUpdate = 0;
 
 }
 //=====
@@ -36,6 +39,34 @@ void DataLinkLayer::encode(
 	DEBUG_OUT << std::endl << "----------   ###   ENCODE   ###   ----------" << std::endl;
 	#endif
 
+	//check if ready to process
+	if(awaitsReply == 1)
+	{
+		//check current time
+		time_t nowClock;
+		time ( &nowClock );
+
+		//compare with saved timestamp from when transmission ended
+		if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+		{
+			//if time expired
+			#ifdef DEBUG
+			DEBUG_OUT << "Time for receiver to reply is up" << std::endl;
+			#endif
+
+			//resend all
+			resendData(~0);
+		}
+		else
+		{
+			//if there is time left
+			#ifdef DEBUG
+			std::cout << "Time left for receiver to reply: " << (MAX_TIME_TO_REPLY-(nowClock-timestampAwaitsReply))
+				  << " seconds" << std::endl;
+			#endif
+		}
+	}
+
 	//update pointers
 	datagramDown = downIn;
 	datagramUp = upOut;
@@ -46,15 +77,12 @@ void DataLinkLayer::encode(
 	DEBUG_OUT << "Popping from datagrambuffer..." << std::endl;
 	#endif
 
-//TODO: check if OK is received, check timestamp and resend or update list
-	nextInSendSequence = 0;
-
 	//process datagrams
 	if(!datagramDown->empty())
 	{
 		while(1)
 		{
-//TODO: implement two-dimensional buffer
+//TODO: implement two-dimensional buffer, zero next in send sequence
 			if(datagramDown->empty())
 			{
 				//Set EOT bit in last frame
@@ -63,6 +91,8 @@ void DataLinkLayer::encode(
 				#endif
 				endDatagram();
 				receiverNeedsUpdate = 1;
+				awaitsReply = 1;
+				time ( &timestampAwaitsReply );
 				break;
 			}
 			if(nextInSendSequence >= 8)
@@ -104,8 +134,6 @@ void DataLinkLayer::decode(
 	#ifdef DEBUG
 	DEBUG_OUT << "Popping from framebuffer..." << std::endl;
 	#endif
-
-//TODO: ved tom buffer, tjek timestampOK
 
 	//process frames
 	while(!frameUp->empty())
@@ -370,7 +398,6 @@ void DataLinkLayer::clearFrameSendList()
 	nextInSendSequence = 0;
 }
 //=====
-//TODO: check frame SEND list
 void DataLinkLayer::checkFrameReceiveList()
 {
 	//initialize variable to hold EOT, goes and nogoes
@@ -459,15 +486,12 @@ void DataLinkLayer::passDataUpwards()
 	//generate ok for sender
 	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),~0);
 
-//TODO: Is this address recivable?
-
 	//clear list
 	clearFrameReceiveList();
 }
 //=====
 void DataLinkLayer::requestResend(int request)
 {
-	//TODO: This function could be spared. Some functionalities has been moved
 	#ifdef DEBUG
 	for(int j=0;j<8;j++)
 		if(!(bool)(request&(1<<j)))
@@ -480,8 +504,7 @@ void DataLinkLayer::requestResend(int request)
 //=====
 void DataLinkLayer::replyFromReceiver(Frame incoming)
 {
-	//TODO: resend missing frames
-
+	awaitsReply = 0;
 	if(incoming.data == 0)
 	{
 		#ifdef DEBUG
@@ -492,10 +515,35 @@ void DataLinkLayer::replyFromReceiver(Frame incoming)
 	else
 	{
 		#ifdef DEBUG
-			DEBUG_OUT << "Receiver requesting resend..." << std::endl;
+			DEBUG_OUT << "Receiver requesting frames...";
+			for(int i=0;i<8;i++)
+			{
+				if((bool)(incoming.byte1 & (1<<i)) == 1)
+					DEBUG_OUT << " " << i;
+			}
+			DEBUG_OUT << std::endl;
 		#endif
-//TODO: iterate through list and update flags
+			resendData(incoming.byte1);
 	}
+}
+//=====
+void DataLinkLayer::resendData(unsigned int request)
+{
+	//iterate through databyte
+	for(int i=0;i<8;i++)
+	{
+		//resend requested frames
+		if((bool)(request & (1<<i)) == 0)
+		{
+			makeFrame(
+					(3<<TYPE)|   									//type 3
+					(currentReceiver<<ADDRESS)| 					//receiver address
+					(i<<SEQUENCE),   								//sequence number
+					frameSendList[i].dataByte);  					//data
+		}
+	}
+	//set EOT bit in last frame
+	endDatagram();
 }
 
 //End Of File

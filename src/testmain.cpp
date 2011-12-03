@@ -82,7 +82,7 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	DataLinkLayer dll;
 
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
-//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
 //	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 //	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);

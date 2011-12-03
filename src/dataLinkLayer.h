@@ -11,7 +11,8 @@
 //defines needed for data link layer
 #define 	MY_ADDRESS			1
 #define		STARTS_WITH_TOKEN
-#define		MAX_TIME_WITH_TOKEN	5
+#define		MAX_TIME_WITH_TOKEN	1
+#define		MAX_TIME_TO_REPLY	1
 
 //debugging
 #define		DEBUG								//out comment for no debug info
@@ -40,6 +41,8 @@ private:
 	int currentReceiver;						//datagrams are processed for this receiver (0:3)
 	int nextInSendSequence;						//points to the next usable sequence number.
 	bool receiverNeedsUpdate;					//set on end of datagram, cleared on receiver update
+	bool awaitsReply;							//set on end of transmission, clear when reply is received
+	time_t timestampAwaitsReply;				//system time @ end of transmission
 
 	time_t timestampToken;						//system time when token was received
 	bool hasToken;								//1 means have token, 0 means have no token
@@ -73,6 +76,7 @@ private:
 	void requestResend(int);					//requests resending of data missing in list
 
 	void replyFromReceiver(Frame);				//checks reply from receiver and generates resend
+	void resendData(unsigned int);				//resends requested frames
 
 	void fatalError();							//reports critical error
 
