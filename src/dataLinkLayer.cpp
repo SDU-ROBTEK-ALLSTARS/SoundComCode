@@ -35,6 +35,7 @@ void DataLinkLayer::encode(
 	#ifdef DEBUG
 	DEBUG_OUT << std::endl << "----------   ###   ENCODE   ###   ----------" << std::endl;
 	#endif
+
 	//update pointers
 	datagramDown = downIn;
 	datagramUp = upOut;
@@ -45,29 +46,41 @@ void DataLinkLayer::encode(
 	DEBUG_OUT << "Popping from datagrambuffer..." << std::endl;
 	#endif
 
-	currentReceiver = 2;
+//TODO: check if OK is received, check timestamp and resend or update list
 	nextInSendSequence = 0;
-//TODO: endDatagram() skal POP - OR - PUSH - timestampReply
+
 	//process datagrams
-	while(1)
+	if(!datagramDown->empty())
 	{
-		if(datagramDown->empty())
+		while(1)
 		{
-			//TODO: Set EOT bit in last frame
-			#ifdef DEBUG
-			DEBUG_OUT << "Buffer is empty...ending transmission" << std::endl;
-			#endif
-			break;
+//TODO: implement two-dimensional buffer
+			if(datagramDown->empty())
+			{
+				//Set EOT bit in last frame
+				#ifdef DEBUG
+				DEBUG_OUT << "Buffer is empty...ending transmission" << std::endl;
+				#endif
+				endDatagram();
+				receiverNeedsUpdate = 1;
+				break;
+			}
+			if(nextInSendSequence >= 8)
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "List is full...ending transmission" << std::endl;
+				#endif
+				break;
+			}
+			processDatagram(datagramDown->front());
+			datagramDown->pop_front();
 		}
-		if(nextInSendSequence >= 8)
-		{
-			#ifdef DEBUG
-			DEBUG_OUT << "List is full...ending transmission" << std::endl;
-			#endif
-			break;
-		}
-		processDatagram(datagramDown->front());
-		datagramDown->pop_front();
+	}
+	else
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Buffer is empty...nothing to process" << std::endl;
+		#endif
 	}
 
 
@@ -92,7 +105,7 @@ void DataLinkLayer::decode(
 	DEBUG_OUT << "Popping from framebuffer..." << std::endl;
 	#endif
 
-	//TODO: ved tom buffer, tjek timestampOK
+//TODO: ved tom buffer, tjek timestampOK
 
 	//process frames
 	while(!frameUp->empty())
@@ -161,10 +174,28 @@ void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 	frameDown->push_back(Frame(header,data));
 
 	#ifdef DEBUG
-	DEBUG_OUT << "Pushing to framebuffer: ";
-	frameDown->back().coutBytes();
+	DEBUG_OUT << "Pushing to framebuffer: " << frameDown->back();
+	#endif
+}
+//=====
+void DataLinkLayer::endDatagram()
+{
+	#ifdef DEBUG
+	DEBUG_OUT << "Setting EOT-bit..." << std::endl;
 	#endif
 
+	//pop last frame put in buffer
+	Frame temp = frameDown->back();
+	frameDown->pop_back();
+
+	//extract bytes and set EOT bit
+	unsigned int tempHeader,tempData;
+	tempData = temp.byte1;
+	tempHeader = temp.byte2;
+	tempHeader |= 1;
+
+	//re-push altered frame
+	frameDown->push_back(Frame(tempHeader,tempData));
 }
 //=====
 void DataLinkLayer::acceptFrame(Frame incoming)
@@ -172,6 +203,10 @@ void DataLinkLayer::acceptFrame(Frame incoming)
 	//put frame in list
 	frameRecList[incoming.sequence].dataByte = incoming.data;
 	frameRecList[incoming.sequence].flag = 1;
+
+	//mark if end of transmission is set
+	if(incoming.end == 1)
+		frameRecList[incoming.sequence].eot = 1;
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Frame accepted" << std::endl;
@@ -192,15 +227,26 @@ void DataLinkLayer::discardFrame()
 //=====
 void DataLinkLayer::processDatagram(unsigned int incoming)
 {
-	//TODO: decide if currentReceiver needs update
+	//update receiver if incoming is first byte of new datagram
+	if(receiverNeedsUpdate == 1)
+	{
+		currentReceiver = (incoming >> 6);
+		receiverNeedsUpdate = 0;
+	}
+
+	//generate frame
 	makeFrame(
-			(3<<6)|   										//type 3
-			(currentReceiver<<4)| 							//receiver address
-			(nextInSendSequence<<1)|   						//sequence number
+			(3<<TYPE)|   									//type 3
+			(currentReceiver<<ADDRESS)| 					//receiver address
+			(nextInSendSequence<<SEQUENCE)|   				//sequence number
 			(nextInSendSequence==7?1:0),					//set end of transmission if seq.no is 7
 			incoming);  									//data
+
+	//put data in list
 	frameSendList[nextInSendSequence].dataByte = incoming; 	//save data in list
 	frameSendList[nextInSendSequence].flag = 1;  		   	//set flag
+
+	//update sequence number
 	nextInSendSequence++;
 }
 //=====
@@ -228,7 +274,7 @@ void DataLinkLayer::tokenOffered()
 	#endif
 
 	//make type 2 frame for station before me
-	makeFrame((2<<6)|MY_ADDRESS?3:MY_ADDRESS-1<<4,~0);
+	makeFrame((2<<TYPE)|(MY_ADDRESS?3:MY_ADDRESS-1<<ADDRESS),~0);
 }
 //=====
 void DataLinkLayer::checkToken()
@@ -255,7 +301,6 @@ void DataLinkLayer::checkToken()
 			std::cout << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
 				  << " seconds" << std::endl;
 			#endif
-			//TODO: do what?
 		}
 	}
 	else
@@ -269,10 +314,10 @@ void DataLinkLayer::checkToken()
 //=====
 void DataLinkLayer::offerToken()
 {
-	//increase next receiver of token
+	//increase token receiver
 	nextStation++;
 
-	//flip over if higher than no of addresses
+	//flip over if higher than number of addresses
 	if(nextStation>3)
 		nextStation = 0;
 
@@ -281,8 +326,8 @@ void DataLinkLayer::offerToken()
 		//offer token to self
 		tokenOffered();
 	else
-		//offer frame to next station
-		makeFrame((1<<6)|(nextStation<<3),0);
+		//generate frame to offer token to next station
+		makeFrame((1<<TYPE)|(nextStation<<ADDRESS),0);
 }
 //=====
 void DataLinkLayer::passToken()
@@ -325,33 +370,51 @@ void DataLinkLayer::clearFrameSendList()
 	nextInSendSequence = 0;
 }
 //=====
+//TODO: check frame SEND list
 void DataLinkLayer::checkFrameReceiveList()
 {
+	//initialize variable to hold EOT, goes and nogoes
+	bool transmissionStop = 0;
+	int request = 0;
+
 	#ifdef DEBUG
 	DEBUG_OUT << "Checking list...entries: " << std::endl;
 	for(int i=0;i<8;i++)
 	{
+	if(transmissionStop==1)
+		break;
 	DEBUG_OUT << i << " - ";
 	for(int j=7;j>=0;j--)
 		DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
 	if(frameRecList[i].flag==1)
-		DEBUG_OUT << " - received" << std::endl;
+		DEBUG_OUT << " - received";
 	else
-		DEBUG_OUT << " - missing" << std::endl;
+		DEBUG_OUT << " - missing";
+	if(frameRecList[i].eot == 1)
+	{
+		DEBUG_OUT << " - End of transmission";
+		transmissionStop = 1;
+	}
+	DEBUG_OUT  << std::endl;
 	}
 	#endif
 
-	//initialize variable to hold goes and nogoes
-	int request = 0;
+	//reset EOT
+	transmissionStop = 0;
 
 	//iterate through list
 	for(int i=0;i<8;i++)
-		//set corresponding bit if seq. no is received
-		request |= ((bool)frameRecList[i].flag<<i);
+	{
+		//set corresponding bit if seq. no is received or transmission stopped
+		request |= ((bool)(frameRecList[i].flag|transmissionStop)<<i);
 
-	//if list is complete
+		//update if eot bit is set
+		if(frameRecList[i].eot == 1)
+			transmissionStop = 1;
+	}
+
+	//pass upwards if list is complete
 	if(request == 0xFF)
-		//finish list
 		passDataUpwards();
 	else
 		//request resends
@@ -360,25 +423,43 @@ void DataLinkLayer::checkFrameReceiveList()
 //=====
 void DataLinkLayer::passDataUpwards()
 {
+	bool transmissionStop = 0;
+
 	//push to datagram buffer
 	for(int i=0;i<8;i++)
+	{
+		//break at the end of transmission
+		if(transmissionStop==1)
+			break;
+
+		//push to buffer
 		datagramUp->push_back(frameRecList[i].dataByte);
 
+		//update if EOT is set
+		if(frameRecList[i].eot == 1)
+			transmissionStop = 1;
+	}
+
 	#ifdef DEBUG
+	transmissionStop = 0;
 	DEBUG_OUT << "Pushing to datagram buffer:";
 	for(int i=0;i<8;i++)
 	{
+		if(transmissionStop==1)
+			break;
 		for(int j=7;j>=0;j--)
 			DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
 		DEBUG_OUT << " ";
+		if(frameRecList[i].eot == 1)
+				transmissionStop = 1;
 	}
 	DEBUG_OUT << std::endl << "Gerating OK reply to sender" << std::endl;
 	#endif
 
 	//generate ok for sender
-	makeFrame(MY_ADDRESS<<4,~0);
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),~0);
 
-	//TODO: What happens if this frame is lost...
+//TODO: Is this address recivable?
 
 	//clear list
 	clearFrameReceiveList();
@@ -394,7 +475,7 @@ void DataLinkLayer::requestResend(int request)
 	#endif
 
 	//make type 0 frame with data byte holding ones for received an zeroes for resend
-	makeFrame(MY_ADDRESS<<4,request);
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
 }
 //=====
 void DataLinkLayer::replyFromReceiver(Frame incoming)
@@ -413,6 +494,7 @@ void DataLinkLayer::replyFromReceiver(Frame incoming)
 		#ifdef DEBUG
 			DEBUG_OUT << "Receiver requesting resend..." << std::endl;
 		#endif
+//TODO: iterate through list and update flags
 	}
 }
 

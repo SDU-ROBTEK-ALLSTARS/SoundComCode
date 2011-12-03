@@ -9,9 +9,10 @@
 #define DATALINKLAYER_H_
 
 //defines needed for data link layer
-#define 	MY_ADDRESS			0
+#define 	MY_ADDRESS			1
 #define		STARTS_WITH_TOKEN
 #define		MAX_TIME_WITH_TOKEN	5
+
 //debugging
 #define		DEBUG								//out comment for no debug info
 #define 	DEBUG_OUT			std::cout		//output for debug info
@@ -27,6 +28,7 @@ struct datalist									//structure for unfinished transmissions
 {
 	unsigned char dataByte;
 	bool flag;
+	bool eot;
 };
 
 //=====     CLASS DECLARATION     =====
@@ -37,6 +39,7 @@ private:
 	datalist frameSendList[8];					//list of send data
 	int currentReceiver;						//datagrams are processed for this receiver (0:3)
 	int nextInSendSequence;						//points to the next usable sequence number.
+	bool receiverNeedsUpdate;					//set on end of datagram, cleared on receiver update
 
 	time_t timestampToken;						//system time when token was received
 	bool hasToken;								//1 means have token, 0 means have no token
@@ -53,6 +56,7 @@ private:
 
 	void processDatagram(unsigned int);			//main engine for processing datagrams into frames
 	void makeFrame(unsigned char,unsigned char);//generate frame and put in frame buffer
+	void endDatagram();							//sets end of transmission bit in last frame
 
 	void tokenOffered();						//receives token
 	void checkToken();							//returns 0 if token is OK and 1 if time to pass token

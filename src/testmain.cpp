@@ -82,28 +82,46 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	DataLinkLayer dll;
 
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
-	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
-	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
-	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+
+#ifdef DEBUG
+DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   ----------" << std::endl;
+#endif
 
 	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
 	while(true)
 		{
-			outputup << (int)uscbo.front() << std::endl;
-			uscbo.pop_front();
 			if(uscbo.empty())
-			{break;}
-
+			{
+				break;
+			}
+			else
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "Writing datagram..." << uscbo.front() << std::endl;
+				#endif
+				outputup << (int)uscbo.front() << std::endl;
+				uscbo.pop_front();
+			}
 		}
 
 		while(true)
 		{
-			outputdown << dscbo.front();
-			dscbo.pop_front();
 			if(dscbo.empty())
-			{break;}
-
+			{
+				break;
+			}
+			else
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "Writing frame..." << dscbo.front() << std::endl;
+				#endif
+				outputdown << dscbo.front();
+				dscbo.pop_front();
+			}
 		}
 	return 0;
 }
