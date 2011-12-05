@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{87E35F1F-0F0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transport-test", "projects\transport-test\transport-test.vcxproj", "{68CE8169-21BB-4C90-8691-384B33C6654F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DtmfBackbone", "projects\DtmfBackbone\DtmfBackbone\DtmfBackbone.vcxproj", "{1366D904-8AD2-4156-BBCC-38594B4FD409}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -73,6 +75,15 @@ Global
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
 		{68CE8169-21BB-4C90-8691-384B33C6654F}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Debug|Win32.Build.0 = Debug|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Debug|x64.ActiveCfg = Debug|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Release|Win32.ActiveCfg = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Release|Win32.Build.0 = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.Release|x64.ActiveCfg = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.ReleaseMinDependency|Win32.ActiveCfg = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.ReleaseMinDependency|Win32.Build.0 = Release|Win32
+		{1366D904-8AD2-4156-BBCC-38594B4FD409}.ReleaseMinDependency|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
