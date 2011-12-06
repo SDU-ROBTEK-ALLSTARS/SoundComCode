@@ -10,6 +10,15 @@
 //debugging
 #define		DEBUG
 #define 	DEBUG_OUT			std::cout
+
+//frame definitions
+#define		TYPE				6
+#define 	ADDRESS				4
+#define		SEQUENCE			1
+#define 	EOT					0
+
+enum {NONE,HEADER};
+
 //=====     INCLUDES     =====
 #include 	<fstream>
 
@@ -17,10 +26,11 @@
 class Frame
 {
 private:
+public:
 	unsigned char byte2;			//header byte
 	unsigned char byte1;			//data byte
 	unsigned char byte0;			//parity byte
-public:
+
 	Frame(unsigned char,unsigned char);
 	Frame(unsigned char,unsigned char,unsigned char);
 
@@ -31,13 +41,13 @@ public:
 	int data;						//byte1
 	int parity;						//byte0
 
-	void makeParity();				//generates parity byte from header and data bytes
+	unsigned int makeParity(unsigned int,unsigned int);		//returns parity byte from header and data bytes
 	int checkParity();				//checks parity of current frame, returns 0 for OK
 	friend std::ostream& operator<<(std::ostream& out, Frame& frm);  //for file output
 
 #ifdef DEBUG
-	void coutBytes();				//outputs byte0
 	void coutHeader();				//outputs header data
+	friend std::ostream& printHeader(std::ostream& out);
 #endif
 };
 #endif /* FRAME_H_ */
