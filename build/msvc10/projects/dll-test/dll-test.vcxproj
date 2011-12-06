@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{68CE8169-21BB-4C90-8691-384B33C6654F}</ProjectGuid>
-    <RootNamespace>transporttest</RootNamespace>
+    <ProjectGuid>{17440F6F-C00C-48BB-8156-8CBA483AC565}</ProjectGuid>
+    <RootNamespace>dlltest</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,6 +45,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -59,13 +61,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\..\..\src</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tests\transport\transport_test.cpp" />
+    <ClCompile Include="..\..\..\..\src\dataLinkLayer.cpp" />
+    <ClCompile Include="..\..\..\..\src\frame.cpp" />
+    <ClCompile Include="..\..\..\..\tests\dll_test_main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\transport.h" />
+    <ClInclude Include="..\..\..\..\src\dataLinkLayer.h" />
+    <ClInclude Include="..\..\..\..\src\frame.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

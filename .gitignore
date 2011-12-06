@@ -43,20 +43,19 @@ obj/
 [Dd]ebug*/
 [Rr]elease*/
 Ankh.NoLoad
+*.cd
 
 #Tooling
 _ReSharper*/
 *.resharper
 [Tt]est[Rr]esult*
 
-#Other project files
+#etc.
 /*.project
 /*.cproject
 /.settings
 /[Dd]efault
+/*.dat
 
 # Office Temp Files
 ~$*
-
-#etc
-/*.dat
