@@ -10,15 +10,6 @@
 //debugging
 #define		DEBUG
 #define 	DEBUG_OUT			std::cout
-
-//frame definitions
-#define		TYPE				6
-#define 	ADDRESS				4
-#define		SEQUENCE			1
-#define 	EOT					0
-
-enum {NONE,HEADER};
-
 //=====     INCLUDES     =====
 #include 	<fstream>
 
@@ -41,15 +32,13 @@ public:
 	int data;						//byte1
 	int parity;						//byte0
 
-	unsigned int makeParity(unsigned int,unsigned int);		//returns parity byte from header and data bytes
-	int checkParity();										//checks parity of current frame, returns 0 for OK
-	unsigned int getNibble(unsigned int,unsigned int);		//returns nibble (high/low , byte)
-
+	void makeParity();				//generates parity byte from header and data bytes
+	int checkParity();				//checks parity of current frame, returns 0 for OK
 	friend std::ostream& operator<<(std::ostream& out, Frame& frm);  //for file output
 
 #ifdef DEBUG
+	void coutBytes();				//outputs byte0
 	void coutHeader();				//outputs header data
-	friend std::ostream& printHeader(std::ostream& out);
 #endif
 };
 #endif /* FRAME_H_ */

@@ -8,10 +8,10 @@
 //=====     DEFINES     =====
 //buffer i/o
 #define 	BUFFERSIZE 		100
-#define 	INPUTUP 		"inputup.dat"
-#define 	INPUTDOWN 		"inputdown.dat"
-#define 	OUTPUTUP 		"outputup.dat"
-#define 	OUTPUTDOWN 		"outputdown.dat"
+#define 	INPUTUP 		"inputRight.dat"
+#define 	INPUTDOWN 		"inputLeft.dat"
+#define 	OUTPUTUP 		"outputRight.dat"
+#define 	OUTPUTDOWN 		"outputLeft.dat"
 
 //=====     INCLUDES     =====
 //general
@@ -20,101 +20,93 @@
 #include 	<string>
 #include 	<boost/circular_buffer.hpp>
 
+
 //data link layer
 #include 	"dataLinkLayer.h"
 #include	"frame.h"
 
-double getFileSize(const char* file)
-{
-	std::ifstream stream(file);
-	if(stream.fail())
-	{
-		std::cerr << "Failed to open\n";
-		exit(1);
-	}
-	double size;
-	int input;
-	std::cout << "counting...";
-	while(!stream.eof())
-		{
-			stream >> input;
-			size++;
-		}
-	stream.close();
-	std::cout << "buffer size: " << size << std::endl;
-	return size;
-}
-//=====
 int main()
 {
 	//variables
 	unsigned int byte1,byte2,byte3;
-	double size;
-	size = getFileSize(INPUTDOWN);
+	char waste[256];
 
 	//i/o streams
-	std::ifstream inputup;
-	std::ifstream inputdown;
-	std::ofstream outputup;
-	std::ofstream outputdown;
+	std::ifstream inputright;
+	std::ifstream inputleft;
+	std::ofstream outputright;
+	std::ofstream outputleft;
 
 	//open files
-	inputup.open(INPUTUP);
-	inputdown.open(INPUTDOWN);
-	if(inputup.fail() || inputdown.fail())
+	inputright.open(INPUTUP);
+	inputleft.open(INPUTDOWN);
+	if(inputright.fail() || inputleft.fail())
 	{
 		DEBUG_OUT << "Error opening input file";
 		exit(1);
 	}
-	outputup.open(OUTPUTUP);
-	outputdown.open(OUTPUTDOWN);
+	outputright.open(OUTPUTUP);
+	outputleft.open(OUTPUTDOWN);
 	
 	//instantiate buffers
-	boost::circular_buffer< unsigned int > dscbi(BUFFERSIZE);   //downwards input
-	boost::circular_buffer< Frame > dscbo(BUFFERSIZE);   //downwards output
-	boost::circular_buffer< Frame > uscbi(BUFFERSIZE);   //upwards input
-	boost::circular_buffer< unsigned int > uscbo(BUFFERSIZE);   //upwards output
+	boost::circular_buffer< unsigned int > inputRight(BUFFERSIZE);   //downwards input Right
+	boost::circular_buffer< unsigned int > inputLeft(BUFFERSIZE);   //downwards input Left
+
+	boost::circular_buffer< unsigned int > outputRight(BUFFERSIZE);   //upwards output Right
+	boost::circular_buffer< unsigned int > outputLeft(BUFFERSIZE);   //upwards output Left
+
+
+	boost::circular_buffer< Frame > movingRightDll(BUFFERSIZE);   //dll communication Right
+	boost::circular_buffer< Frame > movingLeftDll(BUFFERSIZE);   //dll communication Left
 
 #ifdef DEBUG
 DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------" << std::endl;
 #endif
 
 	//fill input buffers
-	while( !inputup.eof() )
+	while( !inputleft.eof() )
 	{
-		inputup >> byte1 >> byte2 >> byte3;
-		#ifdef DEBUG
-		DEBUG_OUT << "Buffering frame from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
-		#endif
-		uscbi.push_back(Frame(byte1,byte2,byte3));
-	}
-
-	while( !inputdown.eof() )
-	{
-		inputdown >> byte1;
+		inputleft >> byte1;
 		#ifdef DEBUG
 		DEBUG_OUT << "Buffering datagram byte from file...";
 		for(int i=7;i>=0;i--)
 			DEBUG_OUT << (bool)(byte1 & (1<<i));
 		DEBUG_OUT << std::endl;
 		#endif
-		dscbi.push_back(byte1);
+		if(!(byte1 == 255))
+		{inputRight.push_back(byte1);}
+		else
+		{inputright.getline(waste,300);}
+	}
+
+	while( !inputright.eof() )
+	{
+		inputright >> byte1;
+		#ifdef DEBUG
+		DEBUG_OUT << "Buffering datagram byte from file...";
+		for(int i=7;i>=0;i--)
+			DEBUG_OUT << (bool)(byte1 & (1<<i));
+		DEBUG_OUT << std::endl;
+		#endif
+		if(!(byte1 == 255))
+		{inputLeft.push_back(byte1);}
+		else
+		{inputleft.getline(waste,300);}
 	}
 
 	//instantiate data link layer
-//	DataLinkLayer dll;
-
-//	//test getNibble
-//	Frame test(145,20);
-//	for(int j=2;j>=0;j--)
-//		for(int i=1;i>=0;i--)
-//			DEBUG_OUT << test.getNibble(i,j) << " ";
-
+	DataLinkLayer Leftdll;
+	DataLinkLayer Rightdll;
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
-//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
-//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
-//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
-//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+
+	Leftdll.encode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
+	
+	
+	Rightdll.encode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
+
+	Leftdll.decode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
+
+	Rightdll.decode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
 
 #ifdef DEBUG
 DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   ----------" << std::endl;
@@ -123,35 +115,36 @@ DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   -----
 	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
 	while(true)
 		{
-			if(uscbo.empty())
+			if(outputLeft.empty())
 			{
 				break;
 			}
 			else
 			{
 				#ifdef DEBUG
-				DEBUG_OUT << "Writing datagram..." << uscbo.front() << std::endl;
+				DEBUG_OUT << "Writing datagram..." << outputLeft.front() << std::endl;
 				#endif
-				outputup << (int)uscbo.front() << std::endl;
-				uscbo.pop_front();
+				outputleft << (int)outputLeft.front() << std::endl;
+				outputLeft.pop_front();
 			}
 		}
 
-		while(true)
+	while(true)
 		{
-			if(dscbo.empty())
+			if(outputRight.empty())
 			{
 				break;
 			}
 			else
 			{
 				#ifdef DEBUG
-				DEBUG_OUT << "Writing frame..." << dscbo.front() << std::endl;
+				DEBUG_OUT << "Writing datagram..." << outputRight.front() << std::endl;
 				#endif
-				outputdown << dscbo.front();
-				dscbo.pop_front();
+				outputright << (int)outputRight.front() << std::endl;
+				outputRight.pop_front();
 			}
 		}
+		system("pause");
 	return 0;
 }
 
