@@ -11,11 +11,109 @@
 //=====     CLASS IMPLEMENTATION     =====
 DataLinkLayer::DataLinkLayer()
 {
-	clearFrameRecList();
-	hasToken = 0;
 	#ifdef STARTS_WITH_TOKEN
-	tokenOffered();
+	hasToken = 1;
+	#else
+	hasToken = 0;
 	#endif
+	#ifdef DEBUG
+	DEBUG_OUT << std::endl << "----------   ###   INSTANTIATING DATA LINK LAYER   ###   ----------" << std::endl;
+	if(hasToken)
+		DEBUG_OUT << "Has token" << std::endl;
+	#endif
+	clearFrameReceiveList();
+	clearFrameSendList();
+	awaitsReply = 0;
+	nextInSendSequence = 0;
+	receiverNeedsUpdate = 0;
+
+}
+//=====
+void DataLinkLayer::encode(
+		boost::circular_buffer< unsigned int > *downIn,
+		boost::circular_buffer< Frame > *downOut,
+		boost::circular_buffer< Frame > *upIn,
+		boost::circular_buffer< unsigned int > *upOut)
+{
+	#ifdef DEBUG
+	DEBUG_OUT << std::endl << "----------   ###   ENCODE   ###   ----------" << std::endl;
+	#endif
+
+	//check if ready to process
+	if(awaitsReply == 1)
+	{
+		//check current time
+		time_t nowClock;
+		time ( &nowClock );
+
+		//compare with saved timestamp from when transmission ended
+		if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+		{
+			//if time expired
+			#ifdef DEBUG
+			DEBUG_OUT << "Time for receiver to reply is up" << std::endl;
+			#endif
+
+			//resend all
+			resendData(~0);
+		}
+		else
+		{
+			//if there is time left
+			#ifdef DEBUG
+			std::cout << "Time left for receiver to reply: " << (MAX_TIME_TO_REPLY-(nowClock-timestampAwaitsReply))
+				  << " seconds" << std::endl;
+			#endif
+		}
+	}
+
+	//update pointers
+	datagramDown = downIn;
+	datagramUp = upOut;
+	frameDown = downOut;
+	frameUp = upIn;
+
+	#ifdef DEBUG
+	DEBUG_OUT << "Popping from datagrambuffer..." << std::endl;
+	#endif
+
+	//process datagrams
+	if(!datagramDown->empty())
+	{
+		while(1)
+		{
+//TODO: implement two-dimensional buffer, zero next in send sequence
+			if(datagramDown->empty())
+			{
+				//Set EOT bit in last frame
+				#ifdef DEBUG
+				DEBUG_OUT << "Buffer is empty...ending transmission" << std::endl;
+				#endif
+				endDatagram();
+				receiverNeedsUpdate = 1;
+				awaitsReply = 1;
+				time ( &timestampAwaitsReply );
+				break;
+			}
+			if(nextInSendSequence >= 8)
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "List is full...ending transmission" << std::endl;
+				#endif
+				break;
+			}
+			processDatagram(datagramDown->front());
+			datagramDown->pop_front();
+		}
+	}
+	else
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Buffer is empty...nothing to process" << std::endl;
+		#endif
+	}
+
+
 }
 //=====
 void DataLinkLayer::decode(
@@ -24,8 +122,9 @@ void DataLinkLayer::decode(
 		boost::circular_buffer< Frame > *upIn,
 		boost::circular_buffer< unsigned int > *upOut)
 {
-	//TODO: Backbone timer
-
+	#ifdef DEBUG
+	DEBUG_OUT << std::endl << "----------   ###   DECODE   ###   ----------" << std::endl;
+	#endif
 	//update pointers
 	datagramDown = downIn;
 	datagramUp = upOut;
@@ -73,7 +172,7 @@ void DataLinkLayer::processFrame(Frame incoming)
 			//if frame is reply from receiver
 		{
 			if(hasToken == 1)
-				replyFromReceiver();
+				replyFromReceiver(incoming);
 			else
 				discardFrame();
 			break;
@@ -91,7 +190,7 @@ void DataLinkLayer::processFrame(Frame incoming)
 	{
 		if(incoming.type == 0 && hasToken == 1)
 			//if frame is reply from receiver and tokenholder is me
-			replyFromReceiver();
+			replyFromReceiver(incoming);
 		else
 			discardFrame();
 	}
@@ -103,17 +202,39 @@ void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 	frameDown->push_back(Frame(header,data));
 
 	#ifdef DEBUG
-	DEBUG_OUT << "Pushing to framebuffer: ";
-	frameDown->back().coutBytes();
+	DEBUG_OUT << "Pushing to framebuffer: " << frameDown->back();
+	#endif
+}
+//=====
+void DataLinkLayer::endDatagram()
+{
+	#ifdef DEBUG
+	DEBUG_OUT << "Setting EOT-bit..." << std::endl;
 	#endif
 
+	//pop last frame put in buffer
+	Frame temp = frameDown->back();
+	frameDown->pop_back();
+
+	//extract bytes and set EOT bit
+	unsigned int tempHeader,tempData;
+	tempData = temp.byte1;
+	tempHeader = temp.byte2;
+	tempHeader |= 1;
+
+	//re-push altered frame
+	frameDown->push_back(Frame(tempHeader,tempData));
 }
 //=====
 void DataLinkLayer::acceptFrame(Frame incoming)
 {
 	//put frame in list
 	frameRecList[incoming.sequence].dataByte = incoming.data;
-	frameRecList[incoming.sequence].receivedFlag = 1;
+	frameRecList[incoming.sequence].flag = 1;
+
+	//mark if end of transmission is set
+	if(incoming.end == 1)
+		frameRecList[incoming.sequence].eot = 1;
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Frame accepted" << std::endl;
@@ -121,7 +242,7 @@ void DataLinkLayer::acceptFrame(Frame incoming)
 
 	//check end of transmission bit and process list if set
 	if(incoming.end == 1)
-		checkFrameRecList();
+		checkFrameReceiveList();
 }
 //=====
 void DataLinkLayer::discardFrame()
@@ -130,6 +251,31 @@ void DataLinkLayer::discardFrame()
 	#ifdef DEBUG
 	DEBUG_OUT << "Frame discarded" << std::endl;
 	#endif
+}
+//=====
+void DataLinkLayer::processDatagram(unsigned int incoming)
+{
+	//update receiver if incoming is first byte of new datagram
+	if(receiverNeedsUpdate == 1)
+	{
+		currentReceiver = (incoming >> 6);
+		receiverNeedsUpdate = 0;
+	}
+
+	//generate frame
+	makeFrame(
+			(3<<TYPE)|   									//type 3
+			(currentReceiver<<ADDRESS)| 					//receiver address
+			(nextInSendSequence<<SEQUENCE)|   				//sequence number
+			(nextInSendSequence==7?1:0),					//set end of transmission if seq.no is 7
+			incoming);  									//data
+
+	//put data in list
+	frameSendList[nextInSendSequence].dataByte = incoming; 	//save data in list
+	frameSendList[nextInSendSequence].flag = 1;  		   	//set flag
+
+	//update sequence number
+	nextInSendSequence++;
 }
 //=====
 void DataLinkLayer::fatalError()
@@ -142,7 +288,7 @@ void DataLinkLayer::fatalError()
 void DataLinkLayer::tokenOffered()
 {
 	//set time
-	time ( &tokenReceiveClock );
+	time ( &timestampToken );
 
 	//acquire token
 	hasToken = 1;
@@ -152,11 +298,11 @@ void DataLinkLayer::tokenOffered()
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Token offered" << std::endl;
-	std::cout << "Token received " << ctime (&tokenReceiveClock) << std::endl;
+	std::cout << "Token received " << ctime (&timestampToken) << std::endl;
 	#endif
 
 	//make type 2 frame for station before me
-	makeFrame((2<<6)|MY_ADDRESS?3:MY_ADDRESS-1<<4,~0);
+	makeFrame((2<<TYPE)|(MY_ADDRESS?3:MY_ADDRESS-1<<ADDRESS),~0);
 }
 //=====
 void DataLinkLayer::checkToken()
@@ -168,7 +314,7 @@ void DataLinkLayer::checkToken()
 		time ( &nowClock );
 
 		//compare with saved timestamp from when token was passed
-		if((nowClock-tokenReceiveClock)>MAX_TIME_WITH_TOKEN)
+		if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
 		{
 			//if token expired
 			#ifdef DEBUG
@@ -180,10 +326,9 @@ void DataLinkLayer::checkToken()
 		{
 			//if token has time left
 			#ifdef DEBUG
-			std::cout << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-tokenReceiveClock))
+			std::cout << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
 				  << " seconds" << std::endl;
 			#endif
-			//TODO: do what?
 		}
 	}
 	else
@@ -197,10 +342,10 @@ void DataLinkLayer::checkToken()
 //=====
 void DataLinkLayer::offerToken()
 {
-	//increase next receiver of token
+	//increase token receiver
 	nextStation++;
 
-	//flip over if higher than no of addresses
+	//flip over if higher than number of addresses
 	if(nextStation>3)
 		nextStation = 0;
 
@@ -209,8 +354,8 @@ void DataLinkLayer::offerToken()
 		//offer token to self
 		tokenOffered();
 	else
-		//offer frame to next station
-		makeFrame((1<<6)|(nextStation<<3),0);
+		//generate frame to offer token to next station
+		makeFrame((1<<TYPE)|(nextStation<<ADDRESS),0);
 }
 //=====
 void DataLinkLayer::passToken()
@@ -223,43 +368,80 @@ void DataLinkLayer::passToken()
 	#endif
 }
 //=====
-void DataLinkLayer::clearFrameRecList()
+void DataLinkLayer::clearFrameReceiveList()
 {
+	#ifdef DEBUG
+		DEBUG_OUT << "clearing receive list" << std::endl;
+	#endif
+
 	//clear each entry in list
 	for(int i=0;i<8;i++)
 	{
 		frameRecList[i].dataByte = 0;
-		frameRecList[i].receivedFlag = 0;
+		frameRecList[i].flag = 0;
 	}
 }
 //=====
-void DataLinkLayer::checkFrameRecList()
+void DataLinkLayer::clearFrameSendList()
 {
+	#ifdef DEBUG
+		DEBUG_OUT << "clearing send list" << std::endl;
+	#endif
+
+	//clear each entry in list
+	for(int i=0;i<8;i++)
+	{
+		frameSendList[i].dataByte = 0;
+		frameSendList[i].flag = 0;
+	}
+
+	nextInSendSequence = 0;
+}
+//=====
+void DataLinkLayer::checkFrameReceiveList()
+{
+	//initialize variable to hold EOT, goes and nogoes
+	bool transmissionStop = 0;
+	int request = 0;
+
 	#ifdef DEBUG
 	DEBUG_OUT << "Checking list...entries: " << std::endl;
 	for(int i=0;i<8;i++)
 	{
+	if(transmissionStop==1)
+		break;
 	DEBUG_OUT << i << " - ";
 	for(int j=7;j>=0;j--)
 		DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
-	if(frameRecList[i].receivedFlag==1)
-		DEBUG_OUT << " - received" << std::endl;
+	if(frameRecList[i].flag==1)
+		DEBUG_OUT << " - received";
 	else
-		DEBUG_OUT << " - missing" << std::endl;
+		DEBUG_OUT << " - missing";
+	if(frameRecList[i].eot == 1)
+	{
+		DEBUG_OUT << " - End of transmission";
+		transmissionStop = 1;
+	}
+	DEBUG_OUT  << std::endl;
 	}
 	#endif
 
-	//initialize variable to hold goes and nogoes
-	int request = 0;
+	//reset EOT
+	transmissionStop = 0;
 
 	//iterate through list
 	for(int i=0;i<8;i++)
-		//set corresponding bit if seq. no is received
-		request |= ((bool)frameRecList[i].receivedFlag<<i);
+	{
+		//set corresponding bit if seq. no is received or transmission stopped
+		request |= ((bool)(frameRecList[i].flag|transmissionStop)<<i);
 
-	//if list is complete
+		//update if eot bit is set
+		if(frameRecList[i].eot == 1)
+			transmissionStop = 1;
+	}
+
+	//pass upwards if list is complete
 	if(request == 0xFF)
-		//finish list
 		passDataUpwards();
 	else
 		//request resends
@@ -268,33 +450,48 @@ void DataLinkLayer::checkFrameRecList()
 //=====
 void DataLinkLayer::passDataUpwards()
 {
+	bool transmissionStop = 0;
+
 	//push to datagram buffer
 	for(int i=0;i<8;i++)
+	{
+		//break at the end of transmission
+		if(transmissionStop==1)
+			break;
+
+		//push to buffer
 		datagramUp->push_back(frameRecList[i].dataByte);
 
+		//update if EOT is set
+		if(frameRecList[i].eot == 1)
+			transmissionStop = 1;
+	}
+
 	#ifdef DEBUG
+	transmissionStop = 0;
 	DEBUG_OUT << "Pushing to datagram buffer:";
 	for(int i=0;i<8;i++)
 	{
+		if(transmissionStop==1)
+			break;
 		for(int j=7;j>=0;j--)
 			DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
 		DEBUG_OUT << " ";
+		if(frameRecList[i].eot == 1)
+				transmissionStop = 1;
 	}
-	DEBUG_OUT << std::endl;
+	DEBUG_OUT << std::endl << "Gerating OK reply to sender" << std::endl;
 	#endif
 
 	//generate ok for sender
-	makeFrame(MY_ADDRESS<<4,~0);
-
-	//TODO: What happens if this frame is lost...
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),~0);
 
 	//clear list
-	clearFrameRecList();
+	clearFrameReceiveList();
 }
 //=====
 void DataLinkLayer::requestResend(int request)
 {
-	//TODO: This function could be spared. Some functionalities has been moved
 	#ifdef DEBUG
 	for(int j=0;j<8;j++)
 		if(!(bool)(request&(1<<j)))
@@ -302,15 +499,51 @@ void DataLinkLayer::requestResend(int request)
 	#endif
 
 	//make type 0 frame with data byte holding ones for received an zeroes for resend
-	makeFrame(MY_ADDRESS<<4,request);
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
 }
 //=====
-void DataLinkLayer::replyFromReceiver()
+void DataLinkLayer::replyFromReceiver(Frame incoming)
 {
-	//TODO: Release FrameSendList or resend missing frames
-	#ifdef DEBUG
-	DEBUG_OUT << "Reply from receiver..." << std::endl;
-	#endif
+	awaitsReply = 0;
+	if(incoming.data == 0)
+	{
+		#ifdef DEBUG
+			DEBUG_OUT << "OK from receiver...";
+		#endif
+		clearFrameSendList();
+	}
+	else
+	{
+		#ifdef DEBUG
+			DEBUG_OUT << "Receiver requesting frames...";
+			for(int i=0;i<8;i++)
+			{
+				if((bool)(incoming.byte1 & (1<<i)) == 1)
+					DEBUG_OUT << " " << i;
+			}
+			DEBUG_OUT << std::endl;
+		#endif
+			resendData(incoming.byte1);
+	}
+}
+//=====
+void DataLinkLayer::resendData(unsigned int request)
+{
+	//iterate through databyte
+	for(int i=0;i<8;i++)
+	{
+		//resend requested frames
+		if((bool)(request & (1<<i)) == 0)
+		{
+			makeFrame(
+					(3<<TYPE)|   									//type 3
+					(currentReceiver<<ADDRESS)| 					//receiver address
+					(i<<SEQUENCE),   								//sequence number
+					frameSendList[i].dataByte);  					//data
+		}
+	}
+	//set EOT bit in last frame
+	endDatagram();
 }
 
 //End Of File

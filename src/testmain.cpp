@@ -24,10 +24,33 @@
 #include 	"dataLinkLayer.h"
 #include	"frame.h"
 
+double getFileSize(const char* file)
+{
+	std::ifstream stream(file);
+	if(stream.fail())
+	{
+		std::cerr << "Failed to open\n";
+		exit(1);
+	}
+	double size;
+	int input;
+	std::cout << "counting...";
+	while(!stream.eof())
+		{
+			stream >> input;
+			size++;
+		}
+	stream.close();
+	std::cout << "buffer size: " << size << std::endl;
+	return size;
+}
+//=====
 int main()
 {
 	//variables
 	unsigned int byte1,byte2,byte3;
+	double size;
+	size = getFileSize(INPUTDOWN);
 
 	//i/o streams
 	std::ifstream inputup;
@@ -52,47 +75,82 @@ int main()
 	boost::circular_buffer< Frame > uscbi(BUFFERSIZE);   //upwards input
 	boost::circular_buffer< unsigned int > uscbo(BUFFERSIZE);   //upwards output
 
+#ifdef DEBUG
+DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------" << std::endl;
+#endif
+
 	//fill input buffers
 	while( !inputup.eof() )
 	{
 		inputup >> byte1 >> byte2 >> byte3;
-		uscbi.push_back(Frame(byte1,byte2,byte3));
 		#ifdef DEBUG
-		DEBUG_OUT << "Buffering from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
+		DEBUG_OUT << "Buffering frame from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
 		#endif
-	}	
+		uscbi.push_back(Frame(byte1,byte2,byte3));
+	}
+
 	while( !inputdown.eof() )
 	{
 		inputdown >> byte1;
-		dscbi.push_back(byte1);
 		#ifdef DEBUG
-		DEBUG_OUT << "Buffering from file..." << byte1 << std::endl;
+		DEBUG_OUT << "Buffering datagram byte from file...";
+		for(int i=7;i>=0;i--)
+			DEBUG_OUT << (bool)(byte1 & (1<<i));
+		DEBUG_OUT << std::endl;
 		#endif
+		dscbi.push_back(byte1);
 	}
 
 	//instantiate data link layer
-	DataLinkLayer dll;
+//	DataLinkLayer dll;
+
+//	//test getNibble
+//	Frame test(145,20);
+//	for(int j=2;j>=0;j--)
+//		for(int i=1;i>=0;i--)
+//			DEBUG_OUT << test.getNibble(i,j) << " ";
 
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
-	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+
+#ifdef DEBUG
+DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   ----------" << std::endl;
+#endif
 
 	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
 	while(true)
 		{
-			outputup << (int)uscbo.front() << std::endl;
-			uscbo.pop_front();
 			if(uscbo.empty())
-			{break;}
-
+			{
+				break;
+			}
+			else
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "Writing datagram..." << uscbo.front() << std::endl;
+				#endif
+				outputup << (int)uscbo.front() << std::endl;
+				uscbo.pop_front();
+			}
 		}
 
 		while(true)
 		{
-			outputdown << dscbo.front();
-			dscbo.pop_front();
 			if(dscbo.empty())
-			{break;}
-
+			{
+				break;
+			}
+			else
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << "Writing frame..." << dscbo.front() << std::endl;
+				#endif
+				outputdown << dscbo.front();
+				dscbo.pop_front();
+			}
 		}
 	return 0;
 }
