@@ -24,10 +24,33 @@
 #include 	"dataLinkLayer.h"
 #include	"frame.h"
 
+double getFileSize(const char* file)
+{
+	std::ifstream stream(file);
+	if(stream.fail())
+	{
+		std::cerr << "Failed to open\n";
+		exit(1);
+	}
+	double size;
+	int input;
+	std::cout << "counting...";
+	while(!stream.eof())
+		{
+			stream >> input;
+			size++;
+		}
+	stream.close();
+	std::cout << "buffer size: " << size << std::endl;
+	return size;
+}
+//=====
 int main()
 {
 	//variables
 	unsigned int byte1,byte2,byte3;
+	double size;
+	size = getFileSize(INPUTDOWN);
 
 	//i/o streams
 	std::ifstream inputup;
@@ -64,7 +87,8 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 		DEBUG_OUT << "Buffering frame from file..." << byte1 << " " << byte2 << " " << byte3 << std::endl;
 		#endif
 		uscbi.push_back(Frame(byte1,byte2,byte3));
-	}	
+	}
+
 	while( !inputdown.eof() )
 	{
 		inputdown >> byte1;
@@ -74,16 +98,21 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 			DEBUG_OUT << (bool)(byte1 & (1<<i));
 		DEBUG_OUT << std::endl;
 		#endif
-
 		dscbi.push_back(byte1);
 	}
 
 	//instantiate data link layer
-	DataLinkLayer dll;
+//	DataLinkLayer dll;
+
+//	//test getNibble
+//	Frame test(145,20);
+//	for(int j=2;j>=0;j--)
+//		for(int i=1;i>=0;i--)
+//			DEBUG_OUT << test.getNibble(i,j) << " ";
 
 	//call encode or decode with arguments &dscbi, &dscbo, &uscbi, &uscbo
-	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
-	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
+//	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
 //	dll.encode(&dscbi, &dscbo, &uscbi, &uscbo);
 //	dll.decode(&dscbi, &dscbo, &uscbi, &uscbo);
 

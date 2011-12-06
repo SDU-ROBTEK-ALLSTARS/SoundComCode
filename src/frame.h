@@ -42,7 +42,9 @@ public:
 	int parity;						//byte0
 
 	unsigned int makeParity(unsigned int,unsigned int);		//returns parity byte from header and data bytes
-	int checkParity();				//checks parity of current frame, returns 0 for OK
+	int checkParity();										//checks parity of current frame, returns 0 for OK
+	unsigned int getNibble(unsigned int,unsigned int);		//returns nibble (high/low , byte)
+
 	friend std::ostream& operator<<(std::ostream& out, Frame& frm);  //for file output
 
 #ifdef DEBUG

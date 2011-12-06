@@ -66,8 +66,8 @@ private:
 	void offerToken();							//offer token to next station
 	void passToken();							//passes token to accepting station
 
-	void checkFrameReceiveList();					//check if list is complete
-	void clearFrameReceiveList();					//clears list of received data
+	void checkFrameReceiveList();				//check if list is complete
+	void clearFrameReceiveList();				//clears list of received data
 
 	void checkFrameSendList();					//check if list is complete
 	void clearFrameSendList();					//clears list of send data

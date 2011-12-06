@@ -104,6 +104,16 @@ int Frame::checkParity()
 	return byte0==makeParity(byte2,byte1)?0:1;
 }
 //=====
+unsigned int Frame::getNibble(unsigned int nib,unsigned int byt)
+{
+	int byte = byt==0?byte0:byt==1?byte1:byt==2?byte2:0;
+	if(nib == 1)
+		return (byte>>4);
+	else if(nib == 0)
+		return byte & 15;
+	else return -1;
+}
+//=====
 std::ostream& operator << (std::ostream& out, Frame& frm)
 {
 	//output bytes
