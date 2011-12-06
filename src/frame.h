@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : soundLibCode.cpp
 // Author      : Leon Bonde Larsen
-// Version     :
+// Version     : 2.0
 // Copyright   : Open Source
 // Description : Implementing frame in C++, Ansi-style
 //============================================================================

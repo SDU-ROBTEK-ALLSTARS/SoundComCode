@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : dataLinkLayer.cpp
 // Author      : Leon Bonde Larsen
-// Version     : 1.0 (updated 27/11-2011 by Leon Larsen)
+// Version     : 2.0
 // Copyright   : Open Source
 // Description : Testing data link layer in C++, Ansi-style
 //============================================================================
