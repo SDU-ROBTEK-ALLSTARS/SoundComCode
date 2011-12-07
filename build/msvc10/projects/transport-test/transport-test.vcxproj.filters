@@ -15,12 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\tests\transport\transport_test.cpp">
+    <ClCompile Include="..\..\..\..\src\transport\transport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\transport\datagram.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\tests\transport\transport-test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\transport.h">
+    <ClInclude Include="..\..\..\..\src\transport\datagram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\transport\transport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
