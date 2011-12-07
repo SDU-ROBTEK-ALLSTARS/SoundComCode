@@ -1,16 +1,41 @@
-//============================================================================
-// Name        : dataLinkLayer.cpp
-// Author      : Leon Bonde Larsen
-// Version     : 2.0
-// Copyright   : Open Source
-// Description : Testing data link layer in C++, Ansi-style
-//============================================================================
-//=====     INCLUDES     =====
+/*******************************************************************************
+# DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
+#
+# Copyright (c) 2011    Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#						Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#						Kent Stark Olsen				<keols09@student.sdu.dk>
+#						Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#						Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#						Rudi Hansen						<rudha10@student.sdu.dk>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
+********************************************************************************
+# File:     frame.cpp
+# Project:  DtmfProject
+# Version:  2.0
+# Platform:	PC/Mac/Linux
+# Authors:  Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#			Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#			Kent Stark Olsen				<keols09@student.sdu.dk>
+#			Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#			Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#			Rudi Hansen						<rudha10@student.sdu.dk>
+# Created:  2011-10-30
+********************************************************************************
+# Description
+#
+# The purpose of this class is to implement the concept of a frame
+#                           (Denne header er dikteret af den onde diktator Kent)
+*******************************************************************************/
+//*****     INCLUDES     *****
 #include 	"frame.h"
 #include 	<stdio.h>
 #include 	<iostream>
 
-//=====     CLASS IMPLEMENTATION     =====
+//*****     CLASS IMPLEMENTATION     *****
 Frame::Frame(unsigned char b2,unsigned char b1)
 {
 	byte2 = b2;
@@ -30,7 +55,7 @@ Frame::Frame(unsigned char b2,unsigned char b1)
 	coutHeader();
 	#endif
 }
-//=====
+//*****
 Frame::Frame(unsigned char b2,unsigned char b1,unsigned char b0)
 {
 	byte2 = b2;
@@ -48,7 +73,7 @@ Frame::Frame(unsigned char b2,unsigned char b1,unsigned char b0)
 	coutHeader();
 	#endif
 }
-//=====
+//*****
 unsigned int Frame::makeParity(unsigned int head, unsigned int dat)
 {
 	unsigned int par = 0;
@@ -89,7 +114,7 @@ unsigned int Frame::makeParity(unsigned int head, unsigned int dat)
 
 	return par;
 }
-//=====
+//*****
 int Frame::checkParity()
 {
 	#ifdef DEBUG
@@ -103,7 +128,7 @@ int Frame::checkParity()
 	//compare actual parity with calculated parity, return 0 for OK, 1 for not OK
 	return byte0==makeParity(byte2,byte1)?0:1;
 }
-//=====
+//*****
 unsigned int Frame::getNibble(unsigned int nib,unsigned int byt)
 {
 	int byte = byt==0?byte0:byt==1?byte1:byt==2?byte2:0;
@@ -113,7 +138,7 @@ unsigned int Frame::getNibble(unsigned int nib,unsigned int byt)
 		return byte & 15;
 	else return -1;
 }
-//=====
+//*****
 std::ostream& operator << (std::ostream& out, Frame& frm)
 {
 	//output bytes
@@ -122,7 +147,7 @@ std::ostream& operator << (std::ostream& out, Frame& frm)
 	out << (int)frm.byte0 << std::endl;
 	return out;
 }
-//=====     DEBUG FUNCTIONS     =====
+//*****     DEBUG FUNCTIONS     *****
 #ifdef DEBUG
 void Frame::coutHeader()
 {
