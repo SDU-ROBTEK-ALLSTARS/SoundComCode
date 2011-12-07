@@ -27,3 +27,16 @@
 
 #include "datagram.h"
 
+Datagram::Datagram()
+{
+}
+
+Datagram::~Datagram()
+{
+}
+
+
+unsigned char Datagram::getLength()
+{
+	return length_;
+}

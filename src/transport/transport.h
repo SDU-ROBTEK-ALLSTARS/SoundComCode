@@ -38,28 +38,32 @@
 class Transport
 {
 private:
-	static bool sPortList_[256] = {false};
+	static bool sPortsInUse_[256];
 	unsigned char port_;
+
+	unsigned char sequence_;
+	
+	void connect();
 
 public:
 	Transport();
-
-	Transport(unsigned char);
-
 	~Transport();
 
-	void setPort(unsigned char);
-
+	//Port operations
+	void setPort(const unsigned char newPort=0);
 	unsigned char getPort();
+	bool isPortSet(const unsigned char enteredPort=0);
+	bool *getPortTable();
 
+	//
 	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Datagram> *TransportDllDown,
-				boost::circular_buffer<unsigned char> *DllTransportUp,
+				boost::circular_buffer<Datagram> *DllTransportUp,
 				boost::circular_buffer<unsigned char> *TransportApiUp);
 	            
 	void encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Datagram> *TransportDllDown,
-				boost::circular_buffer<unsigned char> *DllTransportUp,
+				boost::circular_buffer<Datagram> *DllTransportUp,
 				boost::circular_buffer<unsigned char> *TransportApiUp);
 };
 #endif //TRANSPORT_H

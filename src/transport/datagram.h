@@ -27,6 +27,9 @@
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
 
+#include <vector>
+#include <boost/crc.hpp>
+
 class Datagram
 {
 private:
@@ -41,10 +44,15 @@ private:
 
 public:
 	Datagram();
-	Datagram(unsigned char sourcePort,
-	         unsigned char destPort,
-			 unsigned char *data);
+	~Datagram();
+
+	void make(unsigned char sourcePort,
+	          unsigned char destPort,
+	          unsigned char flags,
+	          std::vector<unsigned char> data);
+
 
 	unsigned char getLength();
+	bool checksumOk();
 };
 #endif //DATAGRAM_H

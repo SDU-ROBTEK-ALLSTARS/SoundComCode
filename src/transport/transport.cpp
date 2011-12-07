@@ -27,22 +27,44 @@
 
 #include <boost/circular_buffer.hpp>
 #include "transport.h"
+#include "datagram.h"
+
+bool Transport::sPortsInUse_[256] = {false};
 
 Transport::Transport()
 {
-}
-
-Transport::Transport(unsigned char port)
-{
+	port_ = 0;
 }
 
 Transport::~Transport()
 {
+	sPortsInUse_[port_] = false;
 }
 
+//Datagram Transport::makeDatagram(Data_ data, unsigned char flags, unsigned char destPort)
+//{
+//	
+//}
 
-void Transport::setPort(unsigned char port)
+void Transport::setPort(const unsigned char newPort)
 {
+	if ((newPort > 19) && (!sPortsInUse_[newPort])) { //Port 0-19 are reserved. This could have a nicer solution
+		sPortsInUse_[newPort] = true;
+		port_ = newPort;
+	}
+	//If a port was not supplied, or the port which was supplied is not available, look for one that is
+	else {
+		for (int i=20; i<256; i++) { //We don't assign port 0-19
+			if (!sPortsInUse_[i]) {
+				sPortsInUse_[i] = true;
+				port_ = (unsigned char) i;
+				break;
+			}
+		}
+	}
+	if (!port_) {
+		throw "[Transport] No ports available.";
+	}
 }
 
 unsigned char Transport::getPort()
@@ -50,16 +72,38 @@ unsigned char Transport::getPort()
 	return port_;
 }
 
+bool Transport::isPortSet(const unsigned char enteredPort)
+{
+	if (enteredPort) {
+		if (sPortsInUse_[enteredPort])
+			return true;
+		else
+			return false;
+	}
+	else {
+		if (sPortsInUse_[port_])
+			return true;
+		else
+			return false;
+	}
+}
+
+bool *Transport::getPortTable()
+{
+	bool *pointer = sPortsInUse_;
+	return pointer;
+}
+
 void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Datagram> *TransportDllDown,
-					   boost::circular_buffer<unsigned char> *DllTransportUp,
+					   boost::circular_buffer<Datagram> *DllTransportUp,
 					   boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }
 	            
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Datagram> *TransportDllDown,
-					   boost::circular_buffer<unsigned char> *DllTransportUp,
+					   boost::circular_buffer<Datagram> *DllTransportUp,
 					   boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }
