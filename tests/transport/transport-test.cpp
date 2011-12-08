@@ -37,7 +37,7 @@ void portList();
 
 int main()
 {
-	packetMakeTest();
+	portAssignTest();
 
 	return 0;
 }
@@ -73,7 +73,7 @@ void portAssignTest()
 		catch(char *str) {
 			std::cout << str << std::endl;
 		}
-		std::cout << i << (char)9 << (int)trans[i].getPort() << std::endl;
+		std::cout << i << (char)9 << (int)trans[i].port() << std::endl;
 	}
 
 	//std::cout << "isSet =" << (char)9 << (int)trans[4].isPortSet() << std::endl;

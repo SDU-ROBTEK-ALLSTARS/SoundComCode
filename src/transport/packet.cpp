@@ -45,17 +45,17 @@ unsigned short int Packet::calcChecksum()
 	return crc.checksum();
 }
 
-void Packet::make(char type[],
-                    unsigned char destPort,
-                    unsigned char sourcePort,
-                    unsigned char ackNumber,
-                    unsigned char seqNumber,
-                    unsigned char data[],
-                    unsigned char dataLength,
-                    bool addChecksum)
+void Packet::make(const char type[],
+                  const unsigned char destPort,
+                  const unsigned char sourcePort,
+                  const unsigned char ackNumber,
+                  const unsigned char seqNumber,
+                  unsigned char data[],
+                  const unsigned char dataLength,
+                  bool addChecksum)
 {
 	std::bitset<8> flags;
-	
+
 	//Decide which type of package to make
 	if (type == "ack") {
 		if ((dataLength > (256-HLEN)) || (!destPort) || (!sourcePort) || (!ackNumber) || (!seqNumber)) {
@@ -114,32 +114,32 @@ void Packet::make(char type[],
 	}
 }
 
-unsigned char Packet::totalLength()
+unsigned char Packet::totalLength() const
 {
 	return length_;
 }
 
-unsigned char Packet::sourcePort()
+unsigned char Packet::sourcePort() const
 {
 	return sourcePort_;
 }
 
-unsigned char Packet::destPort()
+unsigned char Packet::destPort() const
 {
 	return destPort_;
 }
 
-unsigned char Packet::seqNumber()
+unsigned char Packet::seqNumber() const
 {
 	return seqNumber_;
 }
 
-unsigned char Packet::ackNumber()
+unsigned char Packet::ackNumber() const
 {
 	return ackNumber_;
 }
 
-unsigned char Packet::flags()
+unsigned char Packet::flags() const
 {
 	return flags_;
 }

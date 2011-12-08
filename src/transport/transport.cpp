@@ -26,6 +26,7 @@
 ********************************************************************************/
 
 #include <boost/circular_buffer.hpp>
+#include <bitset>
 #include "transport.h"
 #include "packet.h"
 
@@ -43,8 +44,14 @@ Transport::~Transport()
 
 //void connect();
 
-void Transport::processPacket(Packet)
+void Transport::processInboundPacket(Packet packet)
 {
+	if ((port_ == packet.destPort()) && (packet.checksumValid())) {
+		std::bitset<8> flags (packet.flags());
+		if (flags.test(SYN)) {
+			int i=0;
+		}
+	}
 }
 
 void Transport::setPort(const unsigned char newPort)
@@ -69,12 +76,12 @@ void Transport::setPort(const unsigned char newPort)
 	}
 }
 
-unsigned char Transport::getPort()
+unsigned char Transport::port() const
 {
 	return port_;
 }
 
-bool Transport::isPortSet(const unsigned char enteredPort)
+bool Transport::isPortSet(const unsigned char enteredPort) const
 {
 	if (enteredPort) {
 		if (sPortsInUse_[enteredPort])
@@ -90,7 +97,7 @@ bool Transport::isPortSet(const unsigned char enteredPort)
 	}
 }
 
-bool *Transport::getPortTable()
+bool *Transport::getPortTable() const
 {
 	bool *pointer = sPortsInUse_;
 	return pointer;

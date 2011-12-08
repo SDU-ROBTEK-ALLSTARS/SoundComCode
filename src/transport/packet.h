@@ -57,21 +57,21 @@ public:
 	~Packet();
 
 	//make() will be our "lazy" constructor
-	void make(char type[]="ack", //Options are: ack, syn, rst
-	          unsigned char destPort=0,
-	          unsigned char sourcePort=0,
-	          unsigned char ackNumber=0,
-	          unsigned char seqNumber=0,
+	void make(const char type[]="ack", //Options are: ack, syn, rst
+	          const unsigned char destPort=0,
+	          const unsigned char sourcePort=0,
+	          const unsigned char ackNumber=0,
+	          const unsigned char seqNumber=0,
 	          unsigned char data[]=0,
-	          unsigned char dataLength=0,
+	          const unsigned char dataLength=0,
 	          bool addChecksum=true);
 
-	unsigned char totalLength();
-	unsigned char sourcePort();
-	unsigned char destPort();
-	unsigned char seqNumber();
-	unsigned char ackNumber();
-	unsigned char flags();
+	unsigned char totalLength() const;
+	unsigned char sourcePort() const;
+	unsigned char destPort() const;
+	unsigned char seqNumber() const;
+	unsigned char ackNumber() const;
+	unsigned char flags() const;
 	bool checksumValid();
 };
 #endif //PACKET_H

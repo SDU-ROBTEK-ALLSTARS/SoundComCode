@@ -41,22 +41,20 @@ private:
 	static bool sPortsInUse_[256];
 	unsigned char port_;
 
-	unsigned char sequence_;
+	unsigned char lastInSequence_;
 	
-	void connect();
-	void processPacket(Packet);
+	//void connect();
+	void processInboundPacket(Packet);
 
 public:
 	Transport();
 	~Transport();
 
-	//Port operations
 	void setPort(const unsigned char newPort=0);
-	unsigned char getPort();
-	bool isPortSet(const unsigned char enteredPort=0);
-	bool *getPortTable();
+	unsigned char port() const;
+	bool isPortSet(const unsigned char enteredPort=0) const;
+	bool *getPortTable() const;
 
-	//
 	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Packet> *TransportDllDown,
 	            boost::circular_buffer<Packet> *DllTransportUp,
