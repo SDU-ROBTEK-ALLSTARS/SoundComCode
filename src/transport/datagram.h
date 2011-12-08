@@ -15,7 +15,7 @@
 ********************************************************************************
 # File:     datagram.h
 # Project:  DtmfProject
-# Version:  1.0
+# Version:  
 # Platform:	PC/Mac/Linux
 # Author:  	Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 # Created:  2011-06-12
@@ -23,12 +23,20 @@
 # Description
 #
 # 
+# 256 byte max overall length of each package
+#
 ********************************************************************************/
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
 
-#include <vector>
-#include <boost/crc.hpp>
+//Flag bit positions
+#define SYN 0
+#define ACK 1
+#define CHK 2
+#define RST 3
+#define FIN 4
+
+#define HLEN 8 //Header length (in bytes)
 
 class Datagram
 {
@@ -46,13 +54,22 @@ public:
 	Datagram();
 	~Datagram();
 
+	//make() will be our "lazy" constructor
 	void make(unsigned char sourcePort,
 	          unsigned char destPort,
-	          unsigned char flags,
-	          std::vector<unsigned char> data);
+	          unsigned char seqNumber,
+	          unsigned char ackNumber,
+	          unsigned char data[],
+			  unsigned char dataLength,
+	          char type[]="data",		//Options are: data, sync
+	          bool addChecksum=true);
 
-
-	unsigned char getLength();
-	bool checksumOk();
+	unsigned char totalLength();
+	unsigned char sourcePort();
+	unsigned char destPort();
+	unsigned char seqNumber();
+	unsigned char ackNumber();
+	unsigned char flags();
+	bool checksumValid();
 };
 #endif //DATAGRAM_H

@@ -15,7 +15,7 @@
 ********************************************************************************
 # File:     transport-test.cpp
 # Project:  DtmfProject
-# Version:  1.0
+# Version:  
 # Platform:	PC/Mac/Linux
 # Author:	Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 # Created:  2011-29-11
@@ -25,23 +25,43 @@
 # 
 ********************************************************************************/
 
-//#include <boost/lexical_cast.hpp> 
 #include <iostream>
+#include <iomanip>
+#include <bitset>
 #include "transport.h"
 
-void testPortAssign();
+void portAssignTest();
+void datagramMakeTest();
 void portList();
+
 
 int main()
 {
-
-	testPortAssign();
-
-
+	datagramMakeTest();
 	return 0;
 }
 
-void testPortAssign()
+
+void datagramMakeTest()
+{
+	Datagram datagram;
+	//std::vector<unsigned char> data (280,51);
+	unsigned char data[45] = {1,5,7,3,2,4,5};
+	unsigned char length = 45;
+
+	//std::cout << &data << std::endl;
+
+	try {
+		datagram.make(25,35,4,5,data,length,"data",true);
+	}
+	catch (char *str) {
+		std::cout << "EXCEPTION: " << str << std::endl;
+	}
+
+	std::cout << datagram.checksumValid();
+}
+
+void portAssignTest()
 {
 	Transport trans[6];
 
@@ -51,7 +71,7 @@ void testPortAssign()
 			trans[i].setPort();
 		}
 		catch(char *str) {
-			std::cout << "EXCEPTION: " << str << std::endl;
+			std::cout << str << std::endl;
 		}
 		std::cout << i << (char)9 << (int)trans[i].getPort() << std::endl;
 	}
@@ -81,6 +101,7 @@ void testPortAssign()
 	std::cout << std::endl << "Press any key to continue..." << std::endl;
 	std::cin.get();
 }
+
 
 
 void portList()

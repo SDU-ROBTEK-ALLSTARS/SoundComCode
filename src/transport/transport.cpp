@@ -15,7 +15,7 @@
 ********************************************************************************
 # File:     transport.cpp
 # Project:  DtmfProject
-# Version:  1.0
+# Version:  
 # Platform:	PC/Mac/Linux
 # Author:	Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 # Created:  2011-29-11
@@ -63,7 +63,8 @@ void Transport::setPort(const unsigned char newPort)
 		}
 	}
 	if (!port_) {
-		throw "[Transport] No ports available.";
+		throw "Transport.setPort() No ports available.";
+		return;
 	}
 }
 

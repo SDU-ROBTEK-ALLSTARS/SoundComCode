@@ -15,7 +15,7 @@
 ********************************************************************************
 # File:     transport.h
 # Project:  DtmfProject
-# Version:  1.0
+# Version:  
 # Platform:	PC/Mac/Linux
 # Author:	Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 # Created:  2011-29-11
