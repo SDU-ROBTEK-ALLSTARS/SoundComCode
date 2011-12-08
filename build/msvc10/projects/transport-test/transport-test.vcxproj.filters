@@ -18,18 +18,18 @@
     <ClCompile Include="..\..\..\..\src\transport\transport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\transport\datagram.cpp">
+    <ClCompile Include="..\..\..\..\tests\transport\transport-test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\tests\transport\transport-test.cpp">
+    <ClCompile Include="..\..\..\..\src\transport\packet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\transport\datagram.h">
+    <ClInclude Include="..\..\..\..\src\transport\transport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\transport\transport.h">
+    <ClInclude Include="..\..\..\..\src\transport\packet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

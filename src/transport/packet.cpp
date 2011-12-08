@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     datagram.cpp
+# File:     packet.cpp
 # Project:  DtmfProject
 # Version:  
 # Platform:	PC/Mac/Linux
@@ -29,15 +29,15 @@
 #include <ctime>
 #include <bitset>
 #include <boost/crc.hpp>
-#include "datagram.h"
+#include "packet.h"
 
-Datagram::Datagram()
+Packet::Packet()
 {}
 
-Datagram::~Datagram()
+Packet::~Packet()
 {}
 
-unsigned short int Datagram::calcChecksum()
+unsigned short int Packet::calcChecksum()
 {
 	boost::crc_ccitt_type crc;
 	crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
@@ -45,7 +45,7 @@ unsigned short int Datagram::calcChecksum()
 	return crc.checksum();
 }
 
-void Datagram::make(char type[],
+void Packet::make(char type[],
                     unsigned char destPort,
                     unsigned char sourcePort,
                     unsigned char ackNumber,
@@ -59,7 +59,7 @@ void Datagram::make(char type[],
 	//Decide which type of package to make
 	if (type == "ack") {
 		if ((dataLength > (256-HLEN)) || (!destPort) || (!sourcePort) || (!ackNumber) || (!seqNumber)) {
-			throw "Datagram.make() Invalid args for type \"data\"";
+			throw "Packet.make() Invalid args for type \"data\"";
 			return;
 		}
 		sourcePort_ = sourcePort;
@@ -86,7 +86,7 @@ void Datagram::make(char type[],
 	}
 	else if (type == "syn") {
 		if ((!destPort) || (!sourcePort)) {
-			throw "Datagram.make() Invalid args for type \"syn\"";
+			throw "Packet.make() Invalid args for type \"syn\"";
 			return;
 		}
 		//Seed a random sequence number
@@ -101,6 +101,7 @@ void Datagram::make(char type[],
 		data_ = 0;
 		flags.reset();
 		flags.set(SYN);
+		flags.set(CHK);
 		flags_ = (unsigned char) flags.to_ulong();
 		checksum_ = calcChecksum();
 	}
@@ -108,42 +109,42 @@ void Datagram::make(char type[],
 		//
 	}
 	else {
-		throw "Datagram.make() Invalid datagram type";
+		throw "Packet.make() Invalid packet type";
 		return;
 	}
 }
 
-unsigned char Datagram::totalLength()
+unsigned char Packet::totalLength()
 {
 	return length_;
 }
 
-unsigned char Datagram::sourcePort()
+unsigned char Packet::sourcePort()
 {
 	return sourcePort_;
 }
 
-unsigned char Datagram::destPort()
+unsigned char Packet::destPort()
 {
 	return destPort_;
 }
 
-unsigned char Datagram::seqNumber()
+unsigned char Packet::seqNumber()
 {
 	return seqNumber_;
 }
 
-unsigned char Datagram::ackNumber()
+unsigned char Packet::ackNumber()
 {
 	return ackNumber_;
 }
 
-unsigned char Datagram::flags()
+unsigned char Packet::flags()
 {
 	return flags_;
 }
 
-bool Datagram::checksumValid()
+bool Packet::checksumValid()
 {
 	std::bitset<8> flags (flags_);
 	if (flags.test(CHK) && (checksum_)) {

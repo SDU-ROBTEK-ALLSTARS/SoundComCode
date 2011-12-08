@@ -27,7 +27,7 @@
 
 #include <boost/circular_buffer.hpp>
 #include "transport.h"
-#include "datagram.h"
+#include "packet.h"
 
 bool Transport::sPortsInUse_[256] = {false};
 
@@ -41,10 +41,11 @@ Transport::~Transport()
 	sPortsInUse_[port_] = false;
 }
 
-//Datagram Transport::makeDatagram(Data_ data, unsigned char flags, unsigned char destPort)
-//{
-//	
-//}
+//void connect();
+
+void Transport::processPacket(Packet)
+{
+}
 
 void Transport::setPort(const unsigned char newPort)
 {
@@ -96,15 +97,16 @@ bool *Transport::getPortTable()
 }
 
 void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-                       boost::circular_buffer<Datagram> *TransportDllDown,
-                       boost::circular_buffer<Datagram> *DllTransportUp,
+                       boost::circular_buffer<Packet> *TransportDllDown,
+                       boost::circular_buffer<Packet> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
+	
 }
 
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-                       boost::circular_buffer<Datagram> *TransportDllDown,
-                       boost::circular_buffer<Datagram> *DllTransportUp,
+                       boost::circular_buffer<Packet> *TransportDllDown,
+                       boost::circular_buffer<Packet> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }

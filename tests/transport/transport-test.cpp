@@ -31,34 +31,34 @@
 #include "transport.h"
 
 void portAssignTest();
-void datagramMakeTest();
+void packetMakeTest();
 void portList();
 
 
 int main()
 {
-	datagramMakeTest();
+	packetMakeTest();
 
 	return 0;
 }
 
 
-void datagramMakeTest()
+void packetMakeTest()
 {
-	Datagram datagram[2];
+	Packet packet[2];
 	unsigned char data[45] = {1,5,7,3,2,4,5};
 	unsigned char length = 45;
 
 	try {
-		datagram[0].make("syn",2,78);
-		datagram[1].make("ack",1,1,1,1,data,length,true);
+		packet[0].make("syn",2,78);
+		packet[1].make("ack",1,1,1,1,data,length,true);
 	}
 	catch (char *str) {
 		std::cout << "EXCEPTION: " << str << std::endl;
 	}
 
-	std::cout << datagram[0].checksumValid();
-	std::cout << datagram[1].checksumValid();
+	std::cout << packet[0].checksumValid();
+	std::cout << packet[1].checksumValid();
 }
 
 void portAssignTest()

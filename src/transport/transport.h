@@ -33,7 +33,7 @@
 #define TRANSPORT_H
 
 #include <boost/circular_buffer.hpp>
-#include "datagram.h"
+#include "packet.h"
 
 class Transport
 {
@@ -44,6 +44,7 @@ private:
 	unsigned char sequence_;
 	
 	void connect();
+	void processPacket(Packet);
 
 public:
 	Transport();
@@ -57,13 +58,13 @@ public:
 
 	//
 	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-	            boost::circular_buffer<Datagram> *TransportDllDown,
-	            boost::circular_buffer<Datagram> *DllTransportUp,
+	            boost::circular_buffer<Packet> *TransportDllDown,
+	            boost::circular_buffer<Packet> *DllTransportUp,
 	            boost::circular_buffer<unsigned char> *TransportApiUp);
 	            
 	void encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-	            boost::circular_buffer<Datagram> *TransportDllDown,
-	            boost::circular_buffer<Datagram> *DllTransportUp,
+	            boost::circular_buffer<Packet> *TransportDllDown,
+	            boost::circular_buffer<Packet> *DllTransportUp,
 	            boost::circular_buffer<unsigned char> *TransportApiUp);
 };
 #endif //TRANSPORT_H

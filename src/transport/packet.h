@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     datagram.h
+# File:     packet.h
 # Project:  DtmfProject
 # Version:  
 # Platform:	PC/Mac/Linux
@@ -23,11 +23,11 @@
 # Description
 #
 # 
-# 256 byte max overall length of each package
+# 256 byte max overall length of each packet
 #
 ********************************************************************************/
-#ifndef DATAGRAM_H
-#define DATAGRAM_H
+#ifndef PACKET_H
+#define PACKET_H
 
 //Flag bit positions
 #define SYN 0
@@ -38,7 +38,7 @@
 
 #define HLEN 8 //Header length (in bytes)
 
-class Datagram
+class Packet
 {
 private:
 	unsigned char sourcePort_;
@@ -53,8 +53,8 @@ private:
 	unsigned short int calcChecksum();
 
 public:
-	Datagram();
-	~Datagram();
+	Packet();
+	~Packet();
 
 	//make() will be our "lazy" constructor
 	void make(char type[]="ack", //Options are: ack, syn, rst
@@ -74,4 +74,4 @@ public:
 	unsigned char flags();
 	bool checksumValid();
 };
-#endif //DATAGRAM_H
+#endif //PACKET_H

@@ -62,12 +62,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\transport\datagram.cpp" />
+    <ClCompile Include="..\..\..\..\src\transport\packet.cpp" />
     <ClCompile Include="..\..\..\..\src\transport\transport.cpp" />
     <ClCompile Include="..\..\..\..\tests\transport\transport-test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\transport\datagram.h" />
+    <ClInclude Include="..\..\..\..\src\transport\packet.h" />
     <ClInclude Include="..\..\..\..\src\transport\transport.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
