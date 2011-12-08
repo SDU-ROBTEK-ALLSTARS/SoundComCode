@@ -42,9 +42,18 @@ private:
 	unsigned char port_;
 
 	unsigned char lastInSequence_;
-	
-	//void connect();
+
+	//In-Out buffer pointers
+	boost::circular_buffer<unsigned char> *ApiTransportDown_;
+	boost::circular_buffer<Packet> *TransportDllDown_;
+	boost::circular_buffer<unsigned char> *DllTransportUp_;
+	boost::circular_buffer<unsigned char> *TransportApiUp_;
+
+	//Incoming packet handling
+	Packet assemblePacketFromBuffer();
 	void processInboundPacket(Packet);
+
+	//Outgoing packet handling
 
 public:
 	Transport();
@@ -57,12 +66,12 @@ public:
 
 	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Packet> *TransportDllDown,
-	            boost::circular_buffer<Packet> *DllTransportUp,
+	            boost::circular_buffer<unsigned char> *DllTransportUp,
 	            boost::circular_buffer<unsigned char> *TransportApiUp);
 	            
 	void encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Packet> *TransportDllDown,
-	            boost::circular_buffer<Packet> *DllTransportUp,
+	            boost::circular_buffer<unsigned char> *DllTransportUp,
 	            boost::circular_buffer<unsigned char> *TransportApiUp);
 };
 #endif //TRANSPORT_H

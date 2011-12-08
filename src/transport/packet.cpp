@@ -41,7 +41,7 @@ unsigned short int Packet::calcChecksum()
 {
 	boost::crc_ccitt_type crc;
 	crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
-	crc.process_bytes(data_, (length_ - HLEN)); //Data
+	crc.process_bytes(data_, (length_-HLEN)); //Data
 	return crc.checksum();
 }
 
@@ -114,6 +114,18 @@ void Packet::make(const char type[],
 	}
 }
 
+void Packet::makeIn(unsigned char header[HLEN], unsigned char data[])
+{
+	sourcePort_ = header[0];
+	destPort_ = header[1];
+	flags_ = header[2];
+	length_ = header[3];
+	seqNumber_ = header[4];
+	ackNumber_ = header[5];
+	checksum_ = (header[6]<<8)|(header[7]);
+	data_ = data; //may be just 0
+}
+
 unsigned char Packet::totalLength() const
 {
 	return length_;
@@ -144,17 +156,28 @@ unsigned char Packet::flags() const
 	return flags_;
 }
 
+unsigned char *Packet::data() const
+{
+	return data_;
+}
+
+unsigned char Packet::dataLength() const
+{
+	if (length_ >= HLEN)
+		return (length_-HLEN);
+	else 
+		return 0;
+}
+
 bool Packet::checksumValid()
 {
 	std::bitset<8> flags (flags_);
 	if (flags.test(CHK) && (checksum_)) {
 		short unsigned int newChecksum = calcChecksum();
-		if (checksum_ == newChecksum) {
+		if (checksum_ == newChecksum)
 			return true;
-		}
-		else {
+		else
 			return false;
-		}
 	}
 	else {
 		return false; //checksum does not exist at all

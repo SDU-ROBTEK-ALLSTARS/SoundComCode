@@ -44,9 +44,39 @@ Transport::~Transport()
 
 //void connect();
 
-void Transport::processInboundPacket(Packet packet)
+Packet Transport::assemblePacketFromBuffer()
+{
+	if (!DllTransportUp_->empty()) {
+		//Get header off of buffer (HLEN long as defined in packet.h)
+		unsigned char header[HLEN];
+		for (unsigned char i=0; i<HLEN; i++) {
+			header[i] = DllTransportUp_->front();
+			DllTransportUp_->pop_front();
+		}
+
+		//Examine the total packet length (4th header byte) to get any data
+		unsigned char *data;
+		if (header[3] > HLEN) {
+			unsigned char dataLength = header[3]-HLEN;
+			data = new unsigned char[dataLength];
+			for (unsigned char i=0; i<dataLength; i++) {
+				data[i] = DllTransportUp_->front();
+				DllTransportUp_->pop_front();
+			}
+		}
+
+		//Now put collected data in to the established packet structure
+		Packet packet;
+		packet.makeIn(header, data);
+
+		return packet;
+	}
+}
+
+void Transport::processInboundPacket(Packet packet) //TO DO TO DO
 {
 	if ((port_ == packet.destPort()) && (packet.checksumValid())) {
+		//lastInSequence_ = packet.seqNumber();
 		std::bitset<8> flags (packet.flags());
 		if (flags.test(SYN)) {
 			int i=0;
@@ -105,7 +135,7 @@ bool *Transport::getPortTable() const
 
 void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Packet> *TransportDllDown,
-                       boost::circular_buffer<Packet> *DllTransportUp,
+                       boost::circular_buffer<unsigned char> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 	
@@ -113,7 +143,7 @@ void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Packet> *TransportDllDown,
-                       boost::circular_buffer<Packet> *DllTransportUp,
+                       boost::circular_buffer<unsigned char> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }

@@ -65,6 +65,7 @@ public:
 	          unsigned char data[]=0,
 	          const unsigned char dataLength=0,
 	          bool addChecksum=true);
+	void makeIn(unsigned char header[HLEN], unsigned char data[]);
 
 	unsigned char totalLength() const;
 	unsigned char sourcePort() const;
@@ -72,6 +73,8 @@ public:
 	unsigned char seqNumber() const;
 	unsigned char ackNumber() const;
 	unsigned char flags() const;
+	unsigned char *data() const;
+	unsigned char dataLength() const;
 	bool checksumValid();
 };
 #endif //PACKET_H
