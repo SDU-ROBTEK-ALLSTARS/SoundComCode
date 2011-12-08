@@ -49,19 +49,21 @@ private:
 	unsigned char ackNumber_;
 	unsigned short int checksum_;
 	unsigned char *data_;
+	
+	unsigned short int calcChecksum();
 
 public:
 	Datagram();
 	~Datagram();
 
 	//make() will be our "lazy" constructor
-	void make(unsigned char sourcePort,
-	          unsigned char destPort,
-	          unsigned char seqNumber,
-	          unsigned char ackNumber,
-	          unsigned char data[],
-			  unsigned char dataLength,
-	          char type[]="data",		//Options are: data, sync
+	void make(char type[]="ack", //Options are: ack, syn, rst
+	          unsigned char destPort=0,
+	          unsigned char sourcePort=0,
+	          unsigned char ackNumber=0,
+	          unsigned char seqNumber=0,
+	          unsigned char data[]=0,
+	          unsigned char dataLength=0,
 	          bool addChecksum=true);
 
 	unsigned char totalLength();

@@ -25,40 +25,50 @@
 # 
 ********************************************************************************/
 
+#include <cstdlib>
+#include <ctime>
 #include <bitset>
 #include <boost/crc.hpp>
 #include "datagram.h"
 
 Datagram::Datagram()
-{ }
+{}
 
 Datagram::~Datagram()
-{ }
+{}
 
-void Datagram::make(unsigned char sourcePort,
+unsigned short int Datagram::calcChecksum()
+{
+	boost::crc_ccitt_type crc;
+	crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
+	crc.process_bytes(data_, (length_ - HLEN)); //Data
+	return crc.checksum();
+}
+
+void Datagram::make(char type[],
                     unsigned char destPort,
-                    unsigned char seqNumber,
+                    unsigned char sourcePort,
                     unsigned char ackNumber,
+                    unsigned char seqNumber,
                     unsigned char data[],
-					unsigned char dataLength,
-                    char type[],
+                    unsigned char dataLength,
                     bool addChecksum)
-	                
 {
 	std::bitset<8> flags;
 	
 	//Decide which type of package to make
-	if (type == "data") {
-		if (dataLength > 248) {
-			throw "Datagram.make() Invalid data length";
+	if (type == "ack") {
+		if ((dataLength > (256-HLEN)) || (!destPort) || (!sourcePort) || (!ackNumber) || (!seqNumber)) {
+			throw "Datagram.make() Invalid args for type \"data\"";
 			return;
 		}
 		sourcePort_ = sourcePort;
 		destPort_ = destPort;
 		seqNumber_ = seqNumber;
 		ackNumber_ = ackNumber;
-		length_ = dataLength + HLEN; //Header is always 8 bytes long
-		data_ = data; //pointer address
+		length_ = dataLength + HLEN;
+		data_ = data;
+
 		flags.reset();
 		flags.set(ACK);
 
@@ -66,10 +76,7 @@ void Datagram::make(unsigned char sourcePort,
 			flags.set(CHK);
 			flags_ = (unsigned char) flags.to_ulong(); //Set flags before calculating CRC
 			
-			boost::crc_ccitt_type crc;
-			crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
-			crc.process_bytes(data_, dataLength);
-			checksum_ = crc.checksum();
+			checksum_ = calcChecksum();
 		}
 		else {
 			flags.reset(CHK);
@@ -77,8 +84,28 @@ void Datagram::make(unsigned char sourcePort,
 			checksum_ = 0;
 		}
 	}
-	else if (type == "sync") {
-		// todo
+	else if (type == "syn") {
+		if ((!destPort) || (!sourcePort)) {
+			throw "Datagram.make() Invalid args for type \"syn\"";
+			return;
+		}
+		//Seed a random sequence number
+		std::srand((unsigned)time(0));
+		unsigned char randSeq = std::rand()%255;
+
+		sourcePort_ = sourcePort;
+		destPort_ = destPort;
+		seqNumber_ = randSeq;
+		ackNumber_ = 0;
+		length_ = HLEN;
+		data_ = 0;
+		flags.reset();
+		flags.set(SYN);
+		flags_ = (unsigned char) flags.to_ulong();
+		checksum_ = calcChecksum();
+	}
+	else if (type == "rst") {
+		//
 	}
 	else {
 		throw "Datagram.make() Invalid datagram type";
@@ -119,11 +146,9 @@ unsigned char Datagram::flags()
 bool Datagram::checksumValid()
 {
 	std::bitset<8> flags (flags_);
-	if (flags.test(CHK)) {
-		boost::crc_ccitt_type crc;
-		crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
-		crc.process_bytes(data_, (length_ - HLEN));
-		if (checksum_ == crc.checksum()) {
+	if (flags.test(CHK) && (checksum_)) {
+		short unsigned int newChecksum = calcChecksum();
+		if (checksum_ == newChecksum) {
 			return true;
 		}
 		else {
@@ -131,6 +156,6 @@ bool Datagram::checksumValid()
 		}
 	}
 	else {
-		return true; //checksum was not calculated
+		return false; //checksum does not exist at all
 	}
 }

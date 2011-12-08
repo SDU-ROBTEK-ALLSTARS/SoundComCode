@@ -58,12 +58,12 @@ public:
 	//
 	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Datagram> *TransportDllDown,
-				boost::circular_buffer<Datagram> *DllTransportUp,
-				boost::circular_buffer<unsigned char> *TransportApiUp);
+	            boost::circular_buffer<Datagram> *DllTransportUp,
+	            boost::circular_buffer<unsigned char> *TransportApiUp);
 	            
 	void encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
 	            boost::circular_buffer<Datagram> *TransportDllDown,
-				boost::circular_buffer<Datagram> *DllTransportUp,
-				boost::circular_buffer<unsigned char> *TransportApiUp);
+	            boost::circular_buffer<Datagram> *DllTransportUp,
+	            boost::circular_buffer<unsigned char> *TransportApiUp);
 };
 #endif //TRANSPORT_H

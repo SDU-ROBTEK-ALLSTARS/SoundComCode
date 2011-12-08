@@ -38,27 +38,27 @@ void portList();
 int main()
 {
 	datagramMakeTest();
+
 	return 0;
 }
 
 
 void datagramMakeTest()
 {
-	Datagram datagram;
-	//std::vector<unsigned char> data (280,51);
+	Datagram datagram[2];
 	unsigned char data[45] = {1,5,7,3,2,4,5};
 	unsigned char length = 45;
 
-	//std::cout << &data << std::endl;
-
 	try {
-		datagram.make(25,35,4,5,data,length,"data",true);
+		datagram[0].make("syn",2,78);
+		datagram[1].make("ack",1,1,1,1,data,length,true);
 	}
 	catch (char *str) {
 		std::cout << "EXCEPTION: " << str << std::endl;
 	}
 
-	std::cout << datagram.checksumValid();
+	std::cout << datagram[0].checksumValid();
+	std::cout << datagram[1].checksumValid();
 }
 
 void portAssignTest()

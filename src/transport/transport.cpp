@@ -52,8 +52,8 @@ void Transport::setPort(const unsigned char newPort)
 		sPortsInUse_[newPort] = true;
 		port_ = newPort;
 	}
-	//If a port was not supplied, or the port which was supplied is not available, look for one that is
 	else {
+		//If a port was not supplied, or the port which was supplied is not available, look for one that is
 		for (int i=20; i<256; i++) { //We don't assign port 0-19
 			if (!sPortsInUse_[i]) {
 				sPortsInUse_[i] = true;
@@ -97,14 +97,14 @@ bool *Transport::getPortTable()
 
 void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Datagram> *TransportDllDown,
-					   boost::circular_buffer<Datagram> *DllTransportUp,
-					   boost::circular_buffer<unsigned char> *TransportApiUp)
+                       boost::circular_buffer<Datagram> *DllTransportUp,
+                       boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }
-	            
+
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Datagram> *TransportDllDown,
-					   boost::circular_buffer<Datagram> *DllTransportUp,
-					   boost::circular_buffer<unsigned char> *TransportApiUp)
+                       boost::circular_buffer<Datagram> *DllTransportUp,
+                       boost::circular_buffer<unsigned char> *TransportApiUp)
 {
 }
