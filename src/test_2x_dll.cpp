@@ -126,10 +126,12 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	#ifdef DEBUG
 		DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:";
 	#endif
+	Leftdll.needsAttention();
 	Leftdll.decode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
 	count = 0;
 	while(count<50000000)
 		count++;
+	Leftdll.needsAttention();
 	Leftdll.encode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
 	count = 0;
 	while(count<50000000)
@@ -137,10 +139,12 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	#ifdef DEBUG
 	DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:";
 	#endif
+	Leftdll.needsAttention();
 	Rightdll.decode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
 	count = 0;
 	while(count<50000000)
 		count++;
+	Leftdll.needsAttention();
 	Rightdll.encode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
 	count = 0;
 	while(count<50000000)

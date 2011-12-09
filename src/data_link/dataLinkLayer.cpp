@@ -202,6 +202,38 @@ void DataLinkLayer::decode(
 	}
 }
 //*****
+bool needsAttention()
+{
+	time_t nowClock;
+	time (&nowClock);
+
+	//check timestamps
+	if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+	{
+#ifdef DEBUG
+DEBUG_OUT << "Time to re-offer token..." << std::endl;
+#endif
+		return 1;
+	}
+	if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+	{
+#ifdef DEBUG
+DEBUG_OUT << "Time to resend data..." << std::endl;
+#endif
+		return 1;
+	}
+	if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+	{
+#ifdef DEBUG
+DEBUG_OUT << "Time to pass token..." << std::endl;
+#endif
+		return 1;
+	}
+	return 0;
+
+}
+
+//*****
 void DataLinkLayer::processFrame(Frame incoming)
 {
 	if(incoming.checkParity()==0)

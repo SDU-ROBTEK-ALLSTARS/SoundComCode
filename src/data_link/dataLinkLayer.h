@@ -113,6 +113,7 @@ private:
 
 	void fatalError();							//reports critical error
 
+
 public:
 	DataLinkLayer(int,bool);					//construct dll with arguments address and starts with token
 
@@ -126,6 +127,7 @@ public:
 				boost::circular_buffer< Frame >*,
 				boost::circular_buffer< unsigned int >*);
 
+	bool needsAttention();						//returns 1 if a timer is due and 0 if not
 };
 #endif /* DATALINKLAYER_H_ */
 
