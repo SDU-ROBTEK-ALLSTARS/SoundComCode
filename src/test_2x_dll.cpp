@@ -49,8 +49,8 @@
 
 
 //data link layer
-#include 	"dataLinkLayer.h"
-#include	"frame.h"
+#include 	"data_link/dataLinkLayer.h"
+#include	"buffers/frame.h"
 
 int main()
 {

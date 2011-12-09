@@ -49,7 +49,7 @@
 #include 	<stdio.h>
 #include 	<time.h>
 #include 	<boost/circular_buffer.hpp>
-#include 	"frame.h"
+#include 	"buffers/frame.h"
 
 //*****     DECLARATIONS     *****
 struct datalist									//structure for unfinished transmissions
