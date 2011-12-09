@@ -18,6 +18,7 @@
 *.cproject
 /Debug/*
 /Default/*
+*.settings
 
 #Visual Studio files
 *.[Oo]bj
