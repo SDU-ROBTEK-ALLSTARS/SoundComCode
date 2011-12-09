@@ -1,34 +1,69 @@
-//============================================================================
-// Name        : dataLinkLayer.cpp
-// Author      : Leon Bonde Larsen
-// Version     : 1.0 (updated 27/11-2011 by Leon Larsen)
-// Copyright   : Open Source
-// Description : Testing data link layer in C++, Ansi-style
-//============================================================================
-//=====     INCLUDES     =====
+/*******************************************************************************
+# DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
+#
+# Copyright (c) 2011    Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#						Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#						Kent Stark Olsen				<keols09@student.sdu.dk>
+#						Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#						Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#						Rudi Hansen						<rudha10@student.sdu.dk>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
+********************************************************************************
+# File:     datalinklayer.cpp
+# Project:  DtmfProject
+# Version:  2.0
+# Platform:	PC/Mac/Linux
+# Authors:  Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#			Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#			Kent Stark Olsen				<keols09@student.sdu.dk>
+#			Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#			Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#			Rudi Hansen						<rudha10@student.sdu.dk>
+# Created:  2011-10-30
+********************************************************************************
+# Description
+#
+# The purpose of this class is to implement the data link layer of the OSI model.
+# Processing frames into datagrams and datagrams into frames
+#                           (Denne header er dikteret af den onde diktator Kent)
+*******************************************************************************/
+
+//*****     INCLUDES     *****
 #include 	"dataLinkLayer.h"
 
-//=====     CLASS IMPLEMENTATION     =====
-DataLinkLayer::DataLinkLayer()
+//*****     CLASS IMPLEMENTATION     *****
+DataLinkLayer::DataLinkLayer(int addr,bool tok)
 {
-	#ifdef STARTS_WITH_TOKEN
+	if(tok == 1)
+	{
 	hasToken = 1;
-	#else
+	time ( &timestampToken );
+	currentReceiver = 1; //TODO: temporary implementation
+	}
+	else
+	{
 	hasToken = 0;
-	#endif
+	currentReceiver = 0; //TODO: temporary implementation
+	}
+	MY_ADDRESS = addr;
 	#ifdef DEBUG
 	DEBUG_OUT << std::endl << "----------   ###   INSTANTIATING DATA LINK LAYER   ###   ----------" << std::endl;
 	if(hasToken)
 		DEBUG_OUT << "Has token" << std::endl;
+	DEBUG_OUT << "Address: " << MY_ADDRESS << std::endl;
 	#endif
 	clearFrameReceiveList();
 	clearFrameSendList();
 	awaitsReply = 0;
-	nextInSendSequence = 0;
 	receiverNeedsUpdate = 0;
+	nextInSendSequence = 0;
 
 }
-//=====
+//*****
 void DataLinkLayer::encode(
 		boost::circular_buffer< unsigned int > *downIn,
 		boost::circular_buffer< Frame > *downOut,
@@ -38,6 +73,28 @@ void DataLinkLayer::encode(
 	#ifdef DEBUG
 	DEBUG_OUT << std::endl << "----------   ###   ENCODE   ###   ----------" << std::endl;
 	#endif
+
+	//update pointers
+	datagramDown = downIn;
+	datagramUp = upOut;
+	frameDown = downOut;
+	frameUp = upIn;
+
+	if(hasToken == 1)
+	{
+		//if token expired
+		if(checkToken() == 1)
+		{
+			return;
+		}
+	}
+	else
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "has no token" << std::endl;
+		#endif
+		return;
+	}
 
 	//check if ready to process
 	if(awaitsReply == 1)
@@ -66,12 +123,6 @@ void DataLinkLayer::encode(
 			#endif
 		}
 	}
-
-	//update pointers
-	datagramDown = downIn;
-	datagramUp = upOut;
-	frameDown = downOut;
-	frameUp = upIn;
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Popping from datagrambuffer..." << std::endl;
@@ -111,11 +162,19 @@ void DataLinkLayer::encode(
 		#ifdef DEBUG
 		DEBUG_OUT << "Buffer is empty...nothing to process" << std::endl;
 		#endif
+		if(hasToken == 1 && tokenAlreadyOffered == 0)
+		{
+			//Might as well pass token
+			#ifdef DEBUG
+			DEBUG_OUT << "No need for token...passing" << std::endl;
+			#endif
+			offerToken();
+		}
 	}
 
 
 }
-//=====
+//*****
 void DataLinkLayer::decode(
 		boost::circular_buffer< unsigned int > *downIn,
 		boost::circular_buffer< Frame > *downOut,
@@ -142,60 +201,83 @@ void DataLinkLayer::decode(
 	frameUp->pop_front();
 	}
 }
-//=====
+//*****
 void DataLinkLayer::processFrame(Frame incoming)
 {
-	if( (incoming.receiver == MY_ADDRESS)  &&  (incoming.checkParity()==0)  )
-		//if frame is for me and parity is ok
+	if(incoming.checkParity()==0)
 	{
-		switch(incoming.type)
+		if(incoming.receiver == MY_ADDRESS)
+			//if frame is for me and parity is ok
 		{
-		case 3:
-			//if frame type is dataframe
-		{
-			acceptFrame(incoming);
-			break;
+			switch(incoming.type)
+			{
+			case 3:
+				//if frame type is dataframe
+			{
+				acceptFrame(incoming);
+				break;
+			}
+			case 2:
+				//if frame is station accepting token
+			{
+				passToken();
+				break;
+			}
+			case 1:
+				//if frame is station offering token
+			{
+				tokenOffered();
+				break;
+			}
+			case 0:
+				//if frame is reply from receiver
+			{
+				if(hasToken == 1)
+					replyFromReceiver(incoming);
+				else
+				{
+					#ifdef DEBUG
+					DEBUG_OUT << " reply to tokenholder " ;
+					#endif
+					discardFrame();
+				}
+				break;
+			}
+			default:
+				//impossible frame type
+			{
+				fatalError();
+				break;
+			}
+			}
 		}
-		case 2:
-			//if frame is station accepting token
+		else
+			//frame is not for me
 		{
-			passToken();
-			break;
-		}
-		case 1:
-			//if frame is station offering token
-		{
-			tokenOffered();
-			break;
-		}
-		case 0:
-			//if frame is reply from receiver
-		{
-			if(hasToken == 1)
+			if(incoming.type == 0 && hasToken == 1)
+				//if frame is reply from receiver and tokenholder is me
 				replyFromReceiver(incoming);
+			else if(incoming.type == 2 && hasToken == 1)
+				//if frame is accept token and I have token
+				passToken();
 			else
+			{
+				#ifdef DEBUG
+				DEBUG_OUT << " wrong receiver " ;
+				#endif
 				discardFrame();
-			break;
-		}
-		default:
-			//impossible frame type
-		{
-			fatalError();
-			break;
-		}
+			}
 		}
 	}
 	else
-		//frame is not for me or parity was foobah
 	{
-		if(incoming.type == 0 && hasToken == 1)
-			//if frame is reply from receiver and tokenholder is me
-			replyFromReceiver(incoming);
-		else
-			discardFrame();
+		#ifdef DEBUG
+		DEBUG_OUT << " bad parity " ;
+		#endif
+		discardFrame();
 	}
 }
-//=====
+//*****
 void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 {
 	//push frame to buffer
@@ -205,7 +287,7 @@ void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 	DEBUG_OUT << "Pushing to framebuffer: " << frameDown->back();
 	#endif
 }
-//=====
+//*****
 void DataLinkLayer::endDatagram()
 {
 	#ifdef DEBUG
@@ -225,7 +307,7 @@ void DataLinkLayer::endDatagram()
 	//re-push altered frame
 	frameDown->push_back(Frame(tempHeader,tempData));
 }
-//=====
+//*****
 void DataLinkLayer::acceptFrame(Frame incoming)
 {
 	//put frame in list
@@ -244,7 +326,7 @@ void DataLinkLayer::acceptFrame(Frame incoming)
 	if(incoming.end == 1)
 		checkFrameReceiveList();
 }
-//=====
+//*****
 void DataLinkLayer::discardFrame()
 {
 	//discard frame
@@ -252,7 +334,7 @@ void DataLinkLayer::discardFrame()
 	DEBUG_OUT << "Frame discarded" << std::endl;
 	#endif
 }
-//=====
+//*****
 void DataLinkLayer::processDatagram(unsigned int incoming)
 {
 	//update receiver if incoming is first byte of new datagram
@@ -277,7 +359,7 @@ void DataLinkLayer::processDatagram(unsigned int incoming)
 	//update sequence number
 	nextInSendSequence++;
 }
-//=====
+//*****
 void DataLinkLayer::fatalError()
 {
 	//something is very bad...
@@ -302,44 +384,64 @@ void DataLinkLayer::tokenOffered()
 	#endif
 
 	//make type 2 frame for station before me
-	makeFrame((2<<TYPE)|(MY_ADDRESS?3:MY_ADDRESS-1<<ADDRESS),~0);
+	makeFrame((2<<TYPE)|(MY_ADDRESS<<ADDRESS),~0);
 }
-//=====
-void DataLinkLayer::checkToken()
+//*****
+bool DataLinkLayer::checkToken()
 {
-	if(hasToken==1)
-	{
-		//check current time
-		time_t nowClock;
-		time ( &nowClock );
+	//check current time
+	time_t nowClock;
+	time ( &nowClock );
 
+	if(tokenAlreadyOffered == 1)
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Token has been offered to " << nextStation;
+		#endif
+		//check timestamp
+		if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+		{
+			//if expired
+			#ifdef DEBUG
+			DEBUG_OUT << "...time to reply is up" << std::endl;
+			#endif
+			offerToken();
+			return 1;
+		}
+		else
+		{
+			//if not expired
+			#ifdef DEBUG
+			DEBUG_OUT << "...still time left to reply" << std::endl;
+			#endif
+			return 1;
+		}
+	}
+	else
+	{
 		//compare with saved timestamp from when token was passed
 		if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
 		{
-			//if token expired
+		//if token expired
 			#ifdef DEBUG
 			DEBUG_OUT << "Token expired" << std::endl;
 			#endif
 			offerToken();
+			return 1;
 		}
 		else
 		{
 			//if token has time left
 			#ifdef DEBUG
-			std::cout << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
-				  << " seconds" << std::endl;
+			DEBUG_OUT << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
+							  << " seconds" << std::endl;
 			#endif
+			return 0;
 		}
 	}
-	else
-	{
-		//if no token
-		#ifdef DEBUG
-		DEBUG_OUT << "checkToken called without token" << std::endl;
-		#endif
-	}
+	return 0;
 }
-//=====
+//*****
 void DataLinkLayer::offerToken()
 {
 	//increase token receiver
@@ -351,23 +453,36 @@ void DataLinkLayer::offerToken()
 
 	//if next receiver has been increased four times
 	if(nextStation==MY_ADDRESS)
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Offering token to self" << std::endl;
+		#endif
 		//offer token to self
 		tokenOffered();
+	}
 	else
+	{
+		#ifdef DEBUG
+		DEBUG_OUT << "Offering token to " << nextStation << std::endl;
+		#endif
+		tokenAlreadyOffered = 1;
+		time( &timestampTokenOffered );
 		//generate frame to offer token to next station
 		makeFrame((1<<TYPE)|(nextStation<<ADDRESS),0);
+	}
 }
-//=====
+//*****
 void DataLinkLayer::passToken()
 {
 	//release token
 	hasToken = 0;
+	tokenAlreadyOffered = 0;
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Token was passed" << std::endl;
 	#endif
 }
-//=====
+//*****
 void DataLinkLayer::clearFrameReceiveList()
 {
 	#ifdef DEBUG
@@ -381,7 +496,7 @@ void DataLinkLayer::clearFrameReceiveList()
 		frameRecList[i].flag = 0;
 	}
 }
-//=====
+//*****
 void DataLinkLayer::clearFrameSendList()
 {
 	#ifdef DEBUG
@@ -397,7 +512,7 @@ void DataLinkLayer::clearFrameSendList()
 
 	nextInSendSequence = 0;
 }
-//=====
+//*****
 void DataLinkLayer::checkFrameReceiveList()
 {
 	//initialize variable to hold EOT, goes and nogoes
@@ -447,7 +562,7 @@ void DataLinkLayer::checkFrameReceiveList()
 		//request resends
 		requestResend(request);
 }
-//=====
+//*****
 void DataLinkLayer::passDataUpwards()
 {
 	bool transmissionStop = 0;
@@ -489,7 +604,7 @@ void DataLinkLayer::passDataUpwards()
 	//clear list
 	clearFrameReceiveList();
 }
-//=====
+//*****
 void DataLinkLayer::requestResend(int request)
 {
 	#ifdef DEBUG
@@ -501,11 +616,11 @@ void DataLinkLayer::requestResend(int request)
 	//make type 0 frame with data byte holding ones for received an zeroes for resend
 	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
 }
-//=====
+//*****
 void DataLinkLayer::replyFromReceiver(Frame incoming)
 {
 	awaitsReply = 0;
-	if(incoming.data == 0)
+	if(incoming.data == 255)
 	{
 		#ifdef DEBUG
 			DEBUG_OUT << "OK from receiver...";
@@ -518,7 +633,7 @@ void DataLinkLayer::replyFromReceiver(Frame incoming)
 			DEBUG_OUT << "Receiver requesting frames...";
 			for(int i=0;i<8;i++)
 			{
-				if((bool)(incoming.byte1 & (1<<i)) == 1)
+				if((bool)(incoming.byte1 & (1<<i)) == 0)
 					DEBUG_OUT << " " << i;
 			}
 			DEBUG_OUT << std::endl;
@@ -526,7 +641,7 @@ void DataLinkLayer::replyFromReceiver(Frame incoming)
 			resendData(incoming.byte1);
 	}
 }
-//=====
+//*****
 void DataLinkLayer::resendData(unsigned int request)
 {
 	//iterate through databyte

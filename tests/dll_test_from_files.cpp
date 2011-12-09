@@ -102,7 +102,7 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	}
 
 	//instantiate data link layer
-//	DataLinkLayer dll;
+	DataLinkLayer dll(1);
 
 //	//test getNibble
 //	Frame test(145,20);

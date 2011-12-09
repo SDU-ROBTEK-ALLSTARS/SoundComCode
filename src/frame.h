@@ -1,12 +1,40 @@
-//============================================================================
-// Name        : soundLibCode.cpp
-// Author      : Leon Bonde Larsen
-// Version     :
-// Copyright   : Open Source
-// Description : Implementing frame in C++, Ansi-style
-//============================================================================
+/*******************************************************************************
+# DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
+#
+# Copyright (c) 2011    Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#						Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#						Kent Stark Olsen				<keols09@student.sdu.dk>
+#						Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#						Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#						Rudi Hansen						<rudha10@student.sdu.dk>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
+********************************************************************************
+# File:     frame.h
+# Project:  DtmfProject
+# Version:  2.0
+# Platform:	PC/Mac/Linux
+# Authors:  Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
+#			Frederik Hagelskjær				<frhag10@student.sdu.dk>
+#			Kent Stark Olsen				<keols09@student.sdu.dk>
+#			Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
+#			Leon Bonde Larsen				<lelar09@student.sdu.dk>
+#			Rudi Hansen						<rudha10@student.sdu.dk>
+# Created:  2011-10-30
+********************************************************************************
+# Description
+#
+# The purpose of this class is to implement the concept of a frame
+#                           (Denne header er dikteret af den onde diktator Kent)
+*******************************************************************************/
+
 #ifndef FRAME_H_
 #define FRAME_H_
+
+//*****     DEFINES     *****
 //debugging
 #define		DEBUG
 #define 	DEBUG_OUT			std::cout
@@ -19,10 +47,10 @@
 
 enum {NONE,HEADER};
 
-//=====     INCLUDES     =====
+//*****     INCLUDES     *****
 #include 	<fstream>
 
-//=====     CLASS DECLARATION     =====
+//*****     CLASS DECLARATION     *****
 class Frame
 {
 private:

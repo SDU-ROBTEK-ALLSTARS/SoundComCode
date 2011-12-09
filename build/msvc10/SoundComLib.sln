@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "transport-test", "projects\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dll-test", "projects\dll-test\dll-test.vcxproj", "{17440F6F-C00C-48BB-8156-8CBA483AC565}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DtmfBackbone", "projects\DtmfBackbone\DtmfBackbone\DtmfBackbone.vcxproj", "{1366D904-8AD2-4156-BBCC-38594B4FD409}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
