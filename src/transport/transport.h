@@ -49,11 +49,11 @@ private:
 	boost::circular_buffer<unsigned char> *DllTransportUp_;
 	boost::circular_buffer<unsigned char> *TransportApiUp_;
 
-	//Incoming packet handling
-	Packet assemblePacketFromBuffer();
-	void processInboundPacket(Packet);
+	//Up-going packet handling
+	Packet assemblePacketFromBuffer(boost::circular_buffer<unsigned char> *);
+	void processUpboundPacket(Packet);
 
-	//Outgoing packet handling
+	//Down-going packet handling
 
 public:
 	Transport();

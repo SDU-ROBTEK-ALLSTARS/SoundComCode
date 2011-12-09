@@ -67,11 +67,13 @@ public:
 	          bool addChecksum=true);
 	void makeIn(unsigned char header[HLEN], unsigned char data[]);
 
+	bool isMade() const;
 	unsigned char totalLength() const;
 	unsigned char sourcePort() const;
 	unsigned char destPort() const;
 	unsigned char seqNumber() const;
 	unsigned char ackNumber() const;
+	bool flagSet(const int) const;
 	unsigned char flags() const;
 	unsigned char *data() const;
 	unsigned char dataLength() const;

@@ -26,7 +26,6 @@
 ********************************************************************************/
 
 #include <boost/circular_buffer.hpp>
-#include <bitset>
 #include "transport.h"
 #include "packet.h"
 
@@ -44,41 +43,38 @@ Transport::~Transport()
 
 //void connect();
 
-Packet Transport::assemblePacketFromBuffer()
+Packet Transport::assemblePacketFromBuffer(boost::circular_buffer<unsigned char> *buffer)
 {
-	if (!DllTransportUp_->empty()) {
+	Packet packet;
+	if (!buffer->empty()) {
 		//Get header off of buffer (HLEN long as defined in packet.h)
 		unsigned char header[HLEN];
 		for (unsigned char i=0; i<HLEN; i++) {
-			header[i] = DllTransportUp_->front();
-			DllTransportUp_->pop_front();
+			header[i] = buffer->front();
+			buffer->pop_front();
 		}
-
 		//Examine the total packet length (4th header byte) to get any data
 		unsigned char *data;
 		if (header[3] > HLEN) {
 			unsigned char dataLength = header[3]-HLEN;
 			data = new unsigned char[dataLength];
 			for (unsigned char i=0; i<dataLength; i++) {
-				data[i] = DllTransportUp_->front();
-				DllTransportUp_->pop_front();
+				data[i] = buffer->front();
+				buffer->pop_front();
 			}
 		}
-
-		//Now put collected data in to the established packet structure
-		Packet packet;
+		//Now put collected data in the established packet structure
 		packet.makeIn(header, data);
-
 		return packet;
 	}
+	return packet; //empty packet
 }
 
-void Transport::processInboundPacket(Packet packet) //TO DO TO DO
+void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
 {
 	if ((port_ == packet.destPort()) && (packet.checksumValid())) {
 		//lastInSequence_ = packet.seqNumber();
-		std::bitset<8> flags (packet.flags());
-		if (flags.test(SYN)) {
+		if (packet.flagSet(SYN)) {
 			int i=0;
 		}
 	}

@@ -32,7 +32,9 @@
 #include "packet.h"
 
 Packet::Packet()
-{}
+{
+	length_ = 0; //total length is used to test if the packet is "made"; make sure it's 0 initially
+}
 
 Packet::~Packet()
 {}
@@ -126,6 +128,14 @@ void Packet::makeIn(unsigned char header[HLEN], unsigned char data[])
 	data_ = data; //may be just 0
 }
 
+bool Packet::isMade() const
+{
+	if (length_)
+		return true;
+	else
+		return false;
+}
+
 unsigned char Packet::totalLength() const
 {
 	return length_;
@@ -151,6 +161,16 @@ unsigned char Packet::ackNumber() const
 	return ackNumber_;
 }
 
+bool Packet::flagSet(const int test) const
+{
+	std::bitset<8> flags (flags_);
+	
+	if (flags.test(test))
+		return true;
+	else
+		return false;
+}
+
 unsigned char Packet::flags() const
 {
 	return flags_;
@@ -158,12 +178,15 @@ unsigned char Packet::flags() const
 
 unsigned char *Packet::data() const
 {
-	return data_;
+	if (length_ > HLEN)
+		return data_;
+	else 
+		return 0;
 }
 
 unsigned char Packet::dataLength() const
 {
-	if (length_ >= HLEN)
+	if (length_ > HLEN)
 		return (length_-HLEN);
 	else 
 		return 0;
