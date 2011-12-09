@@ -29,13 +29,16 @@
 #include "transport.h"
 #include "packet.h"
 
+// Table of reserved ports
 bool Transport::sPortsInUse_[256] = {false};
 
+// Default constructor
 Transport::Transport()
 {
 	port_ = 0;
 }
 
+// Destructor
 Transport::~Transport()
 {
 	sPortsInUse_[port_] = false;
@@ -48,8 +51,7 @@ Transport::~Transport()
 // Returns a Packet object from chars contained in a circular buffer. It is
 // supposed, that the buffer is operated in a "FIFO"-like way, so that the data
 // gotten from buffer.front() is the data first inserted (with push_back()).
-//
-// Elements 
+// Data is not deleted from the buffer until 
 Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *buffer)
 {
 	Packet packet;
@@ -63,10 +65,9 @@ Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *bu
 
 		//Examine the total packet length (4th header byte) to get any data it might contain
 		unsigned char totalLength = header[3];
-		int bufferLength = buffer->end() - buffer->begin();
 		unsigned char *data;
 
-		if ((totalLength > HLEN) && ((unsigned char)bufferLength > (totalLength-HLEN))) {
+		if ((totalLength > HLEN) && ((unsigned char)buffer->size() > (totalLength-HLEN))) {
 			unsigned char dataLength = header[3]-HLEN;
 			data = new unsigned char[dataLength];
 			for (unsigned char i=0; i<dataLength; i++) {
@@ -74,7 +75,7 @@ Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *bu
 			}
 		}
 		else {
-			throw "assemblePacketFromCharBuffer() buffer does not contain a complete data array";
+			throw "assemblePacketFromCharBuffer() Buffer does not contain a complete data array";
 			return packet; //empty packet
 		}
 
@@ -84,14 +85,26 @@ Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *bu
 		return packet;
 	}
 	else {
-		throw "assemblePacketFromCharBuffer() buffer does not contain a complete header";
+		throw "assemblePacketFromCharBuffer() Buffer does not contain a complete header";
 		return packet; //empty packet
 	}
 }
 
-void Transport::packetToCharBuffer(boost::circular_buffer<unsigned char> *, Packet packet)
+// packetToCharBuffer
+// Places a Packet object as a char array in a boost circular buffer. If there
+// is not enough space in the buffer an exception is thrown.
+void Transport::packetToCharBuffer(boost::circular_buffer<unsigned char> *buffer, Packet packet)
 {
-	
+	unsigned char *packetAsArray = packet.getAsArray();
+	int availableSpace = buffer->capacity() - buffer->size();
+	if (availableSpace >= packet.totalLength()) {
+		for (unsigned char i=0; i<packet.totalLength(); i++) {
+			buffer->push_back(packetAsArray[i]);
+		}
+	}
+	else {
+		throw "packetToCharBuffer() not enough available space in buffer";
+	}
 }
 
 void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
@@ -104,6 +117,9 @@ void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
 	}
 }
 
+// setPort()
+// Gives a certain instance of the class a port number and reserves
+// it, making it unavailable to other class instances.
 void Transport::setPort(const unsigned char newPort)
 {
 	if ((newPort > 19) && (!sPortsInUse_[newPort])) { //Port 0-19 are reserved. This could have a nicer solution
@@ -126,11 +142,16 @@ void Transport::setPort(const unsigned char newPort)
 	}
 }
 
+// port()
+// Returns this instances port number
 unsigned char Transport::port() const
 {
 	return port_;
 }
 
+// isPortSet()
+// True if port number has been set correctly. Can be used to 
+// self-test.
 bool Transport::isPortSet(const unsigned char enteredPort) const
 {
 	if (enteredPort) {
@@ -147,25 +168,36 @@ bool Transport::isPortSet(const unsigned char enteredPort) const
 	}
 }
 
+// getPortTable()
+// Returns a pointer to the array that contains reserved ports.
 bool *Transport::getPortTable() const
 {
 	bool *pointer = sPortsInUse_;
 	return pointer;
 }
 
+// decode()
+// Main public up-stream packet processing method. This is called by the
+// backbone when there is incoming data available to Transport from 
+// the underlying layer.
 void Transport::decode(boost::circular_buffer<unsigned char> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
-	//Make packet from 
+	//Make packet from char array in buffer
 	Packet packet = packetFromCharBuffer(DllTransportUp);
 
-	if (!packet.checksumValid()) {
+	if (packet.checksumValid()) {
+		packetToCharBuffer(TransportApiUp, packet);
+	}
+	else {
 		throw "assemblePacketFromCharBuffer() assembled packet checksum invalid";
 	}
-
-
 }
 
+// encode()
+// Main public down-stream packet processing method. This is called by the
+// backbone when there is incoming data available to Transport from 
+// the above layer.
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
                        boost::circular_buffer<Packet> *TransportDllDown)
 {

@@ -39,6 +39,7 @@ void testToFromCharPacket();
 
 int main()
 {
+	testToFromCharPacket();
 
 	return 0;
 }
@@ -72,20 +73,24 @@ void testToFromCharPacket()
 		}
 		std::cout << std::endl;
 
-		std::cout << "Circ buffer length: "  << (cb->end() - cb->begin()) << std::endl;
+		std::cout << "Circ buffer length: "  << cb->size() << std::endl;
+		std::cout << "Circ buffer space available: " << (cb->capacity() - cb->size()) << std::endl;
+		//see the data in buffer
+		for (unsigned char i=0; i<packet.totalLength(); i++) {
+			std::cout << (int)cb->at(i) << " "; //Data is off-set by HLEN
+		}
+		std::cout << std::endl;
 
-		tp.decode(cb, cb);
 
-		cb->push_back(2);
-		cb->push_back(2);
+		tp.decode(cb, cb); //
 
-		std::cout << "Circ buffer length: " << (cb->end() - cb->begin()) << std::endl;
-
-		////see the data in buffer
-		//for (unsigned char i=0; i<packet.totalLength(); i++) {
-		//	std::cout << (int)cb->at(i) << " "; //Data is off-set by HLEN
-		//}
-		//std::cout << std::endl;
+		std::cout << "Circ buffer length: "  << cb->size() << std::endl;
+		std::cout << "Circ buffer space available: " << (cb->capacity() - cb->size()) << std::endl;
+		//see the data in buffer
+		for (unsigned char i=0; i<packet.totalLength(); i++) {
+			std::cout << (int)cb->at(i) << " "; //Data is off-set by HLEN
+		}
+		std::cout << std::endl;
 
 	}
 	catch (char *str) {
