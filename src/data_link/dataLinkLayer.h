@@ -67,15 +67,17 @@ private:
 
 	datalist frameRecList[8];					//list of received data
 	datalist frameSendList[8];					//list of send data
+
 	int currentReceiver;						//datagrams are processed for this receiver (0:3)
 	int nextInSendSequence;						//points to the next usable sequence number.
 	bool receiverNeedsUpdate;					//set on end of datagram, cleared on receiver update
 	bool awaitsReply;							//set on end of transmission, clear when reply is received
 	time_t timestampAwaitsReply;				//system time @ end of transmission
+
 	bool tokenAlreadyOffered;					//set on offerToken, clear on passToken
 	time_t timestampTokenOffered;				//system time when token was offered
-	time_t timestampToken;						//system time when token was received
 
+	time_t timestampToken;						//system time when token was received
 	bool hasToken;								//1 means have token, 0 means have no token
 	int nextStation;							//next station to be offered the token
 
@@ -112,11 +114,13 @@ private:
 	void fatalError();							//reports critical error
 
 public:
-	DataLinkLayer(int,bool);							//default constructor
+	DataLinkLayer(int,bool);					//construct dll with arguments address and starts with token
+
 	void decode(boost::circular_buffer< unsigned int >*,		//decode is called from backbone
 				boost::circular_buffer< Frame >*,
 				boost::circular_buffer< Frame >*,
 				boost::circular_buffer< unsigned int >*);
+
 	void encode(boost::circular_buffer< unsigned int >*,		//encode is called from backbone
 				boost::circular_buffer< Frame >*,
 				boost::circular_buffer< Frame >*,

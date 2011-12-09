@@ -115,6 +115,7 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 		inputRight.push_back(byte1);
 	}
 
+	Frame test(0,15,1,14,2,13);
 	//instantiate data link layer
 	DataLinkLayer Leftdll(0,1); //addr = 0, has token
 	DataLinkLayer Rightdll(1,0); //addr = 1, has no token
