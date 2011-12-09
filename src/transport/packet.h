@@ -50,7 +50,7 @@ private:
 	unsigned short int checksum_;
 	unsigned char *data_;
 	
-	unsigned short int calcChecksum();
+	unsigned short int calcChecksum() const;
 
 public:
 	Packet();
