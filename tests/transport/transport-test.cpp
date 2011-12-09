@@ -24,22 +24,73 @@
 #
 # 
 ********************************************************************************/
-
+#include <boost/circular_buffer.hpp>
 #include <iostream>
 #include <iomanip>
 #include <bitset>
 #include "transport.h"
+#include "packet.h"
+
 
 void portAssignTest();
 void packetMakeTest();
 void portList();
-
+void testToFromCharPacket();
 
 int main()
 {
-	portAssignTest();
 
 	return 0;
+}
+
+
+void testToFromCharPacket()
+{
+	Transport tp;
+	tp.setPort();
+
+	Packet packet;
+
+	boost::circular_buffer<unsigned char> buf(255);
+	boost::circular_buffer<unsigned char> *cb = &buf;
+
+	unsigned char data[45] = {1,5,7,3,2,4,5,1,5,7,5,6,47,4,9,7};
+	unsigned char length = 45;
+
+	try {
+		packet.make("ack",1,1,1,1,data,length,true);
+	
+		std::cout << "Checksum validity: " << packet.checksumValid() << std::endl;
+		std::cout << "Total package length: " << (int)packet.totalLength() << std::endl;
+
+		unsigned char *packetAsArray = packet.getAsArray();
+		
+		//fill boost circ buffer
+		for (unsigned char i=0; i<packet.totalLength(); i++) {
+			cb->push_back(packetAsArray[i]);
+			std::cout << (int)packetAsArray[i] << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "Circ buffer length: "  << (cb->end() - cb->begin()) << std::endl;
+
+		tp.decode(cb, cb);
+
+		cb->push_back(2);
+		cb->push_back(2);
+
+		std::cout << "Circ buffer length: " << (cb->end() - cb->begin()) << std::endl;
+
+		////see the data in buffer
+		//for (unsigned char i=0; i<packet.totalLength(); i++) {
+		//	std::cout << (int)cb->at(i) << " "; //Data is off-set by HLEN
+		//}
+		//std::cout << std::endl;
+
+	}
+	catch (char *str) {
+		std::cout << "EXCEPTION: " << str << std::endl;
+	}
 }
 
 

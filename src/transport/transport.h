@@ -49,11 +49,10 @@ private:
 	boost::circular_buffer<unsigned char> *DllTransportUp_;
 	boost::circular_buffer<unsigned char> *TransportApiUp_;
 
-	//Up-going packet handling
-	Packet assemblePacketFromBuffer(boost::circular_buffer<unsigned char> *);
+	//Packet handling
+	Packet packetFromCharBuffer(boost::circular_buffer<unsigned char> *);
+	void packetToCharBuffer(boost::circular_buffer<unsigned char> *, Packet);
 	void processUpboundPacket(Packet);
-
-	//Down-going packet handling
 
 public:
 	Transport();
@@ -64,14 +63,10 @@ public:
 	bool isPortSet(const unsigned char enteredPort=0) const;
 	bool *getPortTable() const;
 
-	void decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-	            boost::circular_buffer<Packet> *TransportDllDown,
-	            boost::circular_buffer<unsigned char> *DllTransportUp,
+	void decode(boost::circular_buffer<unsigned char> *DllTransportUp,
 	            boost::circular_buffer<unsigned char> *TransportApiUp);
 	            
 	void encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-	            boost::circular_buffer<Packet> *TransportDllDown,
-	            boost::circular_buffer<unsigned char> *DllTransportUp,
-	            boost::circular_buffer<unsigned char> *TransportApiUp);
+	            boost::circular_buffer<Packet> *TransportDllDown);
 };
 #endif //TRANSPORT_H

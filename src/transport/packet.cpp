@@ -33,7 +33,7 @@
 
 Packet::Packet()
 {
-	length_ = 0; //total length is used to test if the packet is "made"; make sure it's 0 initially
+	length_ = 0; //length is used to test if the packet is "made"; make sure it's 0 initially
 }
 
 Packet::~Packet()
@@ -42,8 +42,15 @@ Packet::~Packet()
 unsigned short int Packet::calcChecksum()
 {
 	boost::crc_ccitt_type crc;
-	crc.process_bytes(&sourcePort_, (HLEN-2)); //Header minus the checksum field
-	crc.process_bytes(data_, (length_-HLEN)); //Data
+
+	crc.process_byte(sourcePort_);
+	crc.process_byte(destPort_);
+	crc.process_byte(flags_);
+	crc.process_byte(length_);
+	crc.process_byte(seqNumber_);
+	crc.process_byte(ackNumber_);
+	crc.process_bytes(data_, (length_-HLEN));
+
 	return crc.checksum();
 }
 
@@ -116,7 +123,7 @@ void Packet::make(const char type[],
 	}
 }
 
-void Packet::makeIn(unsigned char header[HLEN], unsigned char data[])
+void Packet::makeFromArrays(unsigned char header[HLEN], unsigned char data[])
 {
 	sourcePort_ = header[0];
 	destPort_ = header[1];
@@ -126,6 +133,54 @@ void Packet::makeIn(unsigned char header[HLEN], unsigned char data[])
 	ackNumber_ = header[5];
 	checksum_ = (header[6]<<8)|(header[7]);
 	data_ = data; //may be just 0
+}
+
+unsigned char **Packet::getAsPointerArray() //untested!
+{
+	if (length_) {
+		unsigned char **output = new unsigned char*[length_];
+		output[0] = &sourcePort_;
+		output[1] = &destPort_;
+		output[2] = &flags_;
+		output[3] = &length_;
+		output[4] = &seqNumber_;
+		output[5] = &ackNumber_;
+		unsigned char c1 = (unsigned char)(checksum_>>8);
+		unsigned char c2 = (unsigned char)(checksum_);
+		output[6] = &c1;
+		output[7] = &c2;
+		if (length_ > HLEN) {
+			output[8] = data_;
+		}
+		return output;
+	}
+	else {
+		return 0;
+	}
+}
+
+unsigned char *Packet::getAsArray()
+{
+	if (length_) {
+		unsigned char *output = new unsigned char[length_];
+		output[0] = sourcePort_;
+		output[1] = destPort_;
+		output[2] = flags_;
+		output[3] = length_;
+		output[4] = seqNumber_;
+		output[5] = ackNumber_;
+		output[6] = (unsigned char)(checksum_>>8);
+		output[7] = (unsigned char)(checksum_);
+		if (length_ > HLEN) {
+			for (int i=0; i<(length_-HLEN); i++) {
+				output[i+HLEN] = data_[i];
+			}
+		}
+		return output;
+	}
+	else {
+		return 0;
+	}
 }
 
 bool Packet::isMade() const

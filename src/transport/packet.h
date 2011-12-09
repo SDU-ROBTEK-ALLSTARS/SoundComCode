@@ -65,7 +65,9 @@ public:
 	          unsigned char data[]=0,
 	          const unsigned char dataLength=0,
 	          bool addChecksum=true);
-	void makeIn(unsigned char header[HLEN], unsigned char data[]);
+	void makeFromArrays(unsigned char header[HLEN], unsigned char data[]);
+	unsigned char **getAsPointerArray(); //untested!
+	unsigned char *getAsArray(); //memory-inefficient (and propably not needed for normal use)
 
 	bool isMade() const;
 	unsigned char totalLength() const;

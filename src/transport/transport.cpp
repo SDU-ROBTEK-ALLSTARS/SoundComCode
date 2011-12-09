@@ -43,31 +43,55 @@ Transport::~Transport()
 
 //void connect();
 
-Packet Transport::assemblePacketFromBuffer(boost::circular_buffer<unsigned char> *buffer)
+// assemblePacketFromCharBuffer()
+//
+// Returns a Packet object from chars contained in a circular buffer. It is
+// supposed, that the buffer is operated in a "FIFO"-like way, so that the data
+// gotten from buffer.front() is the data first inserted (with push_back()).
+//
+// Elements 
+Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *buffer)
 {
 	Packet packet;
-	if (!buffer->empty()) {
+
+	if (buffer->size() >= HLEN) {
 		//Get header off of buffer (HLEN long as defined in packet.h)
 		unsigned char header[HLEN];
 		for (unsigned char i=0; i<HLEN; i++) {
-			header[i] = buffer->front();
-			buffer->pop_front();
+			header[i] = buffer->at(i);
 		}
-		//Examine the total packet length (4th header byte) to get any data
+
+		//Examine the total packet length (4th header byte) to get any data it might contain
+		unsigned char totalLength = header[3];
+		int bufferLength = buffer->end() - buffer->begin();
 		unsigned char *data;
-		if (header[3] > HLEN) {
+
+		if ((totalLength > HLEN) && ((unsigned char)bufferLength > (totalLength-HLEN))) {
 			unsigned char dataLength = header[3]-HLEN;
 			data = new unsigned char[dataLength];
 			for (unsigned char i=0; i<dataLength; i++) {
-				data[i] = buffer->front();
-				buffer->pop_front();
+				data[i] = buffer->at(i+HLEN); //Data is off-set by HLEN
 			}
 		}
-		//Now put collected data in the established packet structure
-		packet.makeIn(header, data);
+		else {
+			throw "assemblePacketFromCharBuffer() buffer does not contain a complete data array";
+			return packet; //empty packet
+		}
+
+		//Both header and data was succesfully collected
+		packet.makeFromArrays(header, data);
+		buffer->erase_begin(totalLength);
 		return packet;
 	}
-	return packet; //empty packet
+	else {
+		throw "assemblePacketFromCharBuffer() buffer does not contain a complete header";
+		return packet; //empty packet
+	}
+}
+
+void Transport::packetToCharBuffer(boost::circular_buffer<unsigned char> *, Packet packet)
+{
+	
 }
 
 void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
@@ -129,17 +153,20 @@ bool *Transport::getPortTable() const
 	return pointer;
 }
 
-void Transport::decode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-                       boost::circular_buffer<Packet> *TransportDllDown,
-                       boost::circular_buffer<unsigned char> *DllTransportUp,
+void Transport::decode(boost::circular_buffer<unsigned char> *DllTransportUp,
                        boost::circular_buffer<unsigned char> *TransportApiUp)
 {
-	
+	//Make packet from 
+	Packet packet = packetFromCharBuffer(DllTransportUp);
+
+	if (!packet.checksumValid()) {
+		throw "assemblePacketFromCharBuffer() assembled packet checksum invalid";
+	}
+
+
 }
 
 void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-                       boost::circular_buffer<Packet> *TransportDllDown,
-                       boost::circular_buffer<unsigned char> *DllTransportUp,
-                       boost::circular_buffer<unsigned char> *TransportApiUp)
+                       boost::circular_buffer<Packet> *TransportDllDown)
 {
 }
