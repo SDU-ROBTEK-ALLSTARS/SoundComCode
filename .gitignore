@@ -11,9 +11,13 @@
 *.la
 *.a
 
-#OS junk files
+#OS files
 [Tt]humbs.db
 *.DS_Store
+*.project
+*.cproject
+/Debug/*
+/Default/*
 
 #Visual Studio files
 *.[Oo]bj
