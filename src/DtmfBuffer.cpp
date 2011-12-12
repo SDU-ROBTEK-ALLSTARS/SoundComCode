@@ -31,22 +31,24 @@
 #
 *******************************************************************************/
 #include "DtmfBuffer.h"
-DtmfBuffer::DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity,int datagram_size, int frame_size)
+DtmfBuffer::DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity)
 {
-	datagramIn = new CircularCharArrayBuffer(datagram_size,datagramInCapacity);
-	datagramOut  = new CircularCharArrayBuffer(datagram_size,datagramOutCapacity);
-	frameIn  = new CircularCharArrayBuffer(frame_size,frameInCapacity);
-	frameOut  = new CircularCharArrayBuffer(frame_size,frameOutCapacity);
-	msgBufferIn = new DtmfMsgBuffer();
-	msgBufferOut = new DtmfMsgBuffer();
+	//datagramIn   = new boost::circular_buffer<Datagram>(datagramInCapacity);
+	//datagramOut   = new boost::circular_buffer<Datagram>(datagramInCapacity);
+	dllTransportUp   = new boost::circular_buffer<unsigned int>(datagramInCapacity);
+	transportDllDown = new boost::circular_buffer<unsigned int>(datagramInCapacity);
+	physicalDllUp    = new boost::circular_buffer<Frame>(frameInCapacity);
+	dllPhysicalDown  = new boost::circular_buffer<Frame>(frameOutCapacity);
+	apiTransportDown = new DtmfMsgBuffer();
+	transportApiUp   = new DtmfMsgBuffer();
 }
 
 DtmfBuffer::~DtmfBuffer()
 {
-	delete datagramIn;
-	delete datagramOut;
-	delete frameIn;
-	delete frameOut;
-	delete msgBufferIn;
-	delete msgBufferOut;
+	delete physicalDllUp;
+	delete dllPhysicalDown;
+	delete transportDllDown;
+	delete dllTransportUp;	
+	delete apiTransportDown;
+	delete transportApiUp;
 }

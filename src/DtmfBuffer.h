@@ -31,22 +31,44 @@
 #
 *******************************************************************************/
 
+
+
+
+
+
+
 #ifndef DTMFBUFFER_H
 #define DTMFBUFFER_H
-#include "CircularCharArrayBuffer.h"
-#include "DtmfMsgBuffer.h"
+
+//TODO: PLACEHOLDER  OBTAIN THE CORRECT FROM RUDDI 
+class DtmfMsgBuffer
+{
+private:
+public:
+	void pushMsg(){};
+	void pullMsg(){};
+	unsigned int count(){return 1;};
+	bool empty(){return false;};
+};
+//PLACEHOLDER END
+
+#include <boost/circular_buffer.hpp>
+#include "frame.h"
 
 class DtmfBuffer
 {
 private:
 public:
-	CircularCharArrayBuffer * datagramIn;
-	CircularCharArrayBuffer * datagramOut;
-	CircularCharArrayBuffer * frameIn;
-	CircularCharArrayBuffer * frameOut;
-	DtmfMsgBuffer * msgBufferIn;
-	DtmfMsgBuffer * msgBufferOut;
-	DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity,int datagram_size, int frame_size);
+	
+	boost::circular_buffer<Frame>		 * physicalDllUp;
+	boost::circular_buffer<Frame>		 * dllPhysicalDown;
+	//boost::circular_buffer<Datagram>	 * transportDllDown; 
+	//boost::circular_buffer<Datagram>	 * dllTransportUp;
+	boost::circular_buffer<unsigned int> * transportDllDown; //PLACEHOLDER
+	boost::circular_buffer<unsigned int> * dllTransportUp;	 //PLACEHOLDER
+	DtmfMsgBuffer * apiTransportDown;
+	DtmfMsgBuffer * transportApiUp;
+	DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity);
 	~DtmfBuffer();
 };
 #endif DTMFBUFFER_H

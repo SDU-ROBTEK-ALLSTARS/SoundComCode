@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     datalinklayer.h
+# File:     DtmfDatalinkLayer.h
 # Project:  DtmfProject
 # Version:  2.0
 # Platform:	PC/Mac/Linux
@@ -31,8 +31,8 @@
 # Processing frames into datagrams and datagrams into frames
 #                           (Denne header er dikteret af den onde diktator Kent)
 *******************************************************************************/
-#ifndef DATALINKLAYER_H_
-#define DATALINKLAYER_H_
+#ifndef DtmfDatalinkLayer_H_
+#define DtmfDatalinkLayer_H_
 
 //defines needed for data link layer
 //#define 	MY_ADDRESS			1
@@ -60,7 +60,7 @@ struct datalist									//structure for unfinished transmissions
 };
 
 //*****     CLASS DECLARATION     *****
-class DataLinkLayer
+class DtmfDatalinkLayer
 {
 private:
 	int MY_ADDRESS;
@@ -112,17 +112,18 @@ private:
 	void fatalError();							//reports critical error
 
 public:
-	DataLinkLayer(int,bool);							//default constructor
-	void decode(boost::circular_buffer< unsigned int >*,		//decode is called from backbone
-				boost::circular_buffer< Frame >*,
-				boost::circular_buffer< Frame >*,
-				boost::circular_buffer< unsigned int >*);
-	void encode(boost::circular_buffer< unsigned int >*,		//encode is called from backbone
-				boost::circular_buffer< Frame >*,
-				boost::circular_buffer< Frame >*,
-				boost::circular_buffer< unsigned int >*);
-
+	DtmfDatalinkLayer(int,bool);							//default constructor
+	void decode(boost::circular_buffer< unsigned int > *downIn, //decode is called from backbone
+				boost::circular_buffer< Frame > *downOut,
+				boost::circular_buffer< Frame > *upIn,
+				boost::circular_buffer< unsigned int > *upOut);
+	
+	void encode(boost::circular_buffer< unsigned int > *downIn, //encode is called from backbone
+				boost::circular_buffer< Frame > *downOut,
+				boost::circular_buffer< Frame > *upIn,
+				boost::circular_buffer< unsigned int > *upOut);
+	bool needsAttention();	
 };
-#endif /* DATALINKLAYER_H_ */
+#endif /* DtmfDatalinkLayer_H_ */
 
 //End Of File

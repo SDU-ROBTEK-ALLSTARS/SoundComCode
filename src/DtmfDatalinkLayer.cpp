@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     datalinklayer.cpp
+# File:     DtmfDatalinkLayer.cpp
 # Project:  DtmfProject
 # Version:  2.0
 # Platform:	PC/Mac/Linux
@@ -33,10 +33,10 @@
 *******************************************************************************/
 
 //*****     INCLUDES     *****
-#include 	"dataLinkLayer.h"
+#include 	"DtmfDatalinkLayer.h"
 
 //*****     CLASS IMPLEMENTATION     *****
-DataLinkLayer::DataLinkLayer(int addr,bool tok)
+DtmfDatalinkLayer::DtmfDatalinkLayer(int addr,bool tok)
 {
 	if(tok == 1)
 	{
@@ -64,7 +64,7 @@ DataLinkLayer::DataLinkLayer(int addr,bool tok)
 
 }
 //*****
-void DataLinkLayer::encode(
+void DtmfDatalinkLayer::encode(
 		boost::circular_buffer< unsigned int > *downIn,
 		boost::circular_buffer< Frame > *downOut,
 		boost::circular_buffer< Frame > *upIn,
@@ -175,7 +175,7 @@ void DataLinkLayer::encode(
 
 }
 //*****
-void DataLinkLayer::decode(
+void DtmfDatalinkLayer::decode(
 		boost::circular_buffer< unsigned int > *downIn,
 		boost::circular_buffer< Frame > *downOut,
 		boost::circular_buffer< Frame > *upIn,
@@ -202,7 +202,7 @@ void DataLinkLayer::decode(
 	}
 }
 //*****
-void DataLinkLayer::processFrame(Frame incoming)
+void DtmfDatalinkLayer::processFrame(Frame incoming)
 {
 	if(incoming.checkParity()==0)
 	{
@@ -278,7 +278,7 @@ void DataLinkLayer::processFrame(Frame incoming)
 	}
 }
 //*****
-void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
+void DtmfDatalinkLayer::makeFrame(unsigned char header,unsigned  char data)
 {
 	//push frame to buffer
 	frameDown->push_back(Frame(header,data));
@@ -288,7 +288,7 @@ void DataLinkLayer::makeFrame(unsigned char header,unsigned  char data)
 	#endif
 }
 //*****
-void DataLinkLayer::endDatagram()
+void DtmfDatalinkLayer::endDatagram()
 {
 	#ifdef DEBUG
 	DEBUG_OUT << "Setting EOT-bit..." << std::endl;
@@ -308,7 +308,7 @@ void DataLinkLayer::endDatagram()
 	frameDown->push_back(Frame(tempHeader,tempData));
 }
 //*****
-void DataLinkLayer::acceptFrame(Frame incoming)
+void DtmfDatalinkLayer::acceptFrame(Frame incoming)
 {
 	//put frame in list
 	frameRecList[incoming.sequence].dataByte = incoming.data;
@@ -327,7 +327,7 @@ void DataLinkLayer::acceptFrame(Frame incoming)
 		checkFrameReceiveList();
 }
 //*****
-void DataLinkLayer::discardFrame()
+void DtmfDatalinkLayer::discardFrame()
 {
 	//discard frame
 	#ifdef DEBUG
@@ -335,7 +335,7 @@ void DataLinkLayer::discardFrame()
 	#endif
 }
 //*****
-void DataLinkLayer::processDatagram(unsigned int incoming)
+void DtmfDatalinkLayer::processDatagram(unsigned int incoming)
 {
 	//update receiver if incoming is first byte of new datagram
 	if(receiverNeedsUpdate == 1)
@@ -360,14 +360,14 @@ void DataLinkLayer::processDatagram(unsigned int incoming)
 	nextInSendSequence++;
 }
 //*****
-void DataLinkLayer::fatalError()
+void DtmfDatalinkLayer::fatalError()
 {
 	//something is very bad...
 	#ifdef DEBUG
 	DEBUG_OUT << "A fatal error has occured!" << std::endl;
 	#endif
 }
-void DataLinkLayer::tokenOffered()
+void DtmfDatalinkLayer::tokenOffered()
 {
 	//set time
 	time ( &timestampToken );
@@ -387,7 +387,7 @@ void DataLinkLayer::tokenOffered()
 	makeFrame((2<<TYPE)|(MY_ADDRESS<<ADDRESS),~0);
 }
 //*****
-bool DataLinkLayer::checkToken()
+bool DtmfDatalinkLayer::checkToken()
 {
 	//check current time
 	time_t nowClock;
@@ -442,7 +442,7 @@ bool DataLinkLayer::checkToken()
 	return 0;
 }
 //*****
-void DataLinkLayer::offerToken()
+void DtmfDatalinkLayer::offerToken()
 {
 	//increase token receiver
 	nextStation++;
@@ -472,7 +472,7 @@ void DataLinkLayer::offerToken()
 	}
 }
 //*****
-void DataLinkLayer::passToken()
+void DtmfDatalinkLayer::passToken()
 {
 	//release token
 	hasToken = 0;
@@ -483,7 +483,7 @@ void DataLinkLayer::passToken()
 	#endif
 }
 //*****
-void DataLinkLayer::clearFrameReceiveList()
+void DtmfDatalinkLayer::clearFrameReceiveList()
 {
 	#ifdef DEBUG
 		DEBUG_OUT << "clearing receive list" << std::endl;
@@ -497,7 +497,7 @@ void DataLinkLayer::clearFrameReceiveList()
 	}
 }
 //*****
-void DataLinkLayer::clearFrameSendList()
+void DtmfDatalinkLayer::clearFrameSendList()
 {
 	#ifdef DEBUG
 		DEBUG_OUT << "clearing send list" << std::endl;
@@ -513,7 +513,7 @@ void DataLinkLayer::clearFrameSendList()
 	nextInSendSequence = 0;
 }
 //*****
-void DataLinkLayer::checkFrameReceiveList()
+void DtmfDatalinkLayer::checkFrameReceiveList()
 {
 	//initialize variable to hold EOT, goes and nogoes
 	bool transmissionStop = 0;
@@ -563,7 +563,7 @@ void DataLinkLayer::checkFrameReceiveList()
 		requestResend(request);
 }
 //*****
-void DataLinkLayer::passDataUpwards()
+void DtmfDatalinkLayer::passDataUpwards()
 {
 	bool transmissionStop = 0;
 
@@ -605,7 +605,7 @@ void DataLinkLayer::passDataUpwards()
 	clearFrameReceiveList();
 }
 //*****
-void DataLinkLayer::requestResend(int request)
+void DtmfDatalinkLayer::requestResend(int request)
 {
 	#ifdef DEBUG
 	for(int j=0;j<8;j++)
@@ -617,7 +617,7 @@ void DataLinkLayer::requestResend(int request)
 	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
 }
 //*****
-void DataLinkLayer::replyFromReceiver(Frame incoming)
+void DtmfDatalinkLayer::replyFromReceiver(Frame incoming)
 {
 	awaitsReply = 0;
 	if(incoming.data == 255)
@@ -642,7 +642,7 @@ void DataLinkLayer::replyFromReceiver(Frame incoming)
 	}
 }
 //*****
-void DataLinkLayer::resendData(unsigned int request)
+void DtmfDatalinkLayer::resendData(unsigned int request)
 {
 	//iterate through databyte
 	for(int i=0;i<8;i++)
@@ -659,6 +659,38 @@ void DataLinkLayer::resendData(unsigned int request)
 	}
 	//set EOT bit in last frame
 	endDatagram();
+}
+
+//*****
+bool DtmfDatalinkLayer::needsAttention()
+{
+	time_t nowClock;
+	time (&nowClock);
+
+	//check timestamps
+	if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+	{
+#ifdef DEBUG
+		DEBUG_OUT << "Time to re-offer token..." << std::endl;
+#endif
+		return 1;
+	}
+	if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+	{
+#ifdef DEBUG
+		DEBUG_OUT << "Time to resend data..." << std::endl;
+#endif
+		return 1;
+	}
+	if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+	{
+#ifdef DEBUG
+		DEBUG_OUT << "Time to pass token..." << std::endl;
+#endif
+		return 1;
+	}
+	return 0;
+
 }
 
 //End Of File

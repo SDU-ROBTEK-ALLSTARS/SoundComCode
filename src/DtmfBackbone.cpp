@@ -30,23 +30,24 @@
 # Implementation of the class DtmfBackbone
 #
 *******************************************************************************/
+
 #include "DtmfBackbone.h"
-DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferIn,DtmfMsgBuffer *& msgBufferOut )
+
+//The backbone instantiates the buffers and individual layers, and ends off with launching its own operator thread. 
+//Since the api constructs the backbone, a pointer to it, and its message buffers is given as well.
+DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp)
 {
 	//Instantiate the layers, and threads.
 	this->dtmfapi_ =  dtmfApi;
-	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE,DATAGRAM_SIZE,FRAME_SIZE);
-	this->dtmfDatalink_ = new DtmfDatalink();
+	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
+	this->dtmfDatalink_ = new DtmfDatalinkLayer(ADRESS,TOKEN_START);
 	this->dtmfPhysical_ = new DtmfPhysical();
 	this->dtmfSession_ = new DtmfSession();
-	this->portaudioInterface_ = new PortaudioInterface(); //Is this something the physical layers does for me ?
 	this->i = 0;
-
-	
+	msgBufferDown = this->dtmfBuffer_->apiTransportDown;
+	msgBufferUp = this->dtmfBuffer_->transportApiUp;
 	//Spawn the backbone thread, this must be the last thing to do. Object is running
 	workerThread_ = boost::thread(boost::ref(*this));
-	
-
 }
 DtmfBackbone::~DtmfBackbone()
 {
@@ -60,116 +61,157 @@ DtmfBackbone::~DtmfBackbone()
 //Main dispatching loop
 void DtmfBackbone::operator()()
 {
-	//TODO: follow diagram
 	while(true)
-	{
-
-
-
-
-
+	{	
+		//----------Primary thresholds-----------
 		
-		std::cout << "test";
-		//Primary thresholds
-		if((PFRAME_IN > T_PFRAME_MAX)&&(ROOM_FOR_FRAME))
+		//----------  Physical layer section ----
+		//The goal here is to ensure that the physical layer
+		//has enough samples, so it never stops playing before all data is "out".
+		//At the same time, the frames decoded must be moved away fast enough, 
+		//so the audio buffer never overruns.
+		
+		if((UP_PFRAME_AMOUNT > T_PFRAME_MAX)&&
+		   (!this->dtmfBuffer_->physicalDllUp->full()))
 		{
 			moveFrameIn();
 		}
-		else if((PFRAME_OUT < T_PFRAME_MIN)&&(FRAME_AVAILABLE))
+		else if((PFRAME_DOWN_AMOUNT < T_PFRAME_MIN)&&
+				(!this->dtmfBuffer_->dllPhysicalDown->empty()))
 		{
 			moveFrameOut();
 		}
-		else if((FRAME_IN > T_FRAME_MAX)&&(ROOM_FOR_DATAGRAM))
+
+
+		//--------- Data link section --------
+		//The datalink layer decodes frames and encodes datagrams. Since the datalink layer has some token handling
+		//it must always call decode then encode, in that order. This means that 
+		else if(this->dtmfDatalink_->needsAttention()&&this->hasRoomForDatalinkAction())
 		{
-			decodeFrame();
+			dataLinkAction();
 		}
-		else if((FRAME_OUT < T_FRAME_MIN)&&(DATAGRAM_AVAILABLE))
+
+
+
+		else if((this->dtmfBuffer_->physicalDllUp->size() > T_FRAME_MAX)&& //Too many input frames waiting.
+			   (this->hasRoomForDatalinkAction()))
 		{
-			encodeDatagram();
+			dataLinkAction();
 		}
-		else if(DGRAM_IN > T_DGRAM_MAX)
+
+		else if((this->dtmfBuffer_->dllPhysicalDown->size() < T_FRAME_MIN)&&  //The physical layer will soon need more output frames.
+				(!this->dtmfBuffer_->transportDllDown->empty()) &&			  //and there is atleast 1 datagram ready to be encoded
+				(this->hasRoomForDatalinkAction())
+				)
+
+		{
+			dataLinkAction();
+		}
+
+
+		//------------ Network layer section ------------
+		else if(this->dtmfBuffer_->dllTransportUp->size() > T_DGRAM_MAX) //Too many datagrams waiting (the dll is about to clog itself)
 		{
 			decodeDatagram();
 		}
-		else if((DGRAM_OUT < T_DGRAM_MIN)&&(MESSAGE_AVAILABLE))
+
+		//Messages are waiting to be sent, and the dll is about to run out of work.
+		else if((this->dtmfBuffer_->transportDllDown->size() < T_DGRAM_MIN)&&(!this->dtmfBuffer_->apiTransportDown->empty()))
 		{
 			encodeMessage();
 		}
-		//General work
+		
+		
+		//-------------General work ------------
+		//If no buffer is above a max threshold, or belov a min threshold, the system is temporarily stable.
+		//Therefore messages will be moved through the buffers in any way possible.
+
+		
+		
 		else
 		{
 			i++;
 			i %= 6;
 			int j = 0;
 			bool workDone = false;
-			while(j<7)
+			while(j<7  && !workDone)
 			{
 				j++;
-				switch((i+j)%6 && !workDone)
+				switch((i+j)%6)
 				{
 				case 0:
-					if(OUT_MSG_AVAILABLE && ROOM_FOR_RESULT)
+					if(!this->dtmfBuffer_->apiTransportDown->empty()
+						&& hasRoomForMessageEncode())
 					{
 						workDone = true;
 						encodeMessage();
 					}
 					break;
 				case 1:
-					if(OUT_FRAME_AVAILABLE && ROOM_FOR_RESULT)
+					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && ROOM_FOR_PFRAME_DOWN)
 					{
 						workDone = true;
 						moveFrameOut();
 					}
 					break;
 				case 2:
-					if(IN_FRAME_AVAILABLE && ROOM_FOR_RESULT)
+					if(!this->dtmfBuffer_->physicalDllUp->empty() && hasRoomForDatalinkAction())
 					{
 						workDone = true;
-						decodeFrame();
+						dataLinkAction();
 					}
 					break;
 				case 3:
-					if(IN_PFRAME_AVAILABLE && ROOM_FOR_IN_FRAME)
+					if(UP_PFRAME_AVAILABLE && !this->dtmfBuffer_->physicalDllUp->full())
 					{
 						workDone = true;
 						moveFrameIn();
 					}
 					break;
 				case 4:
-					if(IN_DGRAM_AVAILABLE && ROOM_FOR_RESULT)
+					if(!this->dtmfBuffer_->dllTransportUp->empty())
 					{
 						workDone = true;
 						decodeDatagram();
 					}
 					break;
 				default: //case 5:
-					if(OUT_DGRAM_AVAILABLE && ROOM_FOR_RESULT)
+					if(!this->dtmfBuffer_->transportDllDown->empty() && hasRoomForDatalinkAction())
 					{
-						encodeDatagram();
+						dataLinkAction();
 					}
 					break;
 				}
-			//else sleep
-			boost::this_thread::sleep(boost::posix_time::milliseconds(SLEEPTIME_MSEC));
+				//else sleep
+				if(!workDone)
+				{
+					boost::this_thread::sleep(boost::posix_time::milliseconds(SLEEPTIME_MSEC));
+				}
 			}
-
-
-
-
-
 		}
-		
-		
 	}
 }
 
 
 
-//TODO: add actual encode/decode calls
-void DtmfBackbone::moveFrameIn()
+//TODO: add actual encode/decode calls, these will be available when people turn in their code >_>
+
+void DtmfBackbone::dataLinkAction()
 {
+	this->dtmfDatalink_->decode(
+		this->dtmfBuffer_->transportDllDown,
+		this->dtmfBuffer_->dllPhysicalDown,
+		this->dtmfBuffer_->physicalDllUp, 
+		this->dtmfBuffer_->dllTransportUp);
+	this->dtmfDatalink_->encode(
+		this->dtmfBuffer_->transportDllDown,
+		this->dtmfBuffer_->dllPhysicalDown,
+		this->dtmfBuffer_->physicalDllUp, 
+		this->dtmfBuffer_->dllTransportUp);
 }
-void DtmfBackbone::decodeFrame()
+
+#ifdef DEBUG
+void DtmfBackbone::moveFrameIn()
 {
 }
 void DtmfBackbone::decodeDatagram()
@@ -178,9 +220,17 @@ void DtmfBackbone::decodeDatagram()
 void DtmfBackbone::encodeMessage()
 {
 }
-void DtmfBackbone::encodeDatagram()
-{
-}
+
 void DtmfBackbone::moveFrameOut()
 {
 }
+
+bool DtmfBackbone::hasRoomForDatalinkAction()
+{
+	return true;
+}
+bool DtmfBackbone::hasRoomForMessageEncode()
+{
+	return true;
+}
+#endif DEBUG

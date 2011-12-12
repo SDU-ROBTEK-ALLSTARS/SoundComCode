@@ -1,30 +1,3 @@
-//Placeholders
-class placeholder
-{
-public:
-	void encode(char * inputUp,char * inputdown,char * outputUp,char * outputDown)
-	{
-	}
-	void decode(char * inputUp,char * inputdown,char * outputUp,char * outputDown)
-	{
-	}
-};
-
-typedef placeholder DtmfApi; //To simulate, randomly deposit in msgIn.
-typedef placeholder DtmfSession;
-typedef placeholder DtmfDatalink;
-typedef placeholder DtmfPhysical;
-
-typedef placeholder PortaudioInterface; //Essentially two buffers.
-
-
-//Everything above this line should be implemented by someone at some point.
-
-
-
-
-
-
 /*******************************************************************************
 # DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
 #
@@ -55,36 +28,66 @@ typedef placeholder PortaudioInterface; //Essentially two buffers.
 # Description
 #
 # The Backbone class is the main engine, dispatching the different layers of the
-# library to do work on the buffers.
+# library to do work on the buffers. It constructs the various layers(except API),
+# buffers and a runner thread, when it is constructed and destroys all those members when deleted.
+# The backbone class should not be instantiated by any class other than the API class, 
+# and not be deleted by any other class either.
 *******************************************************************************/
-
-
-
-
-
-
-
-//TODO: Arv fra rudis kode... han har  bedre thread handler!
 
 #ifndef DTMFBACKBONE_H
 #define DTMFBACKBONE_H
+#ifdef _DEBUG
+#define DEBUG
+#endif _DEBUG
+ 
+//Default values for buffers, these will be adjusted during testing, 
+#ifdef DEBUG
+const unsigned int T_PFRAME_MAX=				(10);
+const unsigned int T_PFRAME_MIN=				(20);
+const unsigned int FRAME_BUFFER_IN_SIZE=		(1000);
+const unsigned int FRAME_BUFFER_OUT_SIZE=		(1000);
+const unsigned int T_FRAME_MAX=					(5);
+const unsigned int T_FRAME_MIN=					(10);
+const unsigned int DATAGRAM_BUFFER_IN_SIZE=		(200);
+const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	(200);
+const unsigned int T_DGRAM_MAX=					(2);
+const unsigned int T_DGRAM_MIN=					(5);
+const unsigned int SLEEPTIME=					(10);
+const unsigned int SLEEPTIME_MSEC =				(1);
+const bool TOKEN_START =					    (true);
+const int ADRESS =								(5);
+const int MAX_FRAMES_PR_DATAGRAM =				(8);
+const int MAX_DATAGRAM_PR_MESSAGE =				(10);
+#endif DEBUG
+#ifndef DEBUG
+//Put final values here
+#endif
 
 
-//Default buffer værdier, pt bare bogus.
-#define T_TONE_MAX	(10)
-#define T_TONE_MIN   (20)
-#define T_FRAME_MAX	(5)
-#define T_FRAME_MIN (10)
-#define T_DGRAM_MAX (2)
-#define T_DGRAM_MIN (5)
-#define SLEEPTIME (10)
-#define FRAME_BUFFER_IN_SIZE (1000)
-#define FRAME_BUFFER_OUT_SIZE (1000)
-#define DATAGRAM_BUFFER_IN_SIZE (200)
-#define DATAGRAM_BUFFER_OUT_SIZE (200)
-#define DATAGRAM_SIZE (400)
-#define FRAME_SIZE (100)
-#define SLEEPTIME_MSEC (10)
+
+
+
+
+#ifdef DEBUG //PLACEHOLDER SECTION
+#define UP_PFRAME_AVAILABLE (false)
+#define UP_PFRAME_AMOUNT (0)
+#define ROOM_FOR_PFRAME_DOWN (true)
+#define PFRAME_DOWN_AMOUNT (100)
+class placeholder
+{
+public:
+	void encode(char * inputUp,char * inputdown,char * outputUp,char * outputDown)
+	{
+	}
+	void decode(char * inputUp,char * inputdown,char * outputUp,char * outputDown)
+	{
+	}
+};
+typedef placeholder DtmfApi; //To simulate, randomly deposit in msgIn.
+typedef placeholder DtmfSession;
+typedef placeholder DtmfPhysical;
+typedef placeholder PortaudioInterface; //Essentially two buffers, (from backbone perspective)
+#endif DEBUG //PLACEHOLDER END
 
 
 
@@ -96,9 +99,13 @@ typedef placeholder PortaudioInterface; //Essentially two buffers.
 
 
 
-#include <boost/thread.hpp>
+
+
+
+
+#include <boost\thread.hpp>
 #include "DtmfBuffer.h"
-
+#include "DtmfDatalinkLayer.h"
 
 class DtmfBackbone
 {
@@ -106,24 +113,27 @@ private:
 	int i;
 	DtmfApi * dtmfapi_;
 	DtmfSession * dtmfSession_;
-	DtmfDatalink * dtmfDatalink_;
+	DtmfDatalinkLayer * dtmfDatalink_;
 	DtmfPhysical * dtmfPhysical_;
 	PortaudioInterface * portaudioInterface_;
 	DtmfBuffer * dtmfBuffer_;
 	boost::thread workerThread_;
-
+#ifdef DEBUG
 public:
-	void operator()();
-	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferIn,DtmfMsgBuffer *& msgBufferOut);
-	~DtmfBackbone();
-	//ASSUMEDIRECTCONTROL() //stop workerthread.
-	//RELEASEDIRECTCONTROL() //start workerthread again.
+#endif
+	bool hasRoomForDatalinkAction();
+	bool hasRoomForMessageEncode();
 	void moveFrameIn();
-	void decodeFrame();
 	void decodeDatagram();
 	void encodeMessage();
-	void encodeDatagram();
+	void dataLinkAction();
 	void moveFrameOut();
+#ifndef DEBUG
+public:
+#endif DEBUG
+	void operator()();
+	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp);
+	~DtmfBackbone();
+	
 };
-
 #endif DTMFBACKBONE_H
