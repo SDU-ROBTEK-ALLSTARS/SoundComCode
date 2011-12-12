@@ -42,7 +42,7 @@
 #define		MAX_TIME_TO_REPLY	1
 
 //debugging
-#define		DEBUG								//out comment for no debug info
+//#define		DEBUG								//out comment for no debug info
 #define 	DEBUG_OUT			std::cout		//output for debug info
 
 //*****     INCLUDES     *****

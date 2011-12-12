@@ -11,15 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\DtmfApi.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfDatalinkLayer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfBackbone.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfInMessage.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfOutMessage.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
     <ClCompile Include="..\..\..\..\src\frame.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\DtmfApi.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfCallback.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfCallbackThread.h" />
     <ClInclude Include="..\..\..\..\src\DtmfDatalinkLayer.h" />
     <ClInclude Include="..\..\..\..\src\DtmfBackbone.h" />
     <ClInclude Include="..\..\..\..\src\DtmfBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfInMessage.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfOutMessage.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfThread.h" />
+    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\frame.h" />
   </ItemGroup>
   <ItemGroup>

@@ -35,9 +35,10 @@
 
 //The backbone instantiates the buffers and individual layers, and ends off with launching its own operator thread. 
 //Since the api constructs the backbone, a pointer to it, and its message buffers is given as well.
-DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp)
+DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp, boost::mutex ** callbackMainLoopMutex)
 {
 	//Instantiate the layers, and threads.
+	callbackMainLoopMutex_ = callbackMainLoopMutex;
 	this->dtmfapi_ =  dtmfApi;
 	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
 	this->dtmfDatalink_ = new DtmfDatalinkLayer(ADRESS,TOKEN_START);
@@ -47,7 +48,6 @@ DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,Dtm
 	msgBufferDown = this->dtmfBuffer_->apiTransportDown;
 	msgBufferUp = this->dtmfBuffer_->transportApiUp;
 	//Spawn the backbone thread, this must be the last thing to do. Object is running
-	workerThread_ = boost::thread(boost::ref(*this));
 }
 DtmfBackbone::~DtmfBackbone()
 {
@@ -59,9 +59,9 @@ DtmfBackbone::~DtmfBackbone()
 }
 
 //Main dispatching loop
-void DtmfBackbone::operator()()
+void DtmfBackbone::main()
 {
-	while(true)
+	while(continueRunning_)
 	{	
 		//----------Primary thresholds-----------
 		
@@ -216,13 +216,19 @@ void DtmfBackbone::moveFrameIn()
 }
 void DtmfBackbone::decodeDatagram()
 {
+	//push message
+
+	(*(this->callbackMainLoopMutex_))->unlock();
+	
 }
 void DtmfBackbone::encodeMessage()
 {
+	//pull message
 }
 
 void DtmfBackbone::moveFrameOut()
 {
+
 }
 
 bool DtmfBackbone::hasRoomForDatalinkAction()

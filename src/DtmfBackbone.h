@@ -83,7 +83,6 @@ public:
 	{
 	}
 };
-typedef placeholder DtmfApi; //To simulate, randomly deposit in msgIn.
 typedef placeholder DtmfSession;
 typedef placeholder DtmfPhysical;
 typedef placeholder PortaudioInterface; //Essentially two buffers, (from backbone perspective)
@@ -106,8 +105,11 @@ typedef placeholder PortaudioInterface; //Essentially two buffers, (from backbon
 #include <boost\thread.hpp>
 #include "DtmfBuffer.h"
 #include "DtmfDatalinkLayer.h"
+#include "DtmfThread.h"
 
-class DtmfBackbone
+class DtmfApi;
+
+class DtmfBackbone : public DtmfThread
 {
 private:
 	int i;
@@ -117,7 +119,8 @@ private:
 	DtmfPhysical * dtmfPhysical_;
 	PortaudioInterface * portaudioInterface_;
 	DtmfBuffer * dtmfBuffer_;
-	boost::thread workerThread_;
+	boost::mutex ** callbackMainLoopMutex_;
+	void main();
 #ifdef DEBUG
 public:
 #endif
@@ -128,11 +131,11 @@ public:
 	void encodeMessage();
 	void dataLinkAction();
 	void moveFrameOut();
+	
 #ifndef DEBUG
 public:
 #endif DEBUG
-	void operator()();
-	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp);
+	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp,boost::mutex ** callbackMainLoopMutex);
 	~DtmfBackbone();
 	
 };

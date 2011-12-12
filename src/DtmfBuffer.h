@@ -40,20 +40,9 @@
 #ifndef DTMFBUFFER_H
 #define DTMFBUFFER_H
 
-//TODO: PLACEHOLDER  OBTAIN THE CORRECT FROM RUDDI 
-class DtmfMsgBuffer
-{
-private:
-public:
-	void pushMsg(){};
-	void pullMsg(){};
-	unsigned int count(){return 1;};
-	bool empty(){return false;};
-};
-//PLACEHOLDER END
-
 #include <boost/circular_buffer.hpp>
 #include "frame.h"
+#include "dummyMsgBuffer.h"
 
 class DtmfBuffer
 {

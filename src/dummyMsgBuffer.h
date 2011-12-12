@@ -20,6 +20,12 @@ public:
 	{
 		delete(this->buffer_);
 	}
+	bool empty()
+	{
+		if(0 < queueSize())
+			return false;
+		return true;
+	}
 	unsigned int queueSize()
 	{
 		unsigned int size;
