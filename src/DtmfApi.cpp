@@ -1,5 +1,5 @@
 #include "DtmfApi.h"
-
+#include "DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
 
 /*
 Fremgangmåde..
@@ -46,6 +46,7 @@ void DtmfApi::cleanUpMessages_()
 	// Make sure the list is empty
 	this->dtmfOutMessages_.clear();
 }
+//DtmfApi::DtmfOutMessage * newMessage()
 DtmfOutMessage * DtmfApi::newMessage()
 {
 	// Allocate new message
@@ -55,7 +56,7 @@ DtmfOutMessage * DtmfApi::newMessage()
 	// Return message
 	return msg;
 }
-void DtmfApi::msgSendCallback()
+void DtmfApi::msgSendCallback_(DtmfOutMessage * dtmfOutMessage)
 {
-	std::cout << "msgSendCallback here!";
+	this->apiTransportDown_->pushMsg((char*)dtmfOutMessage);
 }

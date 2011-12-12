@@ -1,20 +1,19 @@
 #ifndef DTMFDUMMYBACKBONE_H
 #define DTMFDUMMYBACKBONE_H
 
-// this is used for simulating the backbone
-#include "DtmfThread.h"
-#include "dummyBuffer.h"
-#include "DtmfInMessage.h"
-//#include "DtmfApi.h"
-#include <fstream>
-#include <iostream>
-
 // Forward declarations
 class DtmfApi;
 //class DtmfMsgBuffer;
 class DtmfThread;
 
+// this is used for simulating the backbone
+#include "DtmfThread.h"
+#include "dummyBuffer.h"
+#include "DtmfInMessage.h"
+#include "DtmfOutMessage.h"
+#include <fstream>
 #include <iostream>
+
 
 // LOOP:
 //	Read from file "fromTransport.txt".
@@ -27,8 +26,9 @@ protected:
 	virtual void main()
 	{
 		char readTemp[2048];
-		DtmfInMessage * m;
-		std::fstream fromTransportStream;
+		DtmfInMessage * mIn;
+		DtmfOutMessage * mOut;
+		std::fstream fromTransportStream, toTransportStream;
 		while (this->continueRunning_)
 		{
 			// Check for new data
@@ -43,11 +43,11 @@ protected:
 					std::cout << readTemp[i];
 				std::cout << std::endl;*/
 				// Allocate mem
-				unsigned char * passOn = new unsigned char[fromTransportStream.gcount()];
-				m = new DtmfInMessage('2','1',fromTransportStream.gcount(),passOn);
+				unsigned char * passOn = new unsigned char[(int)fromTransportStream.gcount()];
+				mIn = new DtmfInMessage('2','1',fromTransportStream.gcount(),passOn);
 				memcpy(passOn,readTemp,fromTransportStream.gcount()); // Copy data to dataarea
 				// Send data to buffer
-				this->transportApiUp_->pushMsg((char*)m);
+				this->transportApiUp_->pushMsg((char*)mIn);
 				(*(this->callbackMainLoopMutex_))->unlock(); // Unlock callback thread
 			}
 			// Close file stream
@@ -57,6 +57,16 @@ protected:
 			// Empty the file
 			fromTransportStream.open("fromTransport.txt",  std::fstream::trunc | std::fstream::out );
 			fromTransportStream.close();
+
+			// Is there any messages queued to send to transport layer?
+			toTransportStream.open("toTransport.txt", std::fstream::app | std::fstream::out);
+			while (this->apiTransportDown_->queueSize() > 0)
+			{
+				//mOut = (DtmfOutMessage *)this->apiTransportDown_->pullMsg();
+				//toTransportStream.write((char*)mOut->data_,mOut->dataLength_);
+				//mOut->dispose(); // This is called by ..... transport layer?
+			}
+			toTransportStream.close();
 
 			// Small delay to save resources
 			boost::this_thread::sleep(boost::posix_time::seconds(1));

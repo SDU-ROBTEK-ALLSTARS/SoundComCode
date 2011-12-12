@@ -16,7 +16,7 @@
 
 // This is the main header file, and includes all necessary headers.
 #include <list>
-#include "DtmfOutMessage.h"
+//#include "DtmfOutMessage.h"
 #include "DtmfCallbackThread.h"
 #include "dummyBackbone.h"
 
@@ -25,9 +25,12 @@
 // forward declarations
 class DtmfCallback;
 class DtmfMsgBuffer;
+class DtmfOutMessage;
+class DtmfBackbone;
 
 class DtmfApi
 {
+	//friend class DtmfOutMessage;
 private:
 protected:
 	// Threads
@@ -40,14 +43,16 @@ protected:
 	unsigned char myAddress_;
 	std::list<DtmfOutMessage *> dtmfOutMessages_; // Using a linked list, as this element is only used for holding msg pointers until ~destuct
 	void cleanUpMessages_();
+
+	// Methods used by messages to callback 
+	void msgSendCallback_(DtmfOutMessage * dtmfOutMessage); // Messages calls this method with its pointer as argument.
+	void msgDispose_(DtmfOutMessage * dtmfOutMessage);
 public:
 	DtmfApi(unsigned char myAddress);
 	~DtmfApi();
 	void servicePort(unsigned char port, DtmfCallback * callbackMethod);
-	DtmfOutMessage * newMessage();
+	DtmfApi::DtmfOutMessage * newMessage();
 	void sendMessage(unsigned char rcvAddress, char * data, unsigned long dataLength);
-	void msgSendCallback();
-	friend void DtmfOutMessage::send();
 };
 
 #endif DTMFAPI_H

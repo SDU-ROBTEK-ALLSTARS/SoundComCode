@@ -1,7 +1,8 @@
 #include "DtmfApi.h"
 #include "DtmfCallback.h"
 #include <iostream>
-//#include "dummyMsgBuffer.h"
+#include "DtmfInMessage.h"
+#include "DtmfOutMessage.h"
 
 // This is a part of the testing of the API layer
 
@@ -12,7 +13,7 @@ class MyPort1 : public DtmfCallback
 		unsigned char * data;
 		message->getData(data);
 		std::cout << "PORT1: ";
-		for (int i = 0; i < message->getMessageLength(); i++)
+		for (unsigned int i = 0; i < message->getMessageLength(); i++)
 		{
 			std::cout << data[i];
 		}
@@ -26,7 +27,7 @@ class MyPort2 : public DtmfCallback
 		unsigned char * data;
 		message->getData(data);
 		std::cout << "PORT2: ";
-		for (int i = 0; i < message->getMessageLength(); i++)
+		for (unsigned int i = 0; i < message->getMessageLength(); i++)
 		{
 			std::cout << data[i];
 		}

@@ -2,9 +2,13 @@
 
 DtmfOutMessage::DtmfOutMessage(DtmfApi * apiClass)
 {
-	this->createrApi = apiClass;
+	this->creatorApi = apiClass;
 }
 void DtmfOutMessage::send()
 {
-	this->createrApi->msgSendCallback();
+	//this->creatorApi->msgSendCallback_(this);
+}
+void DtmfOutMessage::dispose()
+{
+	//this->creatorApi->msgSendCallback_();
 }
