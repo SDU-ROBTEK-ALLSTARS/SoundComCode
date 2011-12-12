@@ -1,14 +1,6 @@
 #include "DtmfApi.h"
 #include "DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
 
-/*
-Fremgangmåde..
-
-Bliver noget med at tegne et flowchart - det giver ikke mening med dynamisk allokering af dataplads, hvis der f.eks skal sendes mange MB.
-På den anden side, vil new kun blive kaldt en gang pr. besked, og så er det transport der skal slippe op og delete. <<<--- good point
-*/
-
-
 DtmfApi::DtmfApi(unsigned char myAddress) : myAddress_(myAddress)
 {
 	// Start backbone
@@ -39,6 +31,7 @@ void DtmfApi::cleanUpMessages_()
 		{
 			// Delete allocated memory
 			delete(this->dtmfOutMessages_.back());
+			// The message destructor have the responsibilty for deleting internal allocated mem.
 		}
 		// Remove the message pointer for the list
 		this->dtmfOutMessages_.pop_back();
@@ -58,5 +51,18 @@ DtmfOutMessage * DtmfApi::newMessage()
 }
 void DtmfApi::msgSendCallback_(DtmfOutMessage * dtmfOutMessage)
 {
+	// Called by message - send to queue
 	this->apiTransportDown_->pushMsg((char*)dtmfOutMessage);
+}
+void DtmfApi::msgDispose_(DtmfOutMessage * dtmfOutMessage)
+{
+	// Remove from my list of messages
+	this->dtmfOutMessages_.remove(dtmfOutMessage);
+}
+void DtmfApi::sendMessage(unsigned char rcvAddress, unsigned char rcvPort, unsigned char * data, unsigned long dataLength)
+{
+	DtmfOutMessage * msg = this->newMessage();
+	msg->setAddress(rcvAddress,rcvPort);
+	msg->setData(data,0,dataLength);
+	msg->send();
 }

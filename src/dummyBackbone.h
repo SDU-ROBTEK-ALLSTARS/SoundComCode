@@ -59,14 +59,15 @@ protected:
 			fromTransportStream.close();
 
 			// Is there any messages queued to send to transport layer?
-			toTransportStream.open("toTransport.txt", std::fstream::app | std::fstream::out);
 			while (this->apiTransportDown_->queueSize() > 0)
 			{
-				//mOut = (DtmfOutMessage *)this->apiTransportDown_->pullMsg();
-				//toTransportStream.write((char*)mOut->data_,mOut->dataLength_);
-				//mOut->dispose(); // This is called by ..... transport layer?
+				toTransportStream.open("toTransport.txt", std::fstream::app | std::fstream::out);
+				mOut = (DtmfOutMessage *)this->apiTransportDown_->pullMsg();
+				toTransportStream.write((char*)mOut->data_,mOut->dataLength_);
+				mOut->processed = true;
+				mOut->dispose(); // This is called by ..... transport layer?
+				toTransportStream.close();
 			}
-			toTransportStream.close();
 
 			// Small delay to save resources
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -84,8 +85,6 @@ public:
 	}
 	~DtmfBackbone()
 	{
-		
 	}
-	//dummyBuffer<apiToTransport> * apiToTransportBuffer;
 };
 #endif DTMFDUMMYBACKBONE_H

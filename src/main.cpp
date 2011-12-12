@@ -3,6 +3,7 @@
 #include <iostream>
 #include "DtmfInMessage.h"
 #include "DtmfOutMessage.h"
+#include <string>
 
 // This is a part of the testing of the API layer
 
@@ -44,8 +45,14 @@ int main(void)
 	dtmf->servicePort('2',myPort2);
 
 	DtmfOutMessage * m = dtmf->newMessage();
-	m->send();
-	//DtmfMsgBuffer * m = new DtmfMsgBuffer();
+	unsigned char * data1 = (unsigned char*)"Dette er en test\n";
+	m->setData(data1,0,18);
+	unsigned char * data2 = (unsigned char*)"ER";
+	m->setData(data2,2,2);
+	m->send(); // This will delete the message, when it's processed
+	
+	char * data3 = "Slip flodhestene loes!";
+	dtmf->sendMessage(0,0,(unsigned char*)data3,std::strlen(data3));
 
 	bool run = true;
 	char cmd;
@@ -54,9 +61,8 @@ int main(void)
 		std::cin >> cmd;
 		switch (cmd)
 		{
-		/*case 'p':
-			std::cout << std::endl << m->queueSize() << " - " << (*(m->pullMsg()));
-			break;*/
+		case '0':
+			//std::cout << std::endl << m->queueSize() << " - " << (*(m->pullMsg()));
 		case 'x':
 			run = false;
 			break;

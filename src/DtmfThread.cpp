@@ -6,7 +6,6 @@ DtmfThread::DtmfThread()
 	this->continueRunning_ = true;
 
 	// Create thread
-	//this->thread_ = boost::thread(&DtmfThread::runLoop,this);
 	this->thread_ = boost::thread(boost::bind(&DtmfThread::main, boost::ref(*this)));
 }
 DtmfThread::~DtmfThread()
@@ -20,4 +19,5 @@ DtmfThread::~DtmfThread()
 }
 void DtmfThread::main()
 {
+	// Placeholder
 }

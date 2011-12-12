@@ -1,22 +1,6 @@
 #ifndef DTMFAPI_H
 #define DTMFAPI_H
-
-// CLEAN ME UP AREA
-//#include "DtmfInMessage.h"
-//#include "DtmfThread.h"
-//#include "DtmfCallback.h"
-//#include "dummyBuffer.h"
-//#include "dummyMsgBuffer.h"
-//#include "apiToTransport.h"
-
-//class DtmfCallbackThread;
-//class DtmfBackbone;
-//class DtmfOutMessage;
-// END CLEAN ME UP
-
-// This is the main header file, and includes all necessary headers.
 #include <list>
-//#include "DtmfOutMessage.h"
 #include "DtmfCallbackThread.h"
 #include "dummyBackbone.h"
 
@@ -30,7 +14,7 @@ class DtmfBackbone;
 
 class DtmfApi
 {
-	//friend class DtmfOutMessage;
+	friend class DtmfOutMessage;
 private:
 protected:
 	// Threads
@@ -52,7 +36,7 @@ public:
 	~DtmfApi();
 	void servicePort(unsigned char port, DtmfCallback * callbackMethod);
 	DtmfApi::DtmfOutMessage * newMessage();
-	void sendMessage(unsigned char rcvAddress, char * data, unsigned long dataLength);
+	void sendMessage(unsigned char rcvAddress, unsigned char rcvPort, unsigned char * data, unsigned long dataLength);
 };
 
 #endif DTMFAPI_H

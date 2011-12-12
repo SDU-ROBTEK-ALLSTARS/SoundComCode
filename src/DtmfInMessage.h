@@ -9,15 +9,12 @@ protected:
 	unsigned char * data_;
 public:
 	DtmfInMessage();
-	DtmfInMessage(unsigned char senderAddress, unsigned char senderPort, unsigned long dataLength, unsigned char * data) : senderAddress_(senderAddress), senderPort_(senderPort), dataLength_(dataLength), data_(data){}
-	~DtmfInMessage()
-	{
-		delete(this->data_);
-	}
+	DtmfInMessage(unsigned char senderAddress, unsigned char senderPort, unsigned long dataLength, unsigned char * data);
+	~DtmfInMessage();
     unsigned char getSenderAdress();
 	void getData(unsigned char *& data, unsigned long startAddress, unsigned long stopAddress);
-	void getData(unsigned char *& data){ data = this->data_; }
-	unsigned long getMessageLength(){return this->dataLength_;}
-	unsigned long getSenderPort(){return this->senderPort_;}
+	void getData(unsigned char *& data);
+	unsigned long getMessageLength();
+	unsigned char getSenderPort();
 };
 #endif DTMFINMESSAGE_H;
