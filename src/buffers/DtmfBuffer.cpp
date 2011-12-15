@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     DtmfBuffer.h
+# File:     DtmfBuffer.cpp
 # Project:  DtmfBackbone
 # Version:  1.0
 # Platform:	PC/Mac/Linux
@@ -27,37 +27,29 @@
 ********************************************************************************
 # Description
 #
-# A class designated to hold all the individual buffers of the backbone application.
+# Implementation of the DtmfBuffer class.
 #
 *******************************************************************************/
-
-
-
-
-
-
-
-#ifndef DTMFBUFFER_H
-#define DTMFBUFFER_H
-
-#include <boost/circular_buffer.hpp>
-#include "frame.h"
-#include "dummyMsgBuffer.h"
-
-class DtmfBuffer
+#include "DtmfBuffer.h"
+#include "packet.h"
+DtmfBuffer::DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity)
 {
-private:
-public:
-	
-	boost::circular_buffer<Frame>		 * physicalDllUp;
-	boost::circular_buffer<Frame>		 * dllPhysicalDown;
-	//boost::circular_buffer<Datagram>	 * transportDllDown; 
-	//boost::circular_buffer<Datagram>	 * dllTransportUp;
-	boost::circular_buffer<unsigned int> * transportDllDown; //PLACEHOLDER
-	boost::circular_buffer<unsigned int> * dllTransportUp;	 //PLACEHOLDER
-	DtmfMsgBuffer * apiTransportDown;
-	DtmfMsgBuffer * transportApiUp;
-	DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity);
-	~DtmfBuffer();
-};
-#endif DTMFBUFFER_H
+	//datagramIn   = new boost::circular_buffer<Datagram>(datagramInCapacity);
+	//datagramOut   = new boost::circular_buffer<Datagram>(datagramInCapacity);
+	dllTransportUp   = new boost::circular_buffer<unsigned int>(datagramInCapacity);
+	transportDllDown = new boost::circular_buffer<Packet>(datagramInCapacity);
+	physicalDllUp    = new boost::circular_buffer<Frame>(frameInCapacity);
+	dllPhysicalDown  = new boost::circular_buffer<Frame>(frameOutCapacity);
+	apiTransportDown = new DtmfMsgBuffer();
+	transportApiUp   = new DtmfMsgBuffer();
+}
+
+DtmfBuffer::~DtmfBuffer()
+{
+	delete physicalDllUp;
+	delete dllPhysicalDown;
+	delete transportDllDown;
+	delete dllTransportUp;	
+	delete apiTransportDown;
+	delete transportApiUp;
+}

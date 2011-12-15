@@ -1,8 +1,8 @@
-#include "DtmfApi.h"
+#include "api/DtmfApi.h"
 #include "DtmfCallback.h"
 #include <iostream>
-#include "DtmfInMessage.h"
-#include "DtmfOutMessage.h"
+#include "buffers/DtmfInMessage.h"
+#include "buffers/DtmfOutMessage.h"
 #include <string>
 
 // This is a part of the testing of the API layer

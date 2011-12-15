@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\backboneTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\main.cpp">
+    <ClCompile Include="..\..\..\tests\first_beta.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

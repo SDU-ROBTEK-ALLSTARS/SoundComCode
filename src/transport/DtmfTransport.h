@@ -33,9 +33,9 @@
 #define TRANSPORT_H
 
 #include <boost/circular_buffer.hpp>
-#include "packet.h"
+#include "../buffers/packet.h"
 
-class Transport
+class DtmfTransport
 {
 private:
 	static bool sPortsInUse_[256];
@@ -55,8 +55,8 @@ private:
 	void processUpboundPacket(Packet);
 
 public:
-	Transport();
-	~Transport();
+	DtmfTransport();
+	~DtmfTransport();
 
 	void setPort(const unsigned char newPort=0);
 	unsigned char port() const;

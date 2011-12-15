@@ -83,9 +83,8 @@ public:
 	{
 	}
 };
-typedef placeholder DtmfSession;
+
 typedef placeholder DtmfPhysical;
-typedef placeholder PortaudioInterface; //Essentially two buffers, (from backbone perspective)
 #endif DEBUG //PLACEHOLDER END
 
 
@@ -102,10 +101,11 @@ typedef placeholder PortaudioInterface; //Essentially two buffers, (from backbon
 
 
 
-#include <boost\thread.hpp>
-#include "DtmfBuffer.h"
-#include "DtmfDatalinkLayer.h"
-#include "DtmfThread.h"
+#include <boost/thread.hpp>
+#include "../buffers/DtmfBuffer.h"
+#include "../data_link/DtmfDatalinkLayer.h"
+#include "../transport/DtmfTransport.h"
+#include "../DtmfThread.h"
 
 class DtmfApi;
 
@@ -114,10 +114,9 @@ class DtmfBackbone : public DtmfThread
 private:
 	int i;
 	DtmfApi * dtmfapi_;
-	DtmfSession * dtmfSession_;
-	DtmfDatalinkLayer * dtmfDatalink_;
+	DtmfTransport * dtmfTransport_;
+	DtmfDataLinkLayer * dtmfDatalink_;
 	DtmfPhysical * dtmfPhysical_;
-	PortaudioInterface * portaudioInterface_;
 	DtmfBuffer * dtmfBuffer_;
 	boost::mutex ** callbackMainLoopMutex_;
 	void main();

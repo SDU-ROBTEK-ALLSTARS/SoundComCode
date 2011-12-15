@@ -41,9 +41,9 @@ DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,Dtm
 	callbackMainLoopMutex_ = callbackMainLoopMutex;
 	this->dtmfapi_ =  dtmfApi;
 	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
-	this->dtmfDatalink_ = new DtmfDatalinkLayer(ADRESS,TOKEN_START);
+	this->dtmfDatalink_ = new DtmfDataLinkLayer(ADRESS,TOKEN_START);
 	this->dtmfPhysical_ = new DtmfPhysical();
-	this->dtmfSession_ = new DtmfSession();
+	this->dtmfTransport_ = new DtmfTransport();
 	this->i = 0;
 	msgBufferDown = this->dtmfBuffer_->apiTransportDown;
 	msgBufferUp = this->dtmfBuffer_->transportApiUp;
@@ -54,8 +54,7 @@ DtmfBackbone::~DtmfBackbone()
 	delete dtmfBuffer_;
 	delete dtmfDatalink_;
 	delete dtmfPhysical_;
-	delete dtmfSession_;
-	delete portaudioInterface_;
+	delete dtmfTransport_;
 }
 
 //Main dispatching loop

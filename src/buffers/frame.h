@@ -36,7 +36,7 @@
 
 //*****     DEFINES     *****
 //debugging
-#define		DEBUG
+//#define		DEBUG
 #define 	DEBUG_OUT			std::cout
 
 //frame definitions
@@ -59,8 +59,11 @@ public:
 	unsigned char byte1;			//data byte
 	unsigned char byte0;			//parity byte
 
-	Frame(unsigned char,unsigned char);
-	Frame(unsigned char,unsigned char,unsigned char);
+	Frame(void);										//default constructor for memory allocation
+	Frame(unsigned char,unsigned char);					//constructs frame from header and data bytes
+	Frame(unsigned char,unsigned char,unsigned char);	//constructs frame from header, data and parity bytes
+	Frame(unsigned char,unsigned char,unsigned char,
+			unsigned char,unsigned char,unsigned char);	//constructs frame from six nibbles
 
 	int type;						//range 0:3 shifted 6
 	int receiver;					//range 0:3 shifted 4

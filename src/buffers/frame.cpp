@@ -48,7 +48,7 @@ Frame::Frame(unsigned char b2,unsigned char b1)
 	end = (byte2)&1;
 
 	//generate parity byte
-	byte0 = makeParity(byte2,byte1);
+	parity = byte0 = makeParity(byte2,byte1);
 
 	#ifdef DEBUG
 	DEBUG_OUT << "constructing frame...";
@@ -61,6 +61,7 @@ Frame::Frame(unsigned char b2,unsigned char b1,unsigned char b0)
 	byte2 = b2;
 	byte1 = data = b1;
 	byte0 = parity = b0;
+//	byte0 = parity = makeParity(byte2,byte1);
 
 	//extract header data
 	type = (byte2 >> 6);
@@ -74,6 +75,29 @@ Frame::Frame(unsigned char b2,unsigned char b1,unsigned char b0)
 	#endif
 }
 //*****
+Frame::Frame(unsigned char head_hi,unsigned char head_lo,unsigned char dat_hi,
+		unsigned char dat_lo,unsigned char par_hi,unsigned char par_lo)
+{
+	byte2 = 			(	(head_hi&15)<<4) | (head_lo&15);
+	data = byte1 = 		(	(dat_hi&15)	<<4) | (dat_lo&15);
+	parity = byte0 = 	(	(par_hi&15)	<<4) | (par_lo&15);
+
+	//TODO: cheapest hack in the world - generate parity byte
+//	parity = byte0 = makeParity(byte2,byte1);
+
+	//extract header data
+	type = (byte2 >> TYPE);
+	receiver = (byte2 >> ADDRESS)&3;
+	sequence = (byte2 >>SEQUENCE)&7;
+	end = (byte2)&1;
+
+	#ifdef DEBUG
+	DEBUG_OUT << "constructing frame from nibbles..." <<
+			(int)head_hi << " " << (int)head_lo << " " << (int)dat_hi << " " <<
+	  (int)dat_lo << " " << (int)par_hi << " " << (int)par_lo << std::endl;
+	coutHeader();
+	#endif
+}
 unsigned int Frame::makeParity(unsigned int head, unsigned int dat)
 {
 	unsigned int par = 0;
@@ -159,10 +183,13 @@ void Frame::coutHeader()
 		DEBUG_OUT << "- End of transmission" << std::endl;
 	else
 		DEBUG_OUT << std::endl;
-	DEBUG_OUT << "Data contents: ";
+	DEBUG_OUT << "Header: ";
+	for(int i=7;i>=0;i--)
+		DEBUG_OUT << (bool)(byte2 & (1<<i));
+	DEBUG_OUT << "(" << (int)byte2 << ")" << " Data: " ;
 	for(int i=7;i>=0;i--)
 		DEBUG_OUT << (bool)(byte1 & (1<<i));
-	DEBUG_OUT << "(" << (int)byte1 << ")" << " " << "parity: ";
+	DEBUG_OUT << "(" << (int)byte1 << ")" << " parity: ";
 	for(int i=7;i>=0;i--)
 		DEBUG_OUT << (bool)(byte0 & (1<<i));
 	DEBUG_OUT  << "(" << (int)byte0 << ")" << std::endl;

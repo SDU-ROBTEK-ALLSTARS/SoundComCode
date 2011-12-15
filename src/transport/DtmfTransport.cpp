@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     transport.cpp
+# File:     DtmfTransport.cpp
 # Project:  DtmfProject
 # Version:  
 # Platform:	PC/Mac/Linux
@@ -26,20 +26,20 @@
 ********************************************************************************/
 
 #include <boost/circular_buffer.hpp>
-#include "transport.h"
-#include "packet.h"
+#include "DtmfTransport.h"
+#include "../buffers/packet.h"
 
 // Table of reserved ports
-bool Transport::sPortsInUse_[256] = {false};
+bool DtmfTransport::sPortsInUse_[256] = {false};
 
 // Default constructor
-Transport::Transport()
+DtmfTransport::DtmfTransport()
 {
 	port_ = 0;
 }
 
 // Destructor
-Transport::~Transport()
+DtmfTransport::~DtmfTransport()
 {
 	sPortsInUse_[port_] = false;
 }
@@ -52,7 +52,7 @@ Transport::~Transport()
 // supposed, that the buffer is operated in a "FIFO"-like way, so that the data
 // gotten from buffer.front() is the data first inserted (with push_back()).
 // Data is not deleted from the buffer until 
-Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *buffer)
+Packet DtmfTransport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *buffer)
 {
 	Packet packet;
 
@@ -93,7 +93,7 @@ Packet Transport::packetFromCharBuffer(boost::circular_buffer<unsigned char> *bu
 // packetToCharBuffer
 // Places a Packet object as a char array in a boost circular buffer. If there
 // is not enough space in the buffer an exception is thrown.
-void Transport::packetToCharBuffer(boost::circular_buffer<unsigned char> *buffer, Packet packet)
+void DtmfTransport::packetToCharBuffer(boost::circular_buffer<unsigned char> *buffer, Packet packet)
 {
 	unsigned char *packetAsArray = packet.getAsArray();
 	int availableSpace = buffer->capacity() - buffer->size();
@@ -107,7 +107,7 @@ void Transport::packetToCharBuffer(boost::circular_buffer<unsigned char> *buffer
 	}
 }
 
-void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
+void DtmfTransport::processUpboundPacket(Packet packet) //TO DO TO DO
 {
 	if ((port_ == packet.destPort()) && (packet.checksumValid())) {
 		//lastInSequence_ = packet.seqNumber();
@@ -120,7 +120,7 @@ void Transport::processUpboundPacket(Packet packet) //TO DO TO DO
 // setPort()
 // Gives a certain instance of the class a port number and reserves
 // it, making it unavailable to other class instances.
-void Transport::setPort(const unsigned char newPort)
+void DtmfTransport::setPort(const unsigned char newPort)
 {
 	if ((newPort > 19) && (!sPortsInUse_[newPort])) { //Port 0-19 are reserved. This could have a nicer solution
 		sPortsInUse_[newPort] = true;
@@ -137,14 +137,14 @@ void Transport::setPort(const unsigned char newPort)
 		}
 	}
 	if (!port_) {
-		throw "Transport.setPort() No ports available.";
+		throw "DtmfTransport.setPort() No ports available.";
 		return;
 	}
 }
 
 // port()
 // Returns this instances port number
-unsigned char Transport::port() const
+unsigned char DtmfTransport::port() const
 {
 	return port_;
 }
@@ -152,7 +152,7 @@ unsigned char Transport::port() const
 // isPortSet()
 // True if port number has been set correctly. Can be used to 
 // self-test.
-bool Transport::isPortSet(const unsigned char enteredPort) const
+bool DtmfTransport::isPortSet(const unsigned char enteredPort) const
 {
 	if (enteredPort) {
 		if (sPortsInUse_[enteredPort])
@@ -170,7 +170,7 @@ bool Transport::isPortSet(const unsigned char enteredPort) const
 
 // getPortTable()
 // Returns a pointer to the array that contains reserved ports.
-bool *Transport::getPortTable() const
+bool *DtmfTransport::getPortTable() const
 {
 	bool *pointer = sPortsInUse_;
 	return pointer;
@@ -178,16 +178,16 @@ bool *Transport::getPortTable() const
 
 // decode()
 // Main public up-stream packet processing method. This is called by the
-// backbone when there is incoming data available to Transport from 
+// backbone when there is incoming data available to DtmfTransport from 
 // the underlying layer.
-void Transport::decode(boost::circular_buffer<unsigned char> *DllTransportUp,
-                       boost::circular_buffer<unsigned char> *TransportApiUp)
+void DtmfTransport::decode(boost::circular_buffer<unsigned char> *DllDtmfTransportUp,
+                       boost::circular_buffer<unsigned char> *DtmfTransportApiUp)
 {
 	//Make packet from char array in buffer
-	Packet packet = packetFromCharBuffer(DllTransportUp);
+	Packet packet = packetFromCharBuffer(DllDtmfTransportUp);
 
 	if (packet.checksumValid()) {
-		packetToCharBuffer(TransportApiUp, packet);
+		packetToCharBuffer(DtmfTransportApiUp, packet);
 	}
 	else {
 		throw "assemblePacketFromCharBuffer() assembled packet checksum invalid";
@@ -196,9 +196,9 @@ void Transport::decode(boost::circular_buffer<unsigned char> *DllTransportUp,
 
 // encode()
 // Main public down-stream packet processing method. This is called by the
-// backbone when there is incoming data available to Transport from 
+// backbone when there is incoming data available to DtmfTransport from 
 // the above layer.
-void Transport::encode(boost::circular_buffer<unsigned char> *ApiTransportDown,
-                       boost::circular_buffer<Packet> *TransportDllDown)
+void DtmfTransport::encode(boost::circular_buffer<unsigned char> *ApiDtmfTransportDown,
+                       boost::circular_buffer<Packet> *DtmfTransportDllDown)
 {
 }

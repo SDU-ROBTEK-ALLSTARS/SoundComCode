@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     DtmfBuffer.cpp
+# File:     DtmfBuffer.h
 # Project:  DtmfBackbone
 # Version:  1.0
 # Platform:	PC/Mac/Linux
@@ -27,28 +27,35 @@
 ********************************************************************************
 # Description
 #
-# Implementation of the DtmfBuffer class.
+# A class designated to hold all the individual buffers of the backbone application.
 #
 *******************************************************************************/
-#include "DtmfBuffer.h"
-DtmfBuffer::DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity)
-{
-	//datagramIn   = new boost::circular_buffer<Datagram>(datagramInCapacity);
-	//datagramOut   = new boost::circular_buffer<Datagram>(datagramInCapacity);
-	dllTransportUp   = new boost::circular_buffer<unsigned int>(datagramInCapacity);
-	transportDllDown = new boost::circular_buffer<unsigned int>(datagramInCapacity);
-	physicalDllUp    = new boost::circular_buffer<Frame>(frameInCapacity);
-	dllPhysicalDown  = new boost::circular_buffer<Frame>(frameOutCapacity);
-	apiTransportDown = new DtmfMsgBuffer();
-	transportApiUp   = new DtmfMsgBuffer();
-}
 
-DtmfBuffer::~DtmfBuffer()
+
+
+
+
+
+
+#ifndef DTMFBUFFER_H
+#define DTMFBUFFER_H
+
+#include <boost/circular_buffer.hpp>
+#include "frame.h"
+#include "../dummyMsgBuffer.h"
+#include "packet.h"
+class DtmfBuffer
 {
-	delete physicalDllUp;
-	delete dllPhysicalDown;
-	delete transportDllDown;
-	delete dllTransportUp;	
-	delete apiTransportDown;
-	delete transportApiUp;
-}
+private:
+public:
+	
+	boost::circular_buffer<Frame>		 * physicalDllUp;
+	boost::circular_buffer<Frame>		 * dllPhysicalDown;
+	boost::circular_buffer<Packet>		 * transportDllDown; 
+	boost::circular_buffer<unsigned int>	     * dllTransportUp;
+	DtmfMsgBuffer * apiTransportDown;
+	DtmfMsgBuffer * transportApiUp;
+	DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity);
+	~DtmfBuffer();
+};
+#endif DTMFBUFFER_H
