@@ -29,16 +29,16 @@
 #
 # This class implements the physical layer.
 *******************************************************************************/
-#include "PhysicalLayer.h"
+#include "DtmfPhysical.h"
 
-PhysicalLayer::PhysicalLayer(void)
+DtmfPhysical::DtmfPhysical(void)
 {
 	this -> communicationInterface = new BufferedSoundIO();
 	this -> outputSequenceBuffer = new boost::circular_buffer<unsigned int>();
 	this -> inputFrameBuffer = new boost::circular_buffer<Frame>();
 }
 
-PhysicalLayer::PhysicalLayer(	PaSampleFormat outputSampleFormat,	unsigned int outputNumberOfChannels,
+DtmfPhysical::DtmfPhysical(	PaSampleFormat outputSampleFormat,	unsigned int outputNumberOfChannels,
 								unsigned long outputBufferSize,		unsigned long outputSampleRate,
 								PaSampleFormat inputSampleFormat,	unsigned int inputNumberOfChannels,
 								unsigned long inputBufferSize,		unsigned long inputSampleRate)
@@ -56,26 +56,26 @@ PhysicalLayer::PhysicalLayer(	PaSampleFormat outputSampleFormat,	unsigned int ou
 	this -> inputFrameBuffer = new boost::circular_buffer<Frame>();
 }
 
-PhysicalLayer::~PhysicalLayer(void)
+DtmfPhysical::~DtmfPhysical(void)
 {
 	delete this -> communicationInterface;
 	delete this -> outputSequenceBuffer;
 	delete this -> inputFrameBuffer;
 }
 
-void PhysicalLayer::startDataStream (void)
+void DtmfPhysical::startDataStream (void)
 {
 	this -> communicationInterface -> startOutputStream();
 	this -> communicationInterface -> startInputStream();
 }
 
-void PhysicalLayer::stopDataStream (void)
+void DtmfPhysical::stopDataStream (void)
 {
 	this -> communicationInterface -> stopOutputStream();
 	this -> communicationInterface -> stopInputStream();
 }
 
-int PhysicalLayer::send(void *buffer)
+int DtmfPhysical::send(void *buffer)
 {
 	//	Check if sending is already in progress
 	if (this -> communicationInterface -> isOutputStreamRunning()) return 1;
@@ -135,7 +135,7 @@ int PhysicalLayer::send(void *buffer)
 	return (this -> communicationInterface -> pushSamples(this -> outputSequenceBuffer));
 }
 
-void PhysicalLayer::receive(void *buffer)
+void DtmfPhysical::receive(void *buffer)
 {
 	return this -> communicationInterface -> pullFrames(buffer);
 }

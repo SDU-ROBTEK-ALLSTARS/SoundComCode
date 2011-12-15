@@ -41,7 +41,7 @@
 #define MAX_NIBBLES_PER_FRAME		(13)
 #define FRAME_SIZE					(3)		//	[bytes]
 
-class PhysicalLayer
+class DtmfPhysical
 {
 private:
 	BufferedSoundIO *communicationInterface;
@@ -49,12 +49,12 @@ private:
 	boost::circular_buffer<Frame> *inputFrameBuffer;
 	
 public:
-	PhysicalLayer(void);
-	PhysicalLayer(	PaSampleFormat outputSampleFormat,	unsigned int outputNumberOfChannels,
+	DtmfPhysical(void);
+	DtmfPhysical(	PaSampleFormat outputSampleFormat,	unsigned int outputNumberOfChannels,
 					unsigned long outputBufferSize,		unsigned long outputSampleRate,
 					PaSampleFormat inputSampleFormat,	unsigned int inputNumberOfChannels,
 					unsigned long inputBufferSize,		unsigned long inputSampleRate);
-	~PhysicalLayer(void);
+	~DtmfPhysical(void);
 
 	void startDataStream (void);
 	void stopDataStream (void);

@@ -3,7 +3,7 @@
 #include <list>
 #include "DtmfCallbackThread.h"
 #include "DtmfBackbone.h"
-
+#include "DtmfOutMessage.h"
 #include <iostream>
 
 // forward declarations
@@ -35,7 +35,8 @@ public:
 	DtmfApi(unsigned char myAddress);
 	~DtmfApi();
 	void servicePort(unsigned char port, DtmfCallback * callbackMethod);
-	DtmfApi::DtmfOutMessage * newMessage();
+//	DtmfApi::DtmfOutMessage * newMessage();
+	DtmfOutMessage * newMessage();
 	void sendMessage(unsigned char rcvAddress, unsigned char rcvPort, unsigned char * data, unsigned long dataLength);
 };
 
