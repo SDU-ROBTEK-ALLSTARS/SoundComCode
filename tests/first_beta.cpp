@@ -49,12 +49,12 @@
 #include 	<boost/circular_buffer.hpp>
 
 //physical layer
-#include "../src/physical/PhysicalLayer.h"
+#include "../src/physical/DtmfPhysical.h"
 
 #include "../src/portaudio.h"
 
 //data link layer
-#include 	"../src/data_link/DtmfDataLinkLayer.h"
+#include 	"../src/data_link/DtmfDatalinkLayer.h"
 #include	"../src/buffers/frame.h"
 
 //transport layer
@@ -177,7 +177,7 @@ inputBufferRight.push_back(test1);
 	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
 	//instantiate physical layer
-	PhysicalLayer physicalLayer(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
+	DtmfPhysical physicalLayer(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	physicalLayer.startDataStream();
 
 	//call encode and decode with arguments downInput, downOutput, upInput, upOutput

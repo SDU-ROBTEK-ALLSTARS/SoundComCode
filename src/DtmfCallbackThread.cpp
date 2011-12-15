@@ -5,7 +5,7 @@
 DtmfCallbackThread::DtmfCallbackThread(DtmfMsgBuffer *& transportApiUp, boost::mutex *& callbackMainLoopMutex) : transportApiUp_(transportApiUp)
 {
 	// Initialize mutex
-	this->callbackMainLoopMutex_.initialize();
+	//this->callbackMainLoopMutex_.initialize();
 	callbackMainLoopMutex = &(this->callbackMainLoopMutex_);
 	// Save buffer pointer
 	this->transportApiUp_ = transportApiUp;

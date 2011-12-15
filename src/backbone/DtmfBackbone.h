@@ -39,6 +39,7 @@
 #ifdef _DEBUG
 #define DEBUG
 #endif _DEBUG
+#define DEBUG
  
 //Default values for buffers, these will be adjusted during testing, 
 #ifdef DEBUG
@@ -84,7 +85,7 @@ public:
 	}
 };
 
-typedef placeholder DtmfPhysical;
+
 #endif DEBUG //PLACEHOLDER END
 
 
@@ -106,6 +107,7 @@ typedef placeholder DtmfPhysical;
 #include "../data_link/DtmfDatalinkLayer.h"
 #include "../transport/DtmfTransport.h"
 #include "../DtmfThread.h"
+#include "../physical/DtmfPhysical.h"
 
 class DtmfApi;
 
