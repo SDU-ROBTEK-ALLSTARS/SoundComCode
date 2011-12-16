@@ -56,6 +56,7 @@ _ReSharper*/
 /.settings
 /[Dd]efault
 /*.dat
+*~
 
 # Office Temp Files
 ~$*
