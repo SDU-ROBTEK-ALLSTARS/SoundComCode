@@ -1,5 +1,5 @@
 #include "DtmfOutMessage.h"
-#include "../api/DtmfApi.h"
+#include "DtmfApi.h"
 
 DtmfOutMessage::DtmfOutMessage(DtmfApi * apiClass)
 {

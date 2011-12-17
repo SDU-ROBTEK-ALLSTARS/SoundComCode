@@ -28,7 +28,7 @@
 #include <ctime>
 #include <bitset>
 #include <boost/crc.hpp>
-#include "common/exception.h"
+#include "exception.h"
 #include "packet.h"
 #include "DtmfOutMessage.h"
 

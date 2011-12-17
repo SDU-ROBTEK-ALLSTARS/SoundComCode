@@ -102,10 +102,10 @@ typedef placeholder DtmfPhysical;
 
 
 #include <boost/thread.hpp>
-#include "../buffers/DtmfBuffer.h"
-#include "../data_link/DtmfDatalinkLayer.h"
-#include "../transport/DtmfTransport.h"
-#include "../DtmfThread.h"
+#include "DtmfBuffer.h"
+#include "DtmfDatalinkLayer.h"
+#include "DtmfTransport.h"
+#include "DtmfThread.h"
 
 class DtmfApi;
 

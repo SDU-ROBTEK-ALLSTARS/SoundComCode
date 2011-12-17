@@ -29,9 +29,10 @@
 #
 # This class implements the physical layer.
 *******************************************************************************/
-#pragma once
+#ifndef PHYSICALLAYER_H
+#define PHYSICALLAYER_H
 
-#include "../buffers/frame.h"
+#include "frame.h"
 #include "BufferedSoundIO.h"
 #include <boost/circular_buffer.hpp>
 
@@ -60,3 +61,4 @@ public:
 	int send(void *buffer);
 	void receive(void *buffer);
 };
+#endif //PHYSICALLAYER_H

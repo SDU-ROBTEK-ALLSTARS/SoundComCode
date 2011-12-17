@@ -1,6 +1,6 @@
 #include "DtmfCallbackThread.h"
 #include "DtmfCallback.h"
-#include "buffers/DtmfInMessage.h"
+#include "DtmfInMessage.h"
 
 DtmfCallbackThread::DtmfCallbackThread(DtmfMsgBuffer *& transportApiUp, boost::mutex *& callbackMainLoopMutex) : transportApiUp_(transportApiUp)
 {

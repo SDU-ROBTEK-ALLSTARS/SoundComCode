@@ -40,7 +40,7 @@
 #if (PACKET_DLEN + PACKET_HLEN) > 255
  #error "Packet lengths in-correctly set."
 #endif
-#define PACKET_TLEN = PACKET_DLEN + PACKET_HLEN
+#define PACKET_TLEN (PACKET_DLEN + PACKET_HLEN)
 
 class Packet {
  private:

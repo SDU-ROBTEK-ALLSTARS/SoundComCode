@@ -31,5 +31,111 @@
     <Filter Include="Source Files\physical">
       <UniqueIdentifier>{91a96de5-4285-4448-8ee4-db5083eb8166}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\backbone">
+      <UniqueIdentifier>{85f9c91f-b5b4-4669-9f9c-445b45372e06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\backbone">
+      <UniqueIdentifier>{7e7a537b-5a07-4c07-89ba-f64b53f8831d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\buffers">
+      <UniqueIdentifier>{acdf77e6-7a4c-49d8-96c1-d569df24937e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\buffers">
+      <UniqueIdentifier>{d09e63ec-eef3-46e7-a538-65a884dc30ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\common">
+      <UniqueIdentifier>{f165ecad-280e-4805-8ad9-1c4505e8ee42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api">
+      <UniqueIdentifier>{f03755df-7196-4d9f-8641-66e00950359a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api">
+      <UniqueIdentifier>{f83c944e-b0f3-4d92-b91a-6a97af5d7fce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\DtmfCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\DtmfCallbackThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\DtmfThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\backbone\DtmfBackbone.h">
+      <Filter>Header Files\backbone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h">
+      <Filter>Header Files\physical</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h">
+      <Filter>Header Files\physical</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.h">
+      <Filter>Header Files\datalink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfBuffer.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfInMessage.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfOutMessage.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\buffers\frame.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\buffers\packet.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\common\exception.h">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\api\DtmfApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\DtmfThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\backbone\DtmfBackbone.cpp">
+      <Filter>Source Files\backbone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp">
+      <Filter>Source Files\physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp">
+      <Filter>Source Files\physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp">
+      <Filter>Source Files\datalink</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfBuffer.cpp">
+      <Filter>Source Files\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfInMessage.cpp">
+      <Filter>Source Files\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfOutMessage.cpp">
+      <Filter>Source Files\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\buffers\frame.cpp">
+      <Filter>Source Files\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\buffers\packet.cpp">
+      <Filter>Source Files\buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\api\DtmfApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

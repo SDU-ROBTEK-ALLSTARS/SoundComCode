@@ -2,8 +2,9 @@
 #ifndef DTMFMSGBUFFER_H
 #define DTMFMSGBUFFER_H
 
-#include <boost\circular_buffer.hpp>
-#include <boost\thread.hpp>
+#include <boost/circular_buffer.hpp>
+#include <boost/thread.hpp>
+
 class DtmfMsgBuffer
 {
 private:

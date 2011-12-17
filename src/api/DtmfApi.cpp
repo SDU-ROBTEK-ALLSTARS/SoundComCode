@@ -1,5 +1,5 @@
 #include "DtmfApi.h"
-#include "../buffers/DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
+#include "DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
 
 DtmfApi::DtmfApi(unsigned char myAddress) : myAddress_(myAddress)
 {

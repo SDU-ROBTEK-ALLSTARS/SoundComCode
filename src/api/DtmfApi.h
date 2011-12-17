@@ -1,8 +1,8 @@
 #ifndef DTMFAPI_H
 #define DTMFAPI_H
 #include <list>
-#include "../DtmfCallbackThread.h"
-#include "../backbone/DtmfBackbone.h"
+#include "DtmfCallbackThread.h"
+#include "DtmfBackbone.h"
 
 #include <iostream>
 

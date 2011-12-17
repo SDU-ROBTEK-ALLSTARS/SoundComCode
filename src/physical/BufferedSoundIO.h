@@ -30,12 +30,13 @@
 # The purpose of this class is to create a link between the hardware and the
 # implementation of the physical layer.
 *******************************************************************************/
-#pragma once
+#ifndef BUFFEREDSOUNDIO_H
+#define BUFFEREDSOUNDIO_H
 
-#include "../portaudio.h"
-#include "../buffers/frame.h"
+#include "portaudio.h"
+#include "frame.h"
 #include <boost/circular_buffer.hpp>
-#include <math.h>
+#include <cmath>
 #include <iostream>	//	For debugging purpose
 
 #define PI							(3.14159265f)
@@ -157,3 +158,4 @@ public:
 	////////////////////////////////Temporary hack publics//////////////////////////////
 	void pullFrames (void *buffer);
 };
+#endif //BUFFEREDSOUNDIO_H

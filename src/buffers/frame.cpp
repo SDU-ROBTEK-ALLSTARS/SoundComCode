@@ -32,7 +32,7 @@
 *******************************************************************************/
 //*****     INCLUDES     *****
 #include 	"frame.h"
-#include 	<stdio.h>
+#include 	<cstdio>
 #include 	<iostream>
 
 //*****     CLASS IMPLEMENTATION     *****

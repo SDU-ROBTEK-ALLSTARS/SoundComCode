@@ -15,6 +15,37 @@
       <Project>{05fbb8ba-2723-40de-89d1-57c1339d6423}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\api\DtmfApi.h" />
+    <ClInclude Include="..\..\..\..\src\backbone\DtmfBackbone.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfInMessage.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfOutMessage.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\frame.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\packet.h" />
+    <ClInclude Include="..\..\..\..\src\common\exception.h" />
+    <ClInclude Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfCallback.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfCallbackThread.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfThread.h" />
+    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h" />
+    <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\api\DtmfApi.cpp" />
+    <ClCompile Include="..\..\..\..\src\backbone\DtmfBackbone.cpp" />
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfInMessage.cpp" />
+    <ClCompile Include="..\..\..\..\src\buffers\DtmfOutMessage.cpp" />
+    <ClCompile Include="..\..\..\..\src\buffers\frame.cpp" />
+    <ClCompile Include="..\..\..\..\src\buffers\packet.cpp" />
+    <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
+    <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp" />
+    <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0B0B760B-73AA-4A88-85C9-6EC0BDBA5A78}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -50,7 +81,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\..\lib\portaudio\include;..\..\..\..\lib\boost;..\..\..\..\src;..\..\..\..\src\common;..\..\..\..\src\physical;..\..\..\..\src\datalink;..\..\..\..\src\transport;..\..\..\..\src\buffer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\lib\portaudio\include;..\..\..\..\lib\boost;..\..\..\..\src;..\..\..\..\src\api;..\..\..\..\src\backbone;..\..\..\..\src\buffers;..\..\..\..\src\common;..\..\..\..\src\data_link;..\..\..\..\src\physical;..\..\..\..\src\transport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -66,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\..\lib\portaudio\include;..\..\..\..\lib\boost;..\..\..\..\src;..\..\..\..\src\common;..\..\..\..\src\physical;..\..\..\..\src\datalink;..\..\..\..\src\transport;..\..\..\..\src\buffer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\lib\portaudio\include;..\..\..\..\lib\boost;..\..\..\..\src;..\..\..\..\src\api;..\..\..\..\src\backbone;..\..\..\..\src\buffers;..\..\..\..\src\common;..\..\..\..\src\data_link;..\..\..\..\src\physical;..\..\..\..\src\transport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

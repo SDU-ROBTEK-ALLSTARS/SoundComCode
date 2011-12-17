@@ -48,11 +48,11 @@
 #define DEBUG_OUT std::cout //output for debug info
 
 //***** INCLUDES *****
-#include <stdio.h>
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 #include <boost/circular_buffer.hpp>
-#include "../buffers/frame.h"
-#include "../buffers/packet.h"
+#include "frame.h"
+#include "packet.h"
 
 //***** DECLARATIONS *****
 struct datalist //structure for unfinished transmissions

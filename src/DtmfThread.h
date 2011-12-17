@@ -2,7 +2,7 @@
 #define DTMFTHREAD_H
 
 //#include "DtmfApi.h"
-#include <boost\thread.hpp>
+#include <boost/thread.hpp>
 
 // Used for providing threading support to classes
 class DtmfThread
