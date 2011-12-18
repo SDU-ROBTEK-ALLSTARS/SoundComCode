@@ -110,7 +110,7 @@ void DtmfDataLinkLayer::encode(  boost::circular_buffer< Packet > *downIn,
 			DEBUG_OUT << "Time for receiver to reply is up" << std::endl;
 #endif
 			//resend all
-			resendData(~0);
+			resendData(0);
 		}
 		else
 		{
@@ -603,64 +603,7 @@ void DtmfDataLinkLayer::clearFrameSendList()
 	nextInSendSequence = 0;
 	dataInSendList = 0;
 }
-//*****
-//Works for complete lists
-//void DtmfDataLinkLayer::checkFrameReceiveList()
-//{
-//   //initialize variable to hold EOT, goes and nogoes
-//   bool transmissionStop = 0;
-//   int request = 0;
-//
-//   #ifdef DEBUG
-//   DEBUG_OUT << "Checking list...entries: " << std::endl;
-//
-//   for(int i=0;i<8;i++)
-//   {
-//      if(transmissionStop==1)
-//         break;
-//      DEBUG_OUT << i << " - ";
-//      for(int j=7;j>=0;j--)
-//         DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
-//      if(frameRecList[i].flag==1)
-//         DEBUG_OUT << " - received";
-//      else
-//         DEBUG_OUT << " - missing";
-//      if(frameRecList[i].eot == 1)
-//      {
-//         DEBUG_OUT << " - End of transmission";
-////         transmissionStop = i;
-//      }
-//      DEBUG_OUT << std::endl;
-//   }
-//   #endif
-//
-//	//reset EOT
-//	transmissionStop = 0;
-//
-//	//iterate through list and set request variable
-//	for(int i=0;i<8;i++)
-//	{
-//		//set corresponding bit if seq. no is received or transmission stopped
-//		request |= ((bool)(frameRecList[i].flag)<<i);
-//	}
-//
-//	//shorten list according to EOT
-//	for(int i=7;i<=0;i--)
-//	{
-//		//update if eot bit is set
-//		if(frameRecList[i].eot == 1 && frameRecList[i].flag == 0)
-//			transmissionStop = 1;
-//	}
-//
-//	//pass upwards if list is complete
-//	if(request == 0xFF)
-//		passDataUpwards();
-//	else
-//		//request resends
-//		requestResend(request);
-//}
-//*****
-//
+
 void DtmfDataLinkLayer::checkFrameReceiveList()
 {
 	//initialize variable to hold EOT, goes and nogoes
