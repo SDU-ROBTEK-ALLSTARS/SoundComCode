@@ -143,6 +143,7 @@ public:
 	void stopOutputStream(void);							//	This should be called implicitly when outputbuffer is empty
 	bool isOutputStreamRunning(void);						//	Returns boolean which tell if the playback is running
 	int pushSamples(void *sampleBuffer);					//	Return value indicate success
+	unsigned int outputSequenceBufferSize (void);
 	
 	//	Input stream definitions
 	//	Set up the input stream
@@ -156,4 +157,5 @@ public:
 	
 	////////////////////////////////Temporary hack publics//////////////////////////////
 	void pullFrames (void *buffer);
+	unsigned int frameBufferSize (void);
 };

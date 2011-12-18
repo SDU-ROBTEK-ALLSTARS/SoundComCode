@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     PhysicalLayer.h
+# File:     DtmfPhysical.h
 # Project:  DtmfProject
 # Version:  1.0
 # Platform:	PC/Mac/Linux
@@ -30,10 +30,11 @@
 # This class implements the physical layer.
 *******************************************************************************/
 #pragma once
-
-#include "../buffers/frame.h"
-#include "BufferedSoundIO.h"
+//	Boost include
 #include <boost/circular_buffer.hpp>
+//	Own includes
+#include "BufferedSoundIO.h"
+#include "../buffers/frame.h"
 
 #define DEBUG
 #define NUMBER_OF_NIBBLES_PER_FRAME	(6)
@@ -59,4 +60,6 @@ public:
 	void stopDataStream (void);
 	int send(void *buffer);
 	void receive(void *buffer);
+	unsigned int sendBufferSize (void);
+	unsigned int receiveBufferSize (void);
 };

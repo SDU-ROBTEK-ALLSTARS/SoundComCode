@@ -30,6 +30,7 @@
 # The purpose of this class is to create a link between the hardware and the
 # implementation of the software part of the physical layer.
 *******************************************************************************/
+//	Own include
 #include "BufferedSoundIO.h"
 
 /****************************************************************************************************************/
@@ -189,6 +190,11 @@ void BufferedSoundIO::pullFrames (void *buffer)
 	return;
 }
 
+unsigned int BufferedSoundIO::frameBufferSize (void)
+{
+	return (this -> frameBuffer -> size());
+}
+
 /****************************************************************************************************************/
 /* Private functions																							*/
 /****************************************************************************************************************/
@@ -246,10 +252,10 @@ int BufferedSoundIO::outputStreamCallback(	const void *inputBuffer,
 		this -> isOutputStreamRunning_ = true;
 
 		//  Get frequencies
-		unsigned int code = (this -> outputBuffer -> at(0));				//	Code between 0 and 15 (both included) (possible 19 if extra frequency are added)
-		this -> outputBuffer -> pop_front();								//	Remove code from ring buffer
-		unsigned int lowFrequency = BufferedSoundIO_lowTones[code / 4];		//	Calculate index of low frequency
-		unsigned int highFrequency = BufferedSoundIO_highTones[code % 4];	//	Calculate index of high frequency
+		unsigned int code = (this -> outputBuffer -> at(0));												//	Code between 0 and 15 (both included) (possible 19 if extra frequency are added)
+		this -> outputBuffer -> pop_front();																//	Remove code from ring buffer
+		unsigned int lowFrequency = BufferedSoundIO_lowTones[code / BufferedSoundIO_numberOfHighTones];		//	Calculate index of low frequency
+		unsigned int highFrequency = BufferedSoundIO_highTones[code % BufferedSoundIO_numberOfHighTones];	//	Calculate index of high frequency
 		
 		//	Calulate buffer
 		for(unsigned int i = 0; i < framesPerBuffer; i++)
@@ -474,6 +480,11 @@ int BufferedSoundIO::pushSamples(void *sampleBuffer)
 	for (unsigned int i = 0; i < (data -> size()); i++)	this -> outputBuffer -> push_back(data -> at(i));
 	
  	return 0;
+}
+
+unsigned int BufferedSoundIO::outputSequenceBufferSize (void)
+{
+	return (this -> outputBuffer -> size());
 }
 
 void BufferedSoundIO::setupInputStream(	PaSampleFormat sampleFormat, unsigned int numberOfChannels, 

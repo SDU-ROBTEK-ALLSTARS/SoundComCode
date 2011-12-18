@@ -13,7 +13,7 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:     PhysicalLayer.cpp
+# File:     DtmfPhysical.cpp
 # Project:  DtmfProject
 # Version:  1.0
 # Platform:	PC/Mac/Linux
@@ -138,4 +138,14 @@ int DtmfPhysical::send(void *buffer)
 void DtmfPhysical::receive(void *buffer)
 {
 	return this -> communicationInterface -> pullFrames(buffer);
+}
+
+unsigned int DtmfPhysical::sendBufferSize (void)
+{
+	return (this -> communicationInterface -> outputSequenceBufferSize());
+}
+
+unsigned int DtmfPhysical::receiveBufferSize (void)
+{
+	return (this -> communicationInterface -> frameBufferSize());
 }
