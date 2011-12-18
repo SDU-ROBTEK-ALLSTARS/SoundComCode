@@ -96,7 +96,7 @@
     <ClInclude Include="..\..\..\..\src\common\exception.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\api\DtmfApi.h">
+    <ClInclude Include="..\..\..\..\include\DtmfApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
   </ItemGroup>
