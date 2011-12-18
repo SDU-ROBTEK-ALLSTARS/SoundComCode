@@ -1,10 +1,10 @@
 #include "DtmfApi.h"
-#include "DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
+#include "../buffers/DtmfOutMessage.h" // Work around on a circular include problem with DtmfApi and DtmfOutMessage
 
 DtmfApi::DtmfApi(unsigned char myAddress, bool hasToken) : myAddress_(myAddress)
 {
 	// Start backbone
-	this->backboneThread_ = new DtmfBackbone(this,this->apiTransportDown_,this->transportApiUp_, &(this->callbackMainLoopMutex_));
+	this->backboneThread_ = new DtmfBackbone(this,this->apiTransportDown_,this->transportApiUp_, &(this->callbackMainLoopMutex_),hasToken);
 	this->callbackThread_ = new DtmfCallbackThread(this->transportApiUp_, this->callbackMainLoopMutex_);
 }
 DtmfApi::~DtmfApi()

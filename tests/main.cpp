@@ -39,7 +39,7 @@ class MyPort2 : public DtmfCallback
 
 int main(void)
 {
-	DtmfApi * dtmf = new DtmfApi(1);
+	DtmfApi * dtmf = new DtmfApi(1,true);
 	MyPort1 * myPort1 = new MyPort1();
 	MyPort2 * myPort2 = new MyPort2();
 	dtmf->servicePort('1',myPort1);

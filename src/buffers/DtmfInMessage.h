@@ -12,6 +12,7 @@ protected:
 	DtmfInMessage(unsigned char senderAddress, unsigned char senderPort, unsigned long dataLength, unsigned char * data);
 	~DtmfInMessage();
 public:
+	friend class DtmfCallbackThread;
     unsigned char getSenderAddress();
 	void getData(unsigned char *& data, unsigned long startAddress, unsigned long stopAddress);
 	void getData(unsigned char *& data);

@@ -33,9 +33,9 @@
 #include <ctime>
 #include <queue>
 #include <boost/circular_buffer.hpp>
-#include "packet.h"
-#include "DtmfOutMessage.h"
-#include "DtmfMsgBuffer.h"
+#include "../buffers/packet.h"
+#include "../buffers/DtmfOutMessage.h"
+#include "../DtmfMsgBuffer.h"
 
 // Connection status aliases
 #define TRANSPORT_STATUS_SYNC_WAIT     1

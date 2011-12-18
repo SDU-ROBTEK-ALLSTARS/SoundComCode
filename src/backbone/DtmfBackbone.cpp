@@ -148,7 +148,7 @@ void DtmfBackbone::main()
 					}
 					break;
 				case 1:
-					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && ROOM_FOR_PFRAME_DOWN)
+					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && this->dtmfPhysical_->receiveBufferSize() == 0)
 					{
 						workDone = true;
 						moveFrameOut();
@@ -162,8 +162,7 @@ void DtmfBackbone::main()
 					}
 					break;
 				case 3:
-					if(this->
-						UP_PFRAME_AVAILABLE && !this->dtmfBuffer_->physicalDllUp->full())
+					if(this->dtmfPhysical_->receiveBufferSize() > 0 && !this->dtmfBuffer_->physicalDllUp->full())
 					{
 						workDone = true;
 						moveFrameIn();
@@ -221,6 +220,7 @@ void DtmfBackbone::moveFrameIn()
 
 void DtmfBackbone::decodeDatagram()
 {
+
 	this->dtmfTransport_->decode(this->dtmfBuffer_->dllTransportUp,this->dtmfBuffer_->transportApiUp);
 	//this->dtmfBuffer_->
 

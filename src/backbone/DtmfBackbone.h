@@ -36,10 +36,7 @@
 
 #ifndef DTMFBACKBONE_H
 #define DTMFBACKBONE_H
-#ifdef _DEBUG
-#define DEBUG
-#endif _DEBUG
-#define DEBUG
+
  
 //Default values for buffers, these will be adjusted during testing, 
 #ifdef DEBUG
@@ -67,14 +64,17 @@ const unsigned int INPUT_SAMPLE_RATE =			8000;
 //Put final values here
 const unsigned int T_PFRAME_MAX=				(10);	
 const unsigned int T_PFRAME_MIN=				(1);	// Just make sure there is "something" ...
+
 const unsigned int FRAME_BUFFER_IN_SIZE=		100;
-const unsigned int FRAME_BUFFER_OUT_SIZE=		
+const unsigned int FRAME_BUFFER_OUT_SIZE=		100;
 const unsigned int T_FRAME_MAX=					
 const unsigned int T_FRAME_MIN=					
+
 const unsigned int DATAGRAM_BUFFER_IN_SIZE=		
 const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	
 const unsigned int T_DGRAM_MAX=					
 const unsigned int T_DGRAM_MIN=					
+
 const unsigned int SLEEPTIME=					
 const unsigned int SLEEPTIME_MSEC =				
 const unsigned int ADRESS =						

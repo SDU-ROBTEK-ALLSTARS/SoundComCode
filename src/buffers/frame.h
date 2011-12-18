@@ -36,7 +36,7 @@
 
 //*****     DEFINES     *****
 //debugging
-#define		DEBUG
+//#define		DEBUG
 #define 	DEBUG_OUT			std::cout
 
 //frame definitions
@@ -45,7 +45,7 @@
 #define		SEQUENCE			1
 #define 	EOT					0
 
-enum {NONE,HEADER};
+//enum {NONE,HEADER};
 
 //*****     INCLUDES     *****
 #include 	<fstream>

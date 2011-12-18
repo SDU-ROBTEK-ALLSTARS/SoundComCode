@@ -9,6 +9,7 @@ class DtmfOutMessage
 {
 	friend class DtmfApi;
 	friend class DtmfBackbone;
+	friend class DtmfTransport;
 private:
 protected:
 	bool addedToQue, processed;

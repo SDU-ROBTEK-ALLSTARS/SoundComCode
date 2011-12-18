@@ -44,7 +44,6 @@
 //testing and debugging
 //#define GENERATE_ERRORS
 #define ERROR_PERCENTAGE 5
-#define DEBUG //out comment for no debug info
 #define DEBUG_OUT std::cout //output for debug info
 
 //***** INCLUDES *****

@@ -12,10 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\src\api\DtmfApi.h" />
-    <ClInclude Include="..\..\..\..\src\api\DtmfInMessage.h" />
-    <ClInclude Include="..\..\..\..\src\api\DtmfOutMessage.h" />
     <ClInclude Include="..\..\..\..\src\backbone\DtmfBackbone.h" />
     <ClInclude Include="..\..\..\..\src\buffers\DtmfBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfInMessage.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfOutMessage.h" />
     <ClInclude Include="..\..\..\..\src\buffers\frame.h" />
     <ClInclude Include="..\..\..\..\src\buffers\packet.h" />
     <ClInclude Include="..\..\..\..\src\common\exception.h" />

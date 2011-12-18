@@ -640,7 +640,7 @@ void DtmfDataLinkLayer::checkFrameReceiveList()
 	}
 
 	//pass upwards if list is complete
-	if(request == (pow(2,listLength)-1) && listLength > 0)
+	if(request == (pow(2.,listLength)-1) && listLength > 0)
 		passDataUpwards(listLength);
 	else
 		//request resends
