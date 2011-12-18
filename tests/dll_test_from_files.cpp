@@ -21,7 +21,7 @@
 #include 	<boost/circular_buffer.hpp>
 
 //data link layer
-#include 	"dataLinkLayer.h"
+#include 	"DtmfDataLinkLayer.h"
 #include	"frame.h"
 
 double getFileSize(const char* file)

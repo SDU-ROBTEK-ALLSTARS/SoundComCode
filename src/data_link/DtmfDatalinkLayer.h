@@ -43,7 +43,7 @@
 
 //testing and debugging
 #define GENERATE_ERRORS
-#define ERROR_PERCENTAGE 2
+#define ERROR_PERCENTAGE 5
 #define DEBUG //out comment for no debug info
 #define DEBUG_OUT std::cout //output for debug info
 
@@ -90,7 +90,7 @@ int nextInSendSequence; //points to the next usable sequence number.
 void processFrame(Frame); //main engine for processing frames into datagrams
 void acceptFrame(Frame); //inserts frame in list
 void discardFrame(); //discards frame (by doing nothing)
-void passDataUpwards(); //writes data into buffer
+void passDataUpwards(int); //writes data into buffer
 
 //flags controlling program flow
 bool receiverNeedsUpdate; //set on end of datagram, cleared on receiver update
@@ -99,6 +99,7 @@ bool dataInSendList; //flag set if there are frames in send list
 bool tokenAlreadyOffered; //set on offerToken, clear on passToken
 bool replyGenerated; //flag sets when reply is generated and clears on decode
 bool noReply; //sets in situations where reply is prohibited
+bool resendRequested; //sets on request resend, clear on pass upwards
 
 //timestamps
 time_t timestampAwaitsReply; //system time @ end of transmission

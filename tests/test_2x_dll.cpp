@@ -34,11 +34,14 @@
 
 //*****     DEFINES     *****
 //buffer i/o
-#define 	BUFFERSIZE 		100
+#define 	BUFFERSIZE 		300
 #define 	INPUTUP 		"inputRight.dat"
 #define 	INPUTDOWN 		"inputLeft.dat"
 #define 	OUTPUTUP 		"outputRight.dat"
 #define 	OUTPUTDOWN 		"outputLeft.dat"
+#define		COUNTER			20000000
+#define		TEST_ITERATIONS	5
+#define		PACKET_SIZE		2
 
 //*****     INCLUDES     *****
 //general
@@ -47,77 +50,92 @@
 #include 	<string>
 #include 	<boost/circular_buffer.hpp>
 
+//physical layer
+#include "../src/physical/DtmfPhysical.h"
+#include "../src/portaudio.h"
 
 //data link layer
-#include 	"dataLinkLayer.h"
-#include	"frame.h"
+#include 	"../src/data_link/DtmfDatalinkLayer.h"
+#include	"../src/buffers/frame.h"
 
+//transport layer
+#include	"../src/buffers/packet.h"
+
+//*****     FUNCTIONS     *****
+void wait(int time)
+{
+	double count = 0;
+	int i;
+	for(i=0;i<time+3;i++)
+	{
+	while(count<COUNTER)
+		count++;
+	count=0;
+	}
+}
+
+//*****     MAIN ENTRY POINT     *****
 int main()
 {
-	//variables
-	unsigned int byte1;
-	double count;
-
 	//i/o streams
-	std::ifstream inputright;
-	std::ifstream inputleft;
 	std::ofstream outputright;
 	std::ofstream outputleft;
-
-	//open files
-	inputright.open(INPUTUP);
-	inputleft.open(INPUTDOWN);
-	if(inputright.fail() || inputleft.fail())
-	{
-		DEBUG_OUT << "Error opening input file";
-		exit(1);
-	}
 	outputright.open(OUTPUTUP);
 	outputleft.open(OUTPUTDOWN);
 
 	//instantiate buffers
-	boost::circular_buffer< unsigned int > inputRight(BUFFERSIZE);   //downwards input Right
-	boost::circular_buffer< unsigned int > inputLeft(BUFFERSIZE);   //downwards input Left
+	boost::circular_buffer< Packet > inputRight(BUFFERSIZE);   //downwards input Right
+	boost::circular_buffer< Packet > inputLeft(BUFFERSIZE);   //downwards input Left
 
-	boost::circular_buffer< unsigned int > outputRight(BUFFERSIZE);   //upwards output Right
-	boost::circular_buffer< unsigned int > outputLeft(BUFFERSIZE);   //upwards output Left
+	boost::circular_buffer< unsigned int > outputRight(BUFFERSIZE); //upwards output Right
+	boost::circular_buffer< unsigned int > outputLeft(BUFFERSIZE);  //upwards output Left
 
+	boost::circular_buffer< Frame > movingLeft(BUFFERSIZE);   		//upwards from phys to left dll
+	boost::circular_buffer< Frame > movingRight(BUFFERSIZE);   	//downwards from left dll to phys
 
-	boost::circular_buffer< Frame > movingRightDll(BUFFERSIZE);   //dll communication Right
-	boost::circular_buffer< Frame > movingLeftDll(BUFFERSIZE);   //dll communication Left
+	#ifdef DEBUG
+	DEBUG_OUT << "----------   ### INITIALIZING BUFFERS  ###   ----------" << std::endl;
+	#endif
 
-#ifdef DEBUG
-DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------" << std::endl;
-#endif
+	//make a packet
+	Packet test1;
+	unsigned char data[PACKET_SIZE];
+	for(int k=0;k<PACKET_SIZE;k++)
+		data[k]=k;
+	unsigned char length = PACKET_SIZE;
+	bool flags[8] = {false};
+	flags[PACKET_FLAG_ACK] = true;
+	test1.make(5,2,flags,7,8,length,data);
 
-	//fill input buffers
-	while( !inputleft.eof() )
-	{
-		inputleft >> byte1;
-		#ifdef DEBUG
-		DEBUG_OUT << "Buffering datagram byte from file...";
-		for(int i=7;i>=0;i--)
-			DEBUG_OUT << (bool)(byte1 & (1<<i));
-		DEBUG_OUT << std::endl;
-		#endif
-		inputLeft.push_back(byte1);
-	}
+	//Put packets in buffers
+	test1.setRecvAddr(0);
+	inputLeft.push_back(test1);
+	inputLeft.push_back(test1);
 
-	while( !inputright.eof() )
-	{
-		inputright >> byte1;
-		#ifdef DEBUG
-		DEBUG_OUT << "Buffering datagram byte from file...";
-		for(int i=7;i>=0;i--)
-			DEBUG_OUT << (bool)(byte1 & (1<<i));
-		DEBUG_OUT << std::endl;
-		#endif
-		inputRight.push_back(byte1);
-	}
+	#ifdef DEBUG
+	DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
+	DEBUG_OUT << "Total package length: " << (int)test1.totalLength() << std::endl;
+	unsigned char* arrayPacket = test1.getAsArray();
+	for (int i=0; i<test1.totalLength(); i++)
+		DEBUG_OUT << (int)arrayPacket[i] << " ";
+	DEBUG_OUT << std::endl;
+	#endif
+
+	test1.setRecvAddr(1);
+	inputRight.push_back(test1);
+
+	#ifdef DEBUG
+	DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
+	DEBUG_OUT << "Total package length: " << (int)test1.totalLength() << std::endl;
+	arrayPacket = test1.getAsArray();
+	for (int i=0; i<test1.totalLength(); i++)
+		DEBUG_OUT << (int)arrayPacket[i] << " ";
+	DEBUG_OUT << std::endl;
+	#endif
 
 	//instantiate data link layer
-	DataLinkLayer Leftdll(0,1); //addr = 0, has token
-	DataLinkLayer Rightdll(1,0); //addr = 1, has no token
+	DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
+	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
 	//call encode or decode with arguments downInput, downOutput, upInput, upOutput
 	for(int k=0;k<30;k++)
@@ -125,25 +143,17 @@ DEBUG_OUT << "----------   ### INITIALIZING BUFFERS FROM FILES ###   ----------"
 	#ifdef DEBUG
 		DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:";
 	#endif
-	Leftdll.decode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
-	count = 0;
-	while(count<50000000)
-		count++;
-	Leftdll.encode(&inputLeft, &movingRightDll, &movingLeftDll, &outputLeft);
-	count = 0;
-	while(count<50000000)
-		count++;
+	Leftdll.decode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
+	wait(1);
+	Leftdll.encode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
+
 	#ifdef DEBUG
 	DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:";
 	#endif
-	Rightdll.decode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
-	count = 0;
-	while(count<50000000)
-		count++;
-	Rightdll.encode(&inputRight, &movingLeftDll, &movingRightDll, &outputRight);
-	count = 0;
-	while(count<50000000)
-		count++;
+	Rightdll.decode(&inputRight, &movingLeft, &movingRight, &outputRight);
+	wait(1);
+	Rightdll.encode(&inputRight, &movingLeft, &movingRight, &outputRight);
+	wait(1);
 	}
 
 #ifdef DEBUG
