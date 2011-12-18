@@ -62,7 +62,7 @@ class DtmfTransport {
                               // NUL packet (data-less) if there is nothing else to send
 
     //For compability with the API layer (DtmfOutMessage are friends with us)
-    void toPacketQueueFromApi(DtmfOutMessage *);
+    void toPacketFromApi(DtmfOutMessage *);
 
     // Retransmission
     double retransTimeout; //Timeout value (in millisecs) before retransmission of an un-acknowledged packet

@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h" />
     <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h" />
+    <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\api\DtmfApi.cpp" />
@@ -45,6 +46,7 @@
     <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp" />
+    <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0B0B760B-73AA-4A88-85C9-6EC0BDBA5A78}</ProjectGuid>

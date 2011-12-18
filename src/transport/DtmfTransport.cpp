@@ -30,10 +30,9 @@
 #include <cmath>
 #include <boost/circular_buffer.hpp>
 #include "exception.h"
-#include "transport.h"
+#include "DtmfTransport.h"
 #include "packet.h"
 #include "DtmfOutMessage.h"
-#include "dummyMsgBuffer.h"
 
 // Table of reserved ports.
 bool DtmfTransport::sPortsInUse_[TRANSPORT_NUM_PORTS] = {false};
@@ -48,18 +47,19 @@ DtmfTransport::~DtmfTransport() {
     sPortsInUse_[port_] = false;
 }
 
-// TODO comment
-void DtmfTransport::toPacketQueueFromApi(DtmfOutMessage *msg) {
-    // When receiving a message object from the API, there exists
-    // two scenarios: The data may just fit into one Packet, or
-    // it will have to be split up between several packets.
-    // We create the packets needed to move the data sent to us,
-    // and queue (by address) them for sending.
+// Converts a DtmfOutMessage object (from API) to Packet
+// objects, and places them in the outQueue_.
+// When receiving a message object from the API, there exists
+// two scenarios: The data may just fit into one Packet, or
+// it will have to be split up between several packets.
+// We create as many packets as needed to move the data.
+void DtmfTransport::toPacketFromApi(DtmfOutMessage *msg) {
+
     if ((msg->dataLength_ > 0) && (msg->dataLength_ <= (PACKET_TLEN - PACKET_HLEN))) {
         Packet packetOut;
         packetOut.setDestPort(msg->rcvPort_);
         packetOut.setRecvAddr(msg->rcvAddress_);
-        packetOut.insertData(msg->data_, (unsigned char)msg->dataLength_, false);  // no need to checksum it yet
+        packetOut.insertData(msg->data_, (unsigned char)msg->dataLength_, false);  // no need to checksum it _yet_
         outQueue_.push_back(&packetOut);
     }
     else if (msg->dataLength_ > (PACKET_TLEN - PACKET_HLEN)) {
@@ -80,7 +80,7 @@ void DtmfTransport::toPacketQueueFromApi(DtmfOutMessage *msg) {
                 outQueue_.push_back(&packetOut);
             }
             else {
-                packetOut.insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);
+                packetOut.insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);  // no need to checksum it _yet_
                 outQueue_.push_back(&packetOut);
             }
         }
@@ -312,7 +312,7 @@ void DtmfTransport::encode(DtmfMsgBuffer *ApiTransportDown,
 
         while (ApiTransportDown->queueSize() > 0) {
             DtmfOutMessage *msg = (DtmfOutMessage*) ApiTransportDown->pullMsg();
-            toPacketQueueFromApi(msg);
+            toPacketFromApi(msg);
         }  // while (ApiTransportDown->queueSize() > 0)
 
     }  // connStatus_ == TRANSPORT_STATUS_CONNECTED

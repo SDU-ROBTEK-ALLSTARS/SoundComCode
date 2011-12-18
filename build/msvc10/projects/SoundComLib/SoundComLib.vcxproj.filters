@@ -99,6 +99,9 @@
     <ClInclude Include="..\..\..\..\include\DtmfApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h">
+      <Filter>Header Files\transport</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\api\DtmfApi.cpp">
       <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp">
+      <Filter>Source Files\transport</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -27,20 +27,15 @@
 #define PACKET_H
 
 // Flag bit positions.
-#define PACKET_FLAG_SYN 0
-#define PACKET_FLAG_ACK 1
-#define PACKET_FLAG_NUL 2
-#define PACKET_FLAG_RST 3
-#define PACKET_FLAG_EAK 4
-#define PACKET_FLAG_CHK 7
+#define PACKET_FLAG_SYN  0
+#define PACKET_FLAG_ACK  1
+#define PACKET_FLAG_NUL  2
+#define PACKET_FLAG_RST  3
+#define PACKET_FLAG_EAK  4
+#define PACKET_FLAG_CHK  7
 
-#define PACKET_HLEN 8 - 1    // Header length (in bytes).
-// UNDONE length defs
-#define PACKET_DLEN 248 - 1  // Data length (in bytes).
-#if (PACKET_DLEN + PACKET_HLEN) > 255
- #error "Packet lengths in-correctly set."
-#endif
-#define PACKET_TLEN (PACKET_DLEN + PACKET_HLEN)
+#define PACKET_HLEN      8    // Header length (in bytes).
+#define PACKET_TLEN      128  // Total length (in bytes).
 
 class Packet {
  private:
