@@ -32,10 +32,16 @@
 
 #include <ctime>
 #include <queue>
+#include <map>
 #include <boost/circular_buffer.hpp>
 #include "packet.h"
 #include "DtmfOutMessage.h"
+#include "DtmfInMessage.h"
 #include "DtmfMsgBuffer.h"
+
+// temp
+#define DEBUG //out comment for no debug info
+#define DEBUG_OUT std::cout //output for debug info
 
 // Connection status aliases
 #define TRANSPORT_STATUS_SYNC_WAIT     1
@@ -54,15 +60,18 @@ class DtmfTransport {
     unsigned char port_;
     unsigned int connStatus_;  // Connection status I.D.
 
-    unsigned char lastInSequence_;   // Last received packet that was in sequence.
+    //unsigned char remoteSeq_;
+    //unsigned char localSeq_;
+    unsigned char lastSeqToApi_;
+    //unsigned char sentSeqCount_;
+
     unsigned int maxNumOutstanding;  // Max number of packet which will be sent
                                      // without getting an acknowledgment.
     unsigned int retransmissionTimeout;
     unsigned int nullTimeout; //Timeout value (in millisecs) for sending a
                               // NUL packet (data-less) if there is nothing else to send
 
-    //For compability with the API layer (DtmfOutMessage are friends with us)
-    void toPacketFromApi(DtmfOutMessage *);
+
 
     // Retransmission
     double retransTimeout; //Timeout value (in millisecs) before retransmission of an un-acknowledged packet
@@ -70,21 +79,44 @@ class DtmfTransport {
     unsigned char timedPacketSeq_; //The sequence number of a timed packet
     std::time_t timedPacketStamp_; //Timestamp of timed packet
 
-    // Internal sender queues
-    std::deque<Packet*> outQueue_;
-    std::deque<Packet*> sentUnAckPackets_; //Packets must be kept until they are acknowledged
+    // Map containers for unacknowledged sent- or received
+    // packets. They are mapped as a pair of sequence
+    // number and packet object pointer address.
+    std::map<unsigned char,Packet *> sentUnAckPackets_;
+    std::map<unsigned char,Packet *> recvUnAckPackets_;
 
-    // Internal receiver queues
-    std::deque<Packet*> inQueue_; //To store on API call
-    std::priority_queue<Packet *, std::vector<Packet *>, Packet::orderBySeq> recvOutOfSeqPackets_; //Packets received out-of-sequence
+    //struct dataCont_ {
+    //    unsigned char *dataPointer_;
+    //    unsigned int length_;
+    //    unsigned char seqNr_;
+    //};
+
+    ////Buffered to API
+    //std::deque<dataCont_ *> dataToApi_;
+    std::deque<Packet *> outQueue_;
+
+
+    // For compability with the API layer (DtmfOutMessage
+    // are friends with us)
+    void toPacketsFromApi(DtmfOutMessage *);
 
     // To/from char-array buffer and Packet object
     Packet packetFromCharBuffer(boost::circular_buffer<unsigned int> *);
     void packetToCharBuffer(boost::circular_buffer<unsigned char> *, Packet);
+    
+    // TODO initializes certain vars
+    void init();
 
-    void init(); // TODO initializes certain vars
+    // Received packet processing. This function decides
+    // what happens when a packet is received depending
+    // on it's flags, etc.
+    void processReceivedPacket(Packet *);
 
-    Packet processIncPacket(Packet);
+    // Processes packets for sending
+    void processSendingPacket(Packet *);
+
+    // To open a connection one must use
+    void connect(const unsigned char destPort);
 
  public:
     DtmfTransport();
@@ -94,14 +126,6 @@ class DtmfTransport {
     // must be configured with:
     void setPort(const unsigned int newPort=0);
 
-    //To open a connection one must use
-    void connect(const unsigned char destPort);
-
-    //keep-alive function?
-
-    //Closes all connections
-    void closeAll();
-
     // Accessors
     unsigned char port() const;
     bool isPortSet(const unsigned int enteredPort=0) const;
@@ -110,9 +134,11 @@ class DtmfTransport {
 
     // Public data I/O
     void decode(boost::circular_buffer<unsigned int> *DllTransportUp,
-                boost::circular_buffer<unsigned char> *TransportApiUp);
+                DtmfMsgBuffer *TransportApiUp);
 
     void encode(DtmfMsgBuffer *ApiTransportDown,
                 boost::circular_buffer<Packet> *TransportDllDown);
+
+    
 };
 #endif //TRANSPORT_H

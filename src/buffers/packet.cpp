@@ -30,7 +30,6 @@
 #include <boost/crc.hpp>
 #include "exception.h"
 #include "packet.h"
-#include "DtmfOutMessage.h"
 
 Packet::Packet() {
     length_ = 0;  // Length is used to test if the packet is "made"; make sure it's 0 initially.
