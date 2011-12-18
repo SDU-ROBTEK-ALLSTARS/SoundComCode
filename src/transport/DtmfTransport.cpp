@@ -27,12 +27,12 @@
 
 #include <ctime>
 #include <queue>
-#include <cmath>
 #include <boost/circular_buffer.hpp>
 #include "exception.h"
 #include "DtmfTransport.h"
 #include "packet.h"
 #include "DtmfOutMessage.h"
+#include "DtmfMsgBuffer.h"
 
 // Table of reserved ports.
 bool DtmfTransport::sPortsInUse_[TRANSPORT_NUM_PORTS] = {false};
