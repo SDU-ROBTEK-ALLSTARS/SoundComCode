@@ -23,7 +23,7 @@
 #			Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 #			Leon Bonde Larsen				<lelar09@student.sdu.dk>
 #			Rudi Hansen						<rudha10@student.sdu.dk>
-# Created:  2011-12-08
+# Created:  2011-12-085
 ********************************************************************************
 # Description
 #
@@ -41,7 +41,7 @@
 #include "../../src/buffers/frame.h"
 
 #define SAMPLE_RATE					(8000)
-#define NUMBER_OF_OUTPUT_SAMPLES	(100)
+#define NUMBER_OF_OUTPUT_SAMPLES	(1000)
 #define NUMBER_OF_INPUT_SAMPLES		(NUMBER_OF_OUTPUT_SAMPLES/2)
 #define BUFFER_SIZE					(100)
 
