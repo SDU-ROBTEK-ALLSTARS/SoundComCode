@@ -33,7 +33,7 @@
  *******************************************************************************/
 //***** INCLUDES *****
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include "DtmfDatalinkLayer.h"
 
 
