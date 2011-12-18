@@ -64,6 +64,7 @@ receiverNeedsUpdate = 1;
 nextInSendSequence = 0;
 datagramIterator = 0;
 lostFrameCount = successFrameCount = 0;
+nextStation = 0;
 
 }
 //*****

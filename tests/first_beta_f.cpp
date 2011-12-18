@@ -39,7 +39,7 @@
 #define 	INPUTDOWN 		"inputLeft.dat"
 #define 	OUTPUTUP 		"outputRight.dat"
 #define 	OUTPUTDOWN 		"outputLeft.dat"
-#define		COUNTER			200000000
+#define		COUNTER			20000000
 
 //*****     INCLUDES     *****
 //general
@@ -173,23 +173,23 @@ inputBufferRight.push_back(test1);
 //	}
 
 	//instantiate data link layer
-	//DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
-	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
+	DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
+	//DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
 	//instantiate physical layer
 	DtmfPhysical physicalLayer(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	physicalLayer.startDataStream();
 
 	//call encode and decode with arguments downInput, downOutput, upInput, upOutput
-	for(int k=0;k<10;k++)
+	while(true)
 	{
 		//left side
 		#ifdef DEBUG
 		DEBUG_OUT << std::endl << " LEFT SIDE:";
 		#endif
-		//Leftdll.decode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
-		//Leftdll.encode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
-
+		Leftdll.decode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		Leftdll.encode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		wait(1);
 		if(!physLeftDown.empty())
 		{
 			#ifdef DEBUG
@@ -205,26 +205,27 @@ inputBufferRight.push_back(test1);
 		}
 		physicalLayer.receive(&physRightUp);
 
-		//right side
-		#ifdef DEBUG
-		DEBUG_OUT << std::endl << " RIGHT SIDE:";
-		#endif
-		Rightdll.decode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
-		Rightdll.encode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
-		if(!physRightDown.empty())
-		{
-			#ifdef DEBUG
-			DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
-			#endif
-			timeToWait = physRightDown.end() - physRightDown.begin();
-			#ifdef DEBUG
-			DEBUG_OUT << timeToWait << " frames to send" << std::endl;
-			#endif
-			physicalLayer.send(&physRightDown);
-			physRightDown.clear();			//TODO: temporary hack. send method should pop, but does not
-			wait(timeToWait);
-		}
-		physicalLayer.receive(&physLeftUp);
+		////right side
+		//#ifdef DEBUG
+		//DEBUG_OUT << std::endl << " RIGHT SIDE:";
+		//#endif
+		//Rightdll.decode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
+		//Rightdll.encode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
+		//wait(1);
+		//if(!physRightDown.empty())
+		//{
+		//	#ifdef DEBUG
+		//	DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
+		//	#endif
+		//	timeToWait = physRightDown.end() - physRightDown.begin();
+		//	#ifdef DEBUG
+		//	DEBUG_OUT << timeToWait << " frames to send" << std::endl;
+		//	#endif
+		//	physicalLayer.send(&physRightDown);
+		//	physRightDown.clear();			//TODO: temporary hack. send method should pop, but does not
+		//	wait(timeToWait);
+		//}
+		//physicalLayer.receive(&physLeftUp);
 	}
 
 #ifdef DEBUG
@@ -267,11 +268,11 @@ DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   -----
 	//print report
 	#ifdef DEBUG
 	DEBUG_OUT << "----------   ### REPORT ###   ----------" << std::endl;
-	DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
-	DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
+	/*DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
+	DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;*/
 	DEBUG_OUT << std::endl;
-//	DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
-	//DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
+	DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
+	DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
 	#endif
 
 	return 0;

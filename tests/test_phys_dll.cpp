@@ -49,17 +49,15 @@
 #include 	<boost/circular_buffer.hpp>
 
 //physical layer
-#include "../src/physical/DtmfPhysical.h"
-
-#include "../src/portaudio.h"
+#include "physical/PhysicalLayer.h"
+#include "portaudio.h"
 
 //data link layer
-#include 	"../src/data_link/DtmfDatalinkLayer.h"
-#include	"../src/buffers/frame.h"
+#include 	"data_link/dataLinkLayer.h"
+#include	"buffers/frame.h"
 
 //transport layer
-
-#include	"../src/buffers/packet.h"
+#include	"transport/packet.h"
 
 //*****     FUNCTIONS     *****
 void wait(int time)
@@ -173,11 +171,11 @@ inputBufferRight.push_back(test1);
 //	}
 
 	//instantiate data link layer
-	//DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
-	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
+	DataLinkLayer Leftdll(1,1); //addr = 1, has token
+	DataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
 	//instantiate physical layer
-	DtmfPhysical physicalLayer(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
+	PhysicalLayer physicalLayer(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	physicalLayer.startDataStream();
 
 	//call encode and decode with arguments downInput, downOutput, upInput, upOutput
@@ -187,8 +185,8 @@ inputBufferRight.push_back(test1);
 		#ifdef DEBUG
 		DEBUG_OUT << std::endl << " LEFT SIDE:";
 		#endif
-		//Leftdll.decode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
-		//Leftdll.encode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		Leftdll.decode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		Leftdll.encode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
 
 		if(!physLeftDown.empty())
 		{
@@ -264,15 +262,7 @@ DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   -----
 			}
 		}
 
-	//print report
-	#ifdef DEBUG
-	DEBUG_OUT << "----------   ### REPORT ###   ----------" << std::endl;
-	DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
-	DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
-	DEBUG_OUT << std::endl;
-//	DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
-	//DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
-	#endif
+	std::cout << Rightdll.printFooBah();
 
 	return 0;
 }
