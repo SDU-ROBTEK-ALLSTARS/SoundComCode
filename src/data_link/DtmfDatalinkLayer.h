@@ -37,12 +37,12 @@
 //defines needed for data link layer
 //#define MY_ADDRESS 1
 #define STARTS_WITH_TOKEN
-#define MAX_TIME_WITH_TOKEN 2
-#define MAX_TIME_OFFERING_TOKEN 1
-#define MAX_TIME_TO_REPLY 1
+#define MAX_TIME_WITH_TOKEN 30
+#define MAX_TIME_OFFERING_TOKEN 10
+#define MAX_TIME_TO_REPLY 15
 
 //testing and debugging
-#define GENERATE_ERRORS
+//#define GENERATE_ERRORS
 #define ERROR_PERCENTAGE 5
 #define DEBUG //out comment for no debug info
 #define DEBUG_OUT std::cout //output for debug info

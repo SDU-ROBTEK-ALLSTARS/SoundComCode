@@ -82,9 +82,6 @@ Frame::Frame(unsigned char head_hi,unsigned char head_lo,unsigned char dat_hi,
 	data = byte1 = 		(	(dat_hi&15)	<<4) | (dat_lo&15);
 	parity = byte0 = 	(	(par_hi&15)	<<4) | (par_lo&15);
 
-	//TODO: cheapest hack in the world - generate parity byte
-//	parity = byte0 = makeParity(byte2,byte1);
-
 	//extract header data
 	type = (byte2 >> TYPE);
 	receiver = (byte2 >> ADDRESS)&3;
