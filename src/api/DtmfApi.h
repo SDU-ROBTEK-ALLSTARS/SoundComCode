@@ -1,9 +1,9 @@
 #ifndef DTMFAPI_H
 #define DTMFAPI_H
 #include <list>
-#include "../DtmfCallbackThread.h"
-#include "../backbone/DtmfBackbone.h"
-#include "../buffers/DtmfOutMessage.h"
+#include "DtmfCallbackThread.h"
+#include "dummyBackbone.h"
+
 #include <iostream>
 
 // forward declarations
@@ -32,11 +32,10 @@ protected:
 	void msgSendCallback_(DtmfOutMessage * dtmfOutMessage); // Messages calls this method with its pointer as argument.
 	void msgDispose_(DtmfOutMessage * dtmfOutMessage);
 public:
-	DtmfApi(unsigned char myAddress);
+	DtmfApi(unsigned char myAddress, bool hasToken);
 	~DtmfApi();
 	void servicePort(unsigned char port, DtmfCallback * callbackMethod);
-//	DtmfApi::DtmfOutMessage * newMessage();
-	DtmfOutMessage * newMessage();
+	DtmfApi::DtmfOutMessage * newMessage();
 	void sendMessage(unsigned char rcvAddress, unsigned char rcvPort, unsigned char * data, unsigned long dataLength);
 };
 
