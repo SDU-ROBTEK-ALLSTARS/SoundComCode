@@ -63,8 +63,11 @@
     <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h">
       <Filter>Header Files\buffers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h">
-      <Filter>Header Files\buffers</Filter>
+    <ClInclude Include="..\..\..\..\src\physical\DtmfPhysical.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -101,7 +104,10 @@
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp">
+    <ClCompile Include="..\..\..\..\src\physical\DtmfPhysical.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

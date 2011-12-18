@@ -12,7 +12,7 @@
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
-********************************************************************************
+ ********************************************************************************
 # File: DtmfDataLinkLayer.cpp
 # Project: DtmfProject
 # Version: 2.0
@@ -24,764 +24,736 @@
 # Leon Bonde Larsen <lelar09@student.sdu.dk>
 # Rudi Hansen <rudha10@student.sdu.dk>
 # Created: 2011-10-30
-********************************************************************************
+ ********************************************************************************
 # Description
 #
 # The purpose of this class is to implement the data link layer of the OSI model.
 # Processing frames into datagrams and datagrams into frames
 # (Denne header er dikteret af den onde diktator Kent)
-*******************************************************************************/
-
+ *******************************************************************************/
 //***** INCLUDES *****
 #include <cstdlib>
-#include "DtmfDataLinkLayer.h"
+#include <math.h>
+#include "DtmfDatalinkLayer.h"
+
 
 //***** CLASS IMPLEMENTATION *****
 DtmfDataLinkLayer::DtmfDataLinkLayer(int addr,bool tok)
 {
-if(tok == 1)
-{
-hasToken = 1;
-time ( &timestampToken );
-// currentReceiver = 1; //TODO: temporary implementation
-}
-else
-{
-hasToken = 0;
-// currentReceiver = 0; //TODO: temporary implementation
-}
-MY_ADDRESS = addr;
-#ifdef DEBUG
-DEBUG_OUT << std::endl << "---------- ### INSTANTIATING DATA LINK LAYER ### ----------" << std::endl;
-if(hasToken)
-DEBUG_OUT << "Has token" << std::endl;
-DEBUG_OUT << "Address: " << MY_ADDRESS << std::endl;
-#endif
-clearFrameReceiveList();
-clearFrameSendList();
-awaitsReply = 0;
-receiverNeedsUpdate = 1;
-nextInSendSequence = 0;
-datagramIterator = 0;
-lostFrameCount = successFrameCount = 0;
+	if(tok == 1)
+	{
+		hasToken = 1;
+		time ( &timestampToken );
+	}
+	else
+		hasToken = 0;
 
+	MY_ADDRESS = nextStation = addr;
+
+#ifdef DEBUG
+	DEBUG_OUT << std::endl << "---------- ### INSTANTIATING DATA LINK LAYER ### ----------" << std::endl;
+	if(hasToken)
+		DEBUG_OUT << "Has token" << std::endl;
+	DEBUG_OUT << "Address: " << MY_ADDRESS << std::endl;
+#endif
+
+	clearFrameReceiveList();
+	clearFrameSendList();
+	receiverNeedsUpdate = 1;
+	nextInSendSequence = datagramIterator = lostFrameCount = successFrameCount = awaitsReply = 0;
 }
 //*****
-void DtmfDataLinkLayer::encode(
-boost::circular_buffer< Packet > *downIn,
-boost::circular_buffer< Frame > *downOut,
-boost::circular_buffer< Frame > *upIn,
-boost::circular_buffer< unsigned int > *upOut)
+void DtmfDataLinkLayer::encode(  boost::circular_buffer< Packet > *downIn,
+		boost::circular_buffer< Frame > *downOut,
+		boost::circular_buffer< Frame > *upIn,
+		boost::circular_buffer< unsigned int > *upOut)
 {
 #ifdef DEBUG
-DEBUG_OUT << std::endl << "---------- ### ENCODE ### ----------" << std::endl;
+	DEBUG_OUT << std::endl << "---------- ### ENCODE ### ----------" << std::endl;
 #endif
 
-//update pointers
-datagramDown = downIn;
-datagramUp = upOut;
-frameDown = downOut;
-frameUp = upIn;
+	//update pointers
+	datagramDown = downIn;
+	frameDown = downOut;
+	frameUp = upIn;
+	datagramUp = upOut;
 
-// unsigned char incoming;
 
-if(hasToken == 1)
-{
-//if token expired
-if(checkToken() == 1)
-{
-return;
-}
-}
-else
-{
+
+	//do I have token?
+	if(hasToken == 1)
+	{
+		//is the token expired?
+		if(checkToken() == 1)
+			return;
+	}
+	else
+	{
 #ifdef DEBUG
-DEBUG_OUT << "has no token" << std::endl;
+		DEBUG_OUT << "has no token" << std::endl;
 #endif
-return;
-}
+		return;
+	}
 
-//check if ready to process
-if(awaitsReply == 1)
-{
-//check current time
-time_t nowClock;
-time ( &nowClock );
+	//check if ready to process
+	if(awaitsReply == 1)
+	{
+		//check current time
+		time_t nowClock;
+		time ( &nowClock );
 
-//compare with saved timestamp from when transmission ended
-if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
-{
-//if time expired
+		//compare with saved timestamp from when transmission ended
+		if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+		{
+			//if time expired
 #ifdef DEBUG
-DEBUG_OUT << "Time for receiver to reply is up" << std::endl;
+			DEBUG_OUT << "Time for receiver to reply is up" << std::endl;
 #endif
-
-//resend all
-resendData(~0);
-}
-else
-{
-//if there is time left
+			//resend all
+			resendData(0);
+		}
+		else
+		{
+			//if there is time left to reply
 #ifdef DEBUG
-std::cout << "Time left for receiver to reply: " << (MAX_TIME_TO_REPLY-(nowClock-timestampAwaitsReply))
-<< " seconds" << std::endl;
+			std::cout << "Time left for receiver to reply: " <<
+					(MAX_TIME_TO_REPLY-(nowClock-timestampAwaitsReply)) << " seconds" << std::endl;
 #endif
-}
-}
+		}
+	}
 
-//process datagrams
-if(!datagramDown->empty())
-{
-while(1)
-{
-if(receiverNeedsUpdate == 1)
-{
-
-//get address of receiver
-currentReceiver = datagramDown->front().recvAddr();
-receiverNeedsUpdate = 0;
+	//start processing if there is data in the buffer
+	if(!(datagramDown->empty()))
+	{
+		while(true)
+		{
+			//check if list is full
+			if(nextInSendSequence >= 8)
+			{
 #ifdef DEBUG
-DEBUG_OUT << "Setting receiver address to " << currentReceiver << std::endl;
+				DEBUG_OUT << "List is full...ending transmission" << std::endl;
 #endif
-
-}
-if(nextInSendSequence >= 8)
-{
+				endTransmission();
+				break;
+			}
+			//check if end of datagram is reached
+			if(datagramIterator >= datagramLength)
+			{
+				//previous datagram has ended and all data has been sent and confirmed
+				if(dataInSendList == 0 && receiverNeedsUpdate == 0)
+				{
+					datagramDown->pop_front();
+					datagramIterator = 0;
+					receiverNeedsUpdate = 1;
+					if(datagramDown->empty())
+					{
 #ifdef DEBUG
-DEBUG_OUT << "List is full...ending transmission" << std::endl;
+					DEBUG_OUT << "Last element popped" << std::endl;
 #endif
-endTransmission();
-break;
-}
-//if end of datagram is reached
-if(datagramIterator >= datagramLength)
-{
-if(dataInSendList == 0)
-{
-// datagramDown->pop_front();
-datagramIterator = 0;
-datagramLength = datagramDown->front().totalLength();
-}
-else
-{
-//Set EOT bit in last frame
-#ifdef DEBUG
-DEBUG_OUT << "Buffer is empty...ending transmission" << std::endl;
-#endif
-endTransmission();
-receiverNeedsUpdate = 1;
-awaitsReply = 1;
-break;
-}
-}
-else
-//process next byte
-// incoming = datagramDown->front().at(datagramIterator);
-// std::cout << "incoming: " << (int)incoming;
-// processDatagram(incoming);
+					return;
+					}
+				}
+				if(receiverNeedsUpdate == 1)
+				{
+					//get address of receiver
+					currentReceiver = datagramDown->front().recvAddr();
+					datagramLength = datagramDown->front().totalLength();
+					receiverNeedsUpdate = 0;
 
 #ifdef DEBUG
-DEBUG_OUT << "Popping from datagrambuffer..." << (int)datagramDown->front()[datagramIterator] << std::endl;
+					DEBUG_OUT << "Setting receiver address to " << currentReceiver << std::endl;
 #endif
-processDatagram((unsigned int)datagramDown->front()[datagramIterator]);
-// unsigned char* arrayPacket = datagramDown->front().getAsArray();
-
-// processDatagram(arrayPacket[datagramIterator]);
-
-datagramIterator++;
-}
-}
-else
-{
+				}
+				else
+				{
+					//datagram has ended but sent data has not yet been confirmed
 #ifdef DEBUG
-DEBUG_OUT << "Buffer is empty...nothing to process" << std::endl;
+					DEBUG_OUT << "Buffer is empty...ending transmission" << std::endl;
 #endif
-//Make sure no frames hang in send list
-if(hasToken == 1 && tokenAlreadyOffered == 0 && dataInSendList == 0)
-{
-//Might as well pass token
+					//Set EOT bit in last frame
+					endTransmission();
+					break;
+				}
+			}
+			else
+			{
+				//still data to process in this datagram
 #ifdef DEBUG
-DEBUG_OUT << "No need for token...passing" << std::endl;
+				DEBUG_OUT << "Popping from datagrambuffer..." << (int)datagramDown->front()[datagramIterator] << std::endl;
 #endif
-offerToken();
-}
-}
+				processDatagram((unsigned int)datagramDown->front()[datagramIterator]);
+				datagramIterator++;
+			}
+		}
+	}
+	else
+	{
+		//buffer is empty
+#ifdef DEBUG
+		DEBUG_OUT << "Buffer is empty...nothing to process" << std::endl;
+#endif
 
-
+		if(hasToken == 1 && tokenAlreadyOffered == 0 && dataInSendList == 0)
+		{
+			// nothing to process. Might as well pass token
+#ifdef DEBUG
+			DEBUG_OUT << "No need for token...passing" << std::endl;
+#endif
+			offerToken();
+		}
+	}
 }
 //*****
 void DtmfDataLinkLayer::decode(
-boost::circular_buffer< Packet > *downIn,
-boost::circular_buffer< Frame > *downOut,
-boost::circular_buffer< Frame > *upIn,
-boost::circular_buffer< unsigned int > *upOut)
+		boost::circular_buffer< Packet > *downIn,
+		boost::circular_buffer< Frame > *downOut,
+		boost::circular_buffer< Frame > *upIn,
+		boost::circular_buffer< unsigned int > *upOut)
 {
 #ifdef DEBUG
-DEBUG_OUT << std::endl << "---------- ### DECODE ### ----------" << std::endl;
+	DEBUG_OUT << std::endl << "---------- ### DECODE ### ----------" << std::endl;
 #endif
-//update pointers
-datagramDown = downIn;
-frameDown = downOut;
-frameUp = upIn;
-datagramUp = upOut;
+	//update pointers
+	datagramDown = downIn;
+	frameDown = downOut;
+	frameUp = upIn;
+	datagramUp = upOut;
 
-//reset flagbits
-replyGenerated = 0;
-noReply = 1;
+	//reset flagbits
+	replyGenerated = 0;
+	noReply = 1;
 
 #ifdef DEBUG
-DEBUG_OUT << "Popping from framebuffer..." << std::endl;
+	DEBUG_OUT << "Popping from framebuffer..." << std::endl;
 #endif
 
-//nothing to process
-if(frameUp->empty())
-return;
+	//nothing to process
+	if(frameUp->empty())
+		return;
 
-//process frames
-while(!frameUp->empty())
-{
-processFrame(frameUp->front());
-frameUp->pop_front();
-}
-//TODO: temporary hack!
-if(replyGenerated == 0 && hasToken == 0 && noReply == 0)
-checkFrameReceiveList();
+	//process frames
+	while(!frameUp->empty())
+	{
+		processFrame(frameUp->front());
+		frameUp->pop_front();
+	}
+	//TODO: temporary hack!
+	if(replyGenerated == 0 && hasToken == 0 && noReply == 0)
+		checkFrameReceiveList();
 }
 //*****
 bool DtmfDataLinkLayer::needsAttention()
 {
-time_t nowClock;
-time (&nowClock);
+	time_t nowClock;
+	time (&nowClock);
 
-//check timestamps
-if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
-{
+	//check timestamps
+	if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Time to re-offer token..." << std::endl;
+		DEBUG_OUT << "Time to re-offer token..." << std::endl;
 #endif
-return 1;
-}
-if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
-{
+		return 1;
+	}
+	if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Time to resend data..." << std::endl;
+		DEBUG_OUT << "Time to resend data..." << std::endl;
 #endif
-return 1;
-}
-if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
-{
+		return 1;
+	}
+	if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Time to pass token..." << std::endl;
+		DEBUG_OUT << "Time to pass token..." << std::endl;
 #endif
-return 1;
-}
-return 0;
+		return 1;
+	}
+	return 0;
 
 }
 //*****
 bool DtmfDataLinkLayer::canTransmit()
 {
-return hasToken;
+	return hasToken;
 }
 //*****
 void DtmfDataLinkLayer::processFrame(Frame incoming)
 {
-if(incoming.checkParity()==0)
-{
-if(incoming.receiver == MY_ADDRESS)
-//if frame is for me and parity is ok
-{
-switch(incoming.type)
-{
-case 3:
-//if frame type is dataframe
-{
-acceptFrame(incoming);
-break;
-}
-case 2:
-//if frame is station accepting token
-{
-passToken();
-break;
-}
-case 1:
-//if frame is station offering token
-{
-tokenOffered();
-break;
-}
-case 0:
-//if frame is reply from receiver
-{
-if(hasToken == 1)
-replyFromReceiver(incoming);
-else
-{
+	if(incoming.checkParity()==0)
+	{
+		if(incoming.receiver == MY_ADDRESS)
+			//if frame is for me and parity is ok
+		{
+			switch(incoming.type)
+			{
+			case 3:
+				//if frame type is dataframe
+			{
+				acceptFrame(incoming);
+				break;
+			}
+			case 2:
+				//if frame is station accepting token
+			{
+				passToken();
+				break;
+			}
+			case 1:
+				//if frame is station offering token
+			{
+				tokenOffered();
+				break;
+			}
+			case 0:
+				//if frame is reply from receiver
+			{
+				if(hasToken == 1)
+					replyFromReceiver(incoming);
+				else
+				{
 #ifdef DEBUG
-DEBUG_OUT << " reply to tokenholder " ;
+					DEBUG_OUT << " reply to tokenholder " ;
 #endif
-discardFrame();
-}
-break;
-}
-default:
-//impossible frame type
-{
-fatalError();
-break;
-}
-}
-}
-else
-//frame is not for me
-{
-if(incoming.type == 0 && hasToken == 1)
-//if frame is reply from receiver and tokenholder is me
-replyFromReceiver(incoming);
-else if(incoming.type == 2 && hasToken == 1)
-//if frame is accept token and I have token
-passToken();
-else
-{
+					discardFrame();
+				}
+				break;
+			}
+			default:
+				//impossible frame type
+			{
+				fatalError();
+				break;
+			}
+			}
+		}
+		else
+			//frame is not for me
+		{
+			if(incoming.type == 0 && hasToken == 1)
+				//if frame is reply from receiver and tokenholder is me
+				replyFromReceiver(incoming);
+			else if(incoming.type == 2 && hasToken == 1)
+				//if frame is accept token and I have token
+				passToken();
+			else
+			{
 #ifdef DEBUG
-DEBUG_OUT << " wrong receiver " ;
+				DEBUG_OUT << " wrong receiver " ;
 #endif
-discardFrame();
-}
-}
-}
-else
-{
+				discardFrame();
+			}
+		}
+	}
+	else
+	{
 #ifdef DEBUG
-DEBUG_OUT << " bad parity " ;
+		DEBUG_OUT << " bad parity " ;
 #endif
-discardFrame();
-}
+		discardFrame();
+	}
 }
 //*****
 void DtmfDataLinkLayer::makeFrame(unsigned char header,unsigned char data)
 {
-//push frame to buffer
-frameDown->push_back(Frame(header,data));
+	//push frame to buffer
+	frameDown->push_back(Frame(header,data));
 
 #ifdef DEBUG
-DEBUG_OUT << "Pushing to framebuffer: " << frameDown->back();
+	DEBUG_OUT << "Pushing to framebuffer: " << frameDown->back();
 #endif
 
 #ifdef GENERATE_ERRORS
-simulateError();
+	simulateError();
 #endif
 }
 //*****
 void DtmfDataLinkLayer::endTransmission()
 {
 #ifdef DEBUG
-DEBUG_OUT << "Setting EOT-bit..." << std::endl;
+	DEBUG_OUT << "Setting EOT-bit..." << std::endl;
 #endif
 
-//can never try to access an empty buffer
-if(frameDown->empty())
-return;
+	//can never try to access an empty buffer
+	if(frameDown->empty())
+		return;
 
-//pop last frame put in buffer
-Frame temp = frameDown->back();
-frameDown->pop_back();
+	//pop last frame put in buffer
+	Frame temp = frameDown->back();
+	frameDown->pop_back();
 
-//extract bytes and set EOT bit
-unsigned int tempHeader,tempData;
-tempData = temp.byte1;
-tempHeader = temp.byte2;
-tempHeader |= 1;
+	//extract bytes and set EOT bit
+	unsigned int tempHeader,tempData;
+	tempData = temp.byte1;
+	tempHeader = temp.byte2;
+	tempHeader |= 1;
 
-//re-push altered frame
-frameDown->push_back(Frame(tempHeader,tempData));
+	//re-push altered frame
+	frameDown->push_back(Frame(tempHeader,tempData));
 
-//timestamp
-time ( &timestampAwaitsReply );
-awaitsReply = 1;
+	//timestamp
+	time ( &timestampAwaitsReply );
+	awaitsReply = 1;
 }
 //*****
 void DtmfDataLinkLayer::acceptFrame(Frame incoming)
 {
-noReply = 0;
-successFrameCount++;
-//put frame in list
-frameRecList[incoming.sequence].dataByte = incoming.data;
-frameRecList[incoming.sequence].flag = 1;
+	noReply = 0;
+	successFrameCount++;
 
-//mark if end of transmission is set
-if(incoming.end == 1)
-frameRecList[incoming.sequence].eot = 1;
+	//put frame in list
+	frameRecList[incoming.sequence].dataByte = incoming.data;
+	frameRecList[incoming.sequence].flag = 1;
+
+	//mark if end of transmission is set
+	if(incoming.end == 1)
+		frameRecList[incoming.sequence].eot = 1;
 
 #ifdef DEBUG
-DEBUG_OUT << "Frame accepted" << std::endl;
+	DEBUG_OUT << "Frame accepted" << std::endl;
 #endif
 
-//check end of transmission bit and process list if set TODO: might no longer be necessary
-if(incoming.end == 1)
-checkFrameReceiveList();
+	//check end of transmission bit and process list if set TODO: might no longer be necessary
+	//	if(incoming.end == 1)
+	//		checkFrameReceiveList();
 }
 //*****
 void DtmfDataLinkLayer::discardFrame()
 {
-//discard frame
-lostFrameCount++;
+	//discard frame
+	lostFrameCount++;
 #ifdef DEBUG
-DEBUG_OUT << "Frame discarded" << std::endl;
+	DEBUG_OUT << "Frame discarded" << std::endl;
 #endif
 }
 //*****
 void DtmfDataLinkLayer::processDatagram(unsigned int incoming)
 {
-dataInSendList = 1;
-//update receiver if incoming is first byte of new datagram
-if(receiverNeedsUpdate == 1)
-{
-currentReceiver = (incoming >> 6);
-receiverNeedsUpdate = 0;
-}
+	dataInSendList = 1;
 
-//generate frame
-makeFrame(
-(3<<TYPE)| //type 3
-(currentReceiver<<ADDRESS)| //receiver address
-(nextInSendSequence<<SEQUENCE), //sequence number
-incoming); //data
+	//generate frame
+	makeFrame(
+			(3<<TYPE)| //type 3
+			(currentReceiver<<ADDRESS)| //receiver address
+			(nextInSendSequence<<SEQUENCE), //sequence number
+			incoming); //data
 
-//put data in list
-frameSendList[nextInSendSequence].dataByte = incoming; //save data in list
-frameSendList[nextInSendSequence].flag = 1; //set flag
+	//put data in list
+	frameSendList[nextInSendSequence].dataByte = incoming; //save data in list
+	frameSendList[nextInSendSequence].flag = 1; //set flag
 
-//update sequence number
-nextInSendSequence++;
+	//update sequence number
+	nextInSendSequence++;
 }
 //*****
 void DtmfDataLinkLayer::fatalError()
 {
-//something is very bad...
+	//something is very bad...
 #ifdef DEBUG
-DEBUG_OUT << "A fatal error has occured!" << std::endl;
+	DEBUG_OUT << "A fatal error has occured!" << std::endl;
 #endif
 }
 void DtmfDataLinkLayer::tokenOffered()
 {
-//set time
-time ( &timestampToken );
+	//set time
+	time ( &timestampToken );
 
-//acquire token
-hasToken = 1;
+	//acquire token
+	hasToken = 1;
 
-//set next station to me (increased when offered)
-nextStation = MY_ADDRESS;
+	//set next station to me (increased when offered)
+	nextStation = MY_ADDRESS;
 
 #ifdef DEBUG
-DEBUG_OUT << "Token offered" << std::endl;
-std::cout << "Token received " << ctime (&timestampToken) << std::endl;
+	DEBUG_OUT << "Token offered" << std::endl;
+	std::cout << "Token received " << ctime (&timestampToken) << std::endl;
 #endif
 
-//make type 2 frame for station before me
-makeFrame((2<<TYPE)|(MY_ADDRESS<<ADDRESS),~0);
+	//make type 2 frame for station before me
+	makeFrame((2<<TYPE)|(MY_ADDRESS<<ADDRESS),~0);
 }
 //*****
 bool DtmfDataLinkLayer::checkToken()
 {
-//check current time
-time_t nowClock;
-time ( &nowClock );
+	//check current time
+	time_t nowClock;
+	time ( &nowClock );
 
-if(tokenAlreadyOffered == 1)
-{
+	if(tokenAlreadyOffered == 1)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Token has been offered to " << nextStation;
+		DEBUG_OUT << "Token has been offered to " << nextStation;
 #endif
-//check timestamp
-if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
-{
-//if expired
+		//check timestamp
+		if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+		{
+			//if expired
 #ifdef DEBUG
-DEBUG_OUT << "...time to reply is up" << std::endl;
+			DEBUG_OUT << "...time to reply is up" << std::endl;
 #endif
-offerToken();
-return 1;
-}
-else
-{
-//if not expired
+			offerToken();
+			return 1;
+		}
+		else
+		{
+			//if not expired
 #ifdef DEBUG
-DEBUG_OUT << "...still time left to reply" << std::endl;
+			DEBUG_OUT << "...still time left to reply" << std::endl;
 #endif
-return 1;
-}
-}
-else
-{
-//compare with saved timestamp from when token was passed
-if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
-{
-//if token expired
+			return 1;
+		}
+	}
+	else
+	{
+		//compare with saved timestamp from when token was passed
+		if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+		{
+			//if token expired
 #ifdef DEBUG
-DEBUG_OUT << "Token expired" << std::endl;
+			DEBUG_OUT << "Token expired" << std::endl;
 #endif
-offerToken();
-return 1;
-}
-else
-{
-//if token has time left
+			offerToken();
+			return 1;
+		}
+		else
+		{
+			//if token has time left
 #ifdef DEBUG
-DEBUG_OUT << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
-<< " seconds" << std::endl;
+			DEBUG_OUT << "Time left with token: " << (MAX_TIME_WITH_TOKEN-(nowClock-timestampToken))
+				<< " seconds" << std::endl;
 #endif
-return 0;
-}
-}
-return 0;
+			return 0;
+		}
+	}
+	return 0;
 }
 //*****
 void DtmfDataLinkLayer::offerToken()
 {
-//increase token receiver
-nextStation++;
+	//increase token receiver
+	nextStation++;
 
-//flip over if higher than number of addresses
-if(nextStation>3)
-nextStation = 0;
+	//flip over if higher than number of addresses
+	if(nextStation>3)
+		nextStation = 0;
 
-//if next receiver has been increased four times
-if(nextStation==MY_ADDRESS)
-{
+	//if next receiver has been increased four times
+	if(nextStation==MY_ADDRESS)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Offering token to self" << std::endl;
+		DEBUG_OUT << "Offering token to self" << std::endl;
 #endif
-//offer token to self
-tokenOffered();
-}
-else
-{
+		//offer token to self
+		tokenOffered();
+		tokenAlreadyOffered = 0;
+		noReply = 1;
+	}
+	else
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Offering token to " << nextStation << std::endl;
+		DEBUG_OUT << "Offering token to " << nextStation << std::endl;
 #endif
-tokenAlreadyOffered = 1;
-time( &timestampTokenOffered );
-//generate frame to offer token to next station
-makeFrame((1<<TYPE)|(nextStation<<ADDRESS),0);
-}
+		tokenAlreadyOffered = 1;
+		time( &timestampTokenOffered );
+		//generate frame to offer token to next station
+		makeFrame((1<<TYPE)|(nextStation<<ADDRESS),0);
+	}
 }
 //*****
 void DtmfDataLinkLayer::passToken()
 {
-//release token
-hasToken = 0;
-tokenAlreadyOffered = 0;
-noReply = 1;
+	//release token
+	hasToken = 0;
+	tokenAlreadyOffered = 0;
+	noReply = 1;
 
 #ifdef DEBUG
-DEBUG_OUT << "Token was passed" << std::endl;
+	DEBUG_OUT << "Token was passed" << std::endl;
 #endif
 }
 //*****
 void DtmfDataLinkLayer::clearFrameReceiveList()
 {
 #ifdef DEBUG
-DEBUG_OUT << "clearing receive list" << std::endl;
+	DEBUG_OUT << "clearing receive list" << std::endl;
 #endif
 
-//clear each entry in list
-for(int i=0;i<8;i++)
-{
-frameRecList[i].dataByte = 0;
-frameRecList[i].flag = 0;
-}
+	//clear each entry in list
+	for(int i=0;i<8;i++)
+	{
+		frameRecList[i].dataByte = 0;
+		frameRecList[i].flag = 0;
+		frameRecList[i].eot = 0;
+	}
 }
 //*****
 void DtmfDataLinkLayer::clearFrameSendList()
 {
 #ifdef DEBUG
-DEBUG_OUT << "clearing send list" << std::endl;
+	DEBUG_OUT << "clearing send list" << std::endl;
 #endif
 
-//clear each entry in list
-for(int i=0;i<8;i++)
-{
-frameSendList[i].dataByte = 0;
-frameSendList[i].flag = 0;
+	//clear each entry in list
+	for(int i=0;i<8;i++)
+	{
+		frameSendList[i].dataByte = 0;
+		frameSendList[i].flag = 0;
+	}
+
+	nextInSendSequence = 0;
+	dataInSendList = 0;
 }
 
-nextInSendSequence = 0;
-dataInSendList = 0;
-}
-//*****
 void DtmfDataLinkLayer::checkFrameReceiveList()
 {
-//initialize variable to hold EOT, goes and nogoes
-bool transmissionStop = 0;
-int request = 0;
+	//initialize variable to hold EOT, goes and nogoes
+	int request = 0;
+	int listLength = 0;
+
+	//iterate through list to find list length
+	for(int i=0;i<8;i++)
+		if(frameRecList[i].eot == 1)
+			listLength = i+1;
 
 #ifdef DEBUG
-DEBUG_OUT << "Checking list...entries: " << std::endl;
-
-for(int i=0;i<8;i++)
-{
-if(transmissionStop==1)
-break;
-DEBUG_OUT << i << " - ";
-for(int j=7;j>=0;j--)
-DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
-if(frameRecList[i].flag==1)
-DEBUG_OUT << " - received";
-else
-DEBUG_OUT << " - missing";
-if(frameRecList[i].eot == 1 && frameRecList[i].flag == 0)
-{
-DEBUG_OUT << " - End of transmission";
-transmissionStop = 1;
-}
-DEBUG_OUT << std::endl;
-}
+	DEBUG_OUT << "Checking list of " << listLength << " entries..." << std::endl;
+	for(int i=0;i<listLength;i++)
+	{
+		DEBUG_OUT << i << " - ";
+		for(int j=7;j>=0;j--)
+			DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
+		if(frameRecList[i].flag==1)
+			DEBUG_OUT << " - received";
+		else
+			DEBUG_OUT << " - missing";
+		if(frameRecList[i].eot == 1)
+			DEBUG_OUT << " - End of transmission";
+		DEBUG_OUT << std::endl;
+	}
 #endif
 
-//reset EOT
-transmissionStop = 0;
+	//iterate through list and and set request variable according to flagbits
+	for(int j=0;j<listLength;j++)
+	{
+		for(int i=0;i<j+1;i++)
+			request |= ((bool)(frameRecList[i].flag)<<i);
+	}
 
-//iterate through list and shorten list according to EOT
-for(int i=0;i<8;i++)
-{
-//set corresponding bit if seq. no is received or transmission stopped
-request |= ((bool)(frameRecList[i].flag|transmissionStop)<<i);
-
-//update if eot bit is set
-if(frameRecList[i].eot == 1 && frameRecList[i].flag == 0)
-transmissionStop = 1;
+	//pass upwards if list is complete
+	if(request == (pow(2,listLength)-1) && listLength > 0)
+		passDataUpwards(listLength);
+	else
+		//request resends
+		requestResend(request);
 }
 
-//pass upwards if list is complete
-if(request == 0xFF)
-passDataUpwards();
-else
-//request resends
-requestResend(request);
-}
 //*****
-void DtmfDataLinkLayer::passDataUpwards()
+void DtmfDataLinkLayer::passDataUpwards(int listLength)
 {
-bool transmissionStop = 0;
-
-//push to datagram buffer
-for(int i=0;i<8;i++)
-{
-//break at the end of transmission
-if(transmissionStop==1)
-break;
-
-//push to buffer
-datagramUp->push_back(frameRecList[i].dataByte);
-
-//update if EOT is set
-if(frameRecList[i].eot == 1 && frameRecList[i].flag == 0)
-transmissionStop = 1;
-}
-
 #ifdef DEBUG
-transmissionStop = 0;
-DEBUG_OUT << "Pushing to datagram buffer:";
-for(int i=0;i<8;i++)
-{
-if(transmissionStop==1)
-break;
-for(int j=7;j>=0;j--)
-DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<j));
-DEBUG_OUT << " ";
-if(frameRecList[i].eot == 1)
-transmissionStop = 1;
-}
-DEBUG_OUT << std::endl << "Gerating OK reply to sender" << std::endl;
+	DEBUG_OUT << "Pushing to datagram buffer:";
 #endif
 
-//generate ok for sender
-makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),~0);
-replyGenerated = 1;
+	//iterate through list and push to datagram buffer
+	for(int i=0;i<listLength;i++)
+	{
+#ifdef DEBUG
+		for(int k=7;k>=0;k--)
+			DEBUG_OUT << (bool)(frameRecList[i].dataByte&(1<<k));
+		DEBUG_OUT << " ";
+#endif
+		datagramUp->push_back(frameRecList[i].dataByte);
+	}
+	std::cout << std::endl;
 
-//clear list
-clearFrameReceiveList();
+#ifdef DEBUG
+	DEBUG_OUT << std::endl << "Gerating OK reply to sender" << std::endl;
+#endif
+
+	//generate ok for sender
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),~0);
+	replyGenerated = 1;
+
+	//clear list
+	clearFrameReceiveList();
 }
 //*****
 void DtmfDataLinkLayer::requestResend(int request)
 {
 #ifdef DEBUG
-for(int j=0;j<8;j++)
-if(!(bool)(request&(1<<j)))
-DEBUG_OUT << "Requesting resend frame " << j << std::endl;
+	for(int j=0;j<8;j++)
+		if(!(bool)(request&(1<<j)))
+			DEBUG_OUT << "Requesting resend frame " << j << std::endl;
 #endif
 
-//make type 0 frame with data byte holding ones for received an zeroes for resend
-makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
-replyGenerated = 1;
+	//make type 0 frame with data byte holding ones for received an zeroes for resend
+	makeFrame((MY_ADDRESS<<ADDRESS)|(1<<EOT),request);
+	replyGenerated = 1;
 }
 //*****
 void DtmfDataLinkLayer::replyFromReceiver(Frame incoming)
 {
-awaitsReply = 0;
-if(incoming.data == 255)
-{
+	awaitsReply = 0;
+	if(incoming.data == 255)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "OK from receiver...";
+		DEBUG_OUT << "OK from receiver...";
 #endif
-clearFrameSendList();
-}
-else
-{
+		clearFrameSendList();
+	}
+	else
+	{
 #ifdef DEBUG
-DEBUG_OUT << "Receiver requesting frames...";
-for(int i=0;i<8;i++)
-{
-if((bool)(incoming.data & (1<<i)) == 0)
-DEBUG_OUT << " " << i;
-}
-DEBUG_OUT << std::endl;
+		DEBUG_OUT << "Receiver requesting frames...";
+		for(int i=0;i<8;i++)
+		{
+			if((bool)(incoming.data & (1<<i)) == 0)
+				DEBUG_OUT << " " << i;
+		}
+		DEBUG_OUT << std::endl;
 #endif
-resendData(incoming.data);
-}
+		resendData(incoming.data);
+	}
 }
 //*****
 void DtmfDataLinkLayer::resendData(unsigned int request)
 {
-//iterate through databyte
-for(int i=0;i<8;i++)
-{
-//resend requested frames
-if((bool)(request & (1<<i)) == 0)
-{
-makeFrame(
-(3<<TYPE)| //type 3
-(currentReceiver<<ADDRESS)| //receiver address
-(i<<SEQUENCE), //sequence number
-frameSendList[i].dataByte); //data
-}
-}
-//set EOT bit in last frame
-endTransmission();
+	//iterate through databyte
+	for(int i=0;i<8;i++)
+	{
+		//resend requested frames
+		if((bool)(request & (1<<i)) == 0)
+		{
+			makeFrame(
+					(3<<TYPE)| //type 3
+					(currentReceiver<<ADDRESS)| //receiver address
+					(i<<SEQUENCE), //sequence number
+					frameSendList[i].dataByte); //data
+		}
+	}
+	//set EOT bit in last frame
+	endTransmission();
 }
 //*****
 #ifdef GENERATE_ERRORS
 void DtmfDataLinkLayer::simulateError()
 {
-//generate random number
-int random = rand()&0xFF;
+	//generate random number
+	int random = rand()&0xFF;
 
-if((random*100/255)<ERROR_PERCENTAGE)
-{
+	if((random*100/255)<ERROR_PERCENTAGE)
+	{
 #ifdef DEBUG
-DEBUG_OUT << "<<<<< SIMULATING ERROR >>>>>" << std::endl;
+		DEBUG_OUT << "<<<<< SIMULATING ERROR >>>>>" << std::endl;
 #endif
 
-//pop last frame put in buffer
-Frame temp = frameDown->back();
-frameDown->pop_back();
+		//pop last frame put in buffer
+		Frame temp = frameDown->back();
+		frameDown->pop_back();
 
-//re-push altered frame
-frameDown->push_back(Frame(temp.byte1 + random,temp.byte2 + random,temp.byte0 + random));
-}
+		//re-push altered frame
+		frameDown->push_back(Frame(temp.byte1,temp.byte2,temp.byte0 + random));
+	}
 }
 #endif
 //End Of File

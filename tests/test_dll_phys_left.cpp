@@ -35,12 +35,11 @@
 //*****     DEFINES     *****
 //buffer i/o
 #define 	BUFFERSIZE 		300
-#define 	INPUTUP 		"inputRight.dat"
-#define 	INPUTDOWN 		"inputLeft.dat"
 #define 	OUTPUTUP 		"outputRight.dat"
 #define 	OUTPUTDOWN 		"outputLeft.dat"
-#define		COUNTER			200000000
-#define		TEST_ITERATIONS	10
+#define		COUNTER			100000000
+#define		TEST_ITERATIONS	100
+#define		PACKET_SIZE		2
 
 //*****     INCLUDES     *****
 //general
@@ -51,7 +50,6 @@
 
 //physical layer
 #include "../src/physical/DtmfPhysical.h"
-
 #include "../src/portaudio.h"
 
 //data link layer
@@ -59,7 +57,6 @@
 #include	"../src/buffers/frame.h"
 
 //transport layer
-
 #include	"../src/buffers/packet.h"
 
 //*****     FUNCTIONS     *****
@@ -67,7 +64,7 @@ void wait(int time)
 {
 	double count = 0;
 	int i;
-	for(i=0;i<time+3;i++)
+	for(i=0;i<time;i++)
 	{
 	while(count<COUNTER)
 		count++;
@@ -79,7 +76,6 @@ void wait(int time)
 int main()
 {
 	//variables
-//	unsigned int byte1;
 	int timeToWait;
 
 	//i/o streams
@@ -89,8 +85,8 @@ int main()
 	outputleft.open(OUTPUTDOWN);
 
 	//instantiate buffers
-	boost::circular_buffer< Packet > inputBufferRight(BUFFERSIZE);   //downwards input Right
-	boost::circular_buffer< Packet > inputBufferLeft(BUFFERSIZE);   //downwards input Left
+	boost::circular_buffer< Packet > inputRight(BUFFERSIZE);   //downwards input Right
+	boost::circular_buffer< Packet > inputLeft(BUFFERSIZE);   //downwards input Left
 
 	boost::circular_buffer< unsigned int > outputRight(BUFFERSIZE); //upwards output Right
 	boost::circular_buffer< unsigned int > outputLeft(BUFFERSIZE);  //upwards output Left
@@ -100,84 +96,102 @@ int main()
 	boost::circular_buffer< Frame > physRightUp(BUFFERSIZE);   		//upwards from phys to right dll
 	boost::circular_buffer< Frame > physRightDown(BUFFERSIZE);   	//downwards from right dll to phys
 
+	#ifdef DEBUG
+	DEBUG_OUT << "----------   ### INITIALIZING BUFFERS  ###   ----------" << std::endl;
+	#endif
 
-#ifdef DEBUG
-DEBUG_OUT << "----------   ### INITIALIZING BUFFERS  ###   ----------" << std::endl;
-#endif
-//make a packet
-Packet test1;
-unsigned char data[247];
-for(int k=0;k<247;k++)
- data[k]=k;
-unsigned char length = 247;
-bool flags[8] = {false};
-flags[PACKET_FLAG_ACK] = true;
-test1.make(5,2,flags,7,8,length,data);
-#ifdef DEBUG
-DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
-DEBUG_OUT << "Total package length: " << (int)test1.totalLength() << std::endl;
-unsigned char* arrayPacket = test1.getAsArray();
-for (int i=0; i<test1.totalLength(); i++) {
-	DEBUG_OUT << (int)arrayPacket[i] << " ";
-}
-#endif
+	//make a packet
+	Packet test1;
+	unsigned char data[PACKET_SIZE];
+	for(int k=0;k<PACKET_SIZE;k++)
+		data[k]=k;
+	unsigned char length = PACKET_SIZE;
+	bool flags[8] = {false};
+	flags[PACKET_FLAG_ACK] = true;
+	test1.make(5,2,flags,7,8,length,data);
 
-inputBufferLeft.push_back(test1);
-inputBufferRight.push_back(test1);
+	//Put packets in buffers
+	test1.setRecvAddr(0);
+	inputLeft.push_back(test1);
+	inputLeft.push_back(test1);
 
-	//instantiate data link layer
-	//DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
-	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
+	#ifdef DEBUG
+	DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
+	DEBUG_OUT << "Total package length: " << (int)test1.totalLength() << std::endl;
+	unsigned char* arrayPacket = test1.getAsArray();
+	for (int i=0; i<test1.totalLength(); i++)
+		DEBUG_OUT << (int)arrayPacket[i] << " ";
+	DEBUG_OUT << std::endl;
+	#endif
+
+	test1.setRecvAddr(1);
+	inputRight.push_back(test1);
+
+	#ifdef DEBUG
+	DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
+	DEBUG_OUT << "Total package length: " << (int)test1.totalLength() << std::endl;
+	arrayPacket = test1.getAsArray();
+	for (int i=0; i<test1.totalLength(); i++)
+		DEBUG_OUT << (int)arrayPacket[i] << " ";
+	DEBUG_OUT << std::endl;
+	#endif
+
+	//instantiate data link layers
+	DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
+//	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
 	//instantiate physical layer
 	DtmfPhysical physicalLayer(paFloat32, 2, 600, 8000, paFloat32, 2, 300, 8000);
 	physicalLayer.startDataStream();
 
-	//call encode and decode with arguments downInput, downOutput, upInput, upOutput
+	//call encode or decode with arguments downInput, downOutput, upInput, upOutput
 	for(int k=0;k<TEST_ITERATIONS;k++)
 	{
-		//left side
-		#ifdef DEBUG
+	#ifdef DEBUG
 		DEBUG_OUT << std::endl << " LEFT SIDE:";
-		#endif
-		//Leftdll.decode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
-		//Leftdll.encode(&inputBufferLeft, &physLeftDown, &physLeftUp, &outputLeft);
+	#endif
+		Leftdll.decode(&inputLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		wait(1);
+		Leftdll.encode(&inputLeft, &physLeftDown, &physLeftUp, &outputLeft);
+		wait(1);
 
-		if(!physLeftDown.empty())
-		{
-			#ifdef DEBUG
-			DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
-			#endif
-			timeToWait = physLeftDown.end() - physLeftDown.begin();
-			#ifdef DEBUG
-			DEBUG_OUT << timeToWait << " frames to send" << std::endl;
-			#endif
-			physicalLayer.send(&physLeftDown);
-			physLeftDown.clear();				//TODO: temporary hack. send method should pop, but does not
-			wait(timeToWait);
-		}
-		physicalLayer.receive(&physRightUp);
-
-		//right side
+	if(!physLeftDown.empty())
+	{
 		#ifdef DEBUG
-		DEBUG_OUT << std::endl << " RIGHT SIDE:";
+		DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
 		#endif
-		Rightdll.decode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
-		Rightdll.encode(&inputBufferRight, &physRightDown, &physRightUp, &outputRight);
-		if(!physRightDown.empty())
-		{
-			#ifdef DEBUG
-			DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
-			#endif
-			timeToWait = physRightDown.end() - physRightDown.begin();
-			#ifdef DEBUG
-			DEBUG_OUT << timeToWait << " frames to send" << std::endl;
-			#endif
-			physicalLayer.send(&physRightDown);
-			physRightDown.clear();			//TODO: temporary hack. send method should pop, but does not
-			wait(timeToWait);
-		}
-		physicalLayer.receive(&physLeftUp);
+		timeToWait = physLeftDown.end() - physLeftDown.begin();
+		#ifdef DEBUG
+		DEBUG_OUT << timeToWait << " frames to send" << std::endl;
+		#endif
+		physicalLayer.send(&physLeftDown);
+		physLeftDown.clear();				//TODO: temporary hack. send method should pop, but does not
+		wait(timeToWait+5);
+	}
+	physicalLayer.receive(&physLeftUp);
+
+//	#ifdef DEBUG
+//	DEBUG_OUT << std::endl << " RIGHT SIDE:";
+//	#endif
+//	Rightdll.decode(&inputRight, &physRightDown, &physRightUp, &outputRight);
+//	wait(1);
+//	Rightdll.encode(&inputRight, &physRightDown, &physRightUp, &outputRight);
+//	wait(1);
+//
+//	if(!physRightDown.empty())
+//	{
+//		#ifdef DEBUG
+//		DEBUG_OUT << std::endl << "----------   ###   SEND   ###   ----------" << std::endl;
+//		#endif
+//		timeToWait = physRightDown.end() - physRightDown.begin();
+//		#ifdef DEBUG
+//		DEBUG_OUT << timeToWait << " frames to send" << std::endl;
+//		#endif
+//		physicalLayer.send(&physRightDown);
+//		physRightDown.clear();			//TODO: temporary hack. send method should pop, but does not
+//		wait(timeToWait+5);
+//	}
+//	physicalLayer.receive(&physLeftUp);
 	}
 
 #ifdef DEBUG
@@ -201,30 +215,30 @@ DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   -----
 			}
 		}
 
-	while(true)
-		{
-			if(outputRight.empty())
-			{
-				break;
-			}
-			else
-			{
-				#ifdef DEBUG
-				DEBUG_OUT << "Writing datagram..." << outputRight.front() << std::endl;
-				#endif
-				outputright << (int)outputRight.front() << std::endl;
-				outputRight.pop_front();
-			}
-		}
+//	while(true)
+//		{
+//			if(outputRight.empty())
+//			{
+//				break;
+//			}
+//			else
+//			{
+//				#ifdef DEBUG
+//				DEBUG_OUT << "Writing datagram..." << outputRight.front() << std::endl;
+//				#endif
+//				outputright << (int)outputRight.front() << std::endl;
+//				outputRight.pop_front();
+//			}
+//		}
 
 	//print report
 	#ifdef DEBUG
 	DEBUG_OUT << "----------   ### REPORT ###   ----------" << std::endl;
-	DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
-	DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
-	DEBUG_OUT << std::endl;
-//	DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
-	//DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
+//	DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
+//	DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
+//	DEBUG_OUT << std::endl;
+	DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
+	DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
 	#endif
 
 	return 0;
