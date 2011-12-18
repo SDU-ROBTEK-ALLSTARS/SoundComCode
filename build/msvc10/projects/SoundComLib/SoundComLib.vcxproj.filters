@@ -63,16 +63,10 @@
     <ClInclude Include="..\..\..\..\src\DtmfThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\src\backbone\DtmfBackbone.h">
       <Filter>Header Files\backbone</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h">
-      <Filter>Header Files\physical</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h">
       <Filter>Header Files\physical</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.h">
@@ -102,6 +96,12 @@
     <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h">
       <Filter>Header Files\transport</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\src\physical\DtmfPhysical.h">
+      <Filter>Header Files\physical</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\DtmfMsgBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp">
@@ -114,9 +114,6 @@
       <Filter>Source Files\backbone</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp">
-      <Filter>Source Files\physical</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp">
       <Filter>Source Files\physical</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp">
@@ -142,6 +139,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp">
       <Filter>Source Files\transport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\physical\DtmfPhysical.cpp">
+      <Filter>Source Files\physical</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\DtmfMsgBuffer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

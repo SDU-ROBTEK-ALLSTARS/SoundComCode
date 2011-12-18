@@ -27,10 +27,10 @@
     <ClInclude Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.h" />
     <ClInclude Include="..\..\..\..\src\DtmfCallback.h" />
     <ClInclude Include="..\..\..\..\src\DtmfCallbackThread.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\DtmfThread.h" />
-    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h" />
-    <ClInclude Include="..\..\..\..\src\physical\PhysicalLayer.h" />
+    <ClInclude Include="..\..\..\..\src\physical\DtmfPhysical.h" />
     <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h" />
   </ItemGroup>
   <ItemGroup>
@@ -43,9 +43,10 @@
     <ClCompile Include="..\..\..\..\src\buffers\packet.cpp" />
     <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfMsgBuffer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp" />
-    <ClCompile Include="..\..\..\..\src\physical\PhysicalLayer.cpp" />
+    <ClCompile Include="..\..\..\..\src\physical\DtmfPhysical.cpp" />
     <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
