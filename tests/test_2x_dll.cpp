@@ -2,7 +2,7 @@
 # DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
 #
 # Copyright (c) 2011    Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
-#						Frederik HagelskjÃŠr				<frhag10@student.sdu.dk>
+#						Frederik Hagelskjær				<frhag10@student.sdu.dk>
 #						Kent Stark Olsen				<keols09@student.sdu.dk>
 #						Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 #						Leon Bonde Larsen				<lelar09@student.sdu.dk>
@@ -18,7 +18,7 @@
 # Version:  1.0
 # Platform:	PC/Mac/Linux
 # Authors:  Alexander Adelholm Brandbyge	<abran09@student.sdu.dk>
-#			Frederik HagelskjÃŠr				<frhag10@student.sdu.dk>
+#			Frederik Hagelskjær				<frhag10@student.sdu.dk>
 #			Kent Stark Olsen				<keols09@student.sdu.dk>
 #			Kim Lindberg Schwaner			<kschw10@student.sdu.dk>
 #			Leon Bonde Larsen				<lelar09@student.sdu.dk>
@@ -40,8 +40,8 @@
 #define 	OUTPUTUP 		"outputRight.dat"
 #define 	OUTPUTDOWN 		"outputLeft.dat"
 #define		COUNTER			20000000
-#define		TEST_ITERATIONS	5
-#define		PACKET_SIZE		2
+#define		PACKET_SIZE		50
+#define		MAX_ITERATIONS	300
 
 //*****     INCLUDES     *****
 //general
@@ -77,11 +77,16 @@ void wait(int time)
 //*****     MAIN ENTRY POINT     *****
 int main()
 {
+	//variables
+	time_t timestampStart;
+	time_t timestampEnd;
+	int ERROR_PERCENTAGE;
+	int k;
+
 	//i/o streams
-	std::ofstream outputright;
-	std::ofstream outputleft;
-	outputright.open(OUTPUTUP);
-	outputleft.open(OUTPUTDOWN);
+	std::ofstream report;
+
+	report.open("test_report.txt");
 
 	//instantiate buffers
 	boost::circular_buffer< Packet > inputRight(BUFFERSIZE);   //downwards input Right
@@ -123,6 +128,7 @@ int main()
 
 	test1.setRecvAddr(1);
 	inputRight.push_back(test1);
+	inputRight.push_back(test1);
 
 	#ifdef DEBUG
 	DEBUG_OUT << "Checksum validity: " << test1.checksumValid() << std::endl;
@@ -133,66 +139,79 @@ int main()
 	DEBUG_OUT << std::endl;
 	#endif
 
+	outputLeft.push_back(0);
+	outputRight.push_back(0);
+
 	//instantiate data link layer
 	DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
 	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
-	//call encode or decode with arguments downInput, downOutput, upInput, upOutput
-	for(int k=0;k<30;k++)
+	for(int l=0;l<=60;l++)
 	{
-	#ifdef DEBUG
-		DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:";
-	#endif
-	Leftdll.decode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
-	wait(1);
-	Leftdll.encode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
+		ERROR_PERCENTAGE = l;
+		Leftdll.ERROR_PERCENTAGE = ERROR_PERCENTAGE;
+		Rightdll.ERROR_PERCENTAGE = ERROR_PERCENTAGE;
 
-	#ifdef DEBUG
-	DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:";
-	#endif
-	Rightdll.decode(&inputRight, &movingLeft, &movingRight, &outputRight);
-	wait(1);
-	Rightdll.encode(&inputRight, &movingLeft, &movingRight, &outputRight);
-	wait(1);
-	}
+		//timestamp
+		time ( &timestampStart );
+
+		//call encode or decode with arguments downInput, downOutput, upInput, upOutput
+		for(k=0;k<MAX_ITERATIONS;k++)
+		{
+#ifdef DEBUG
+			DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:";
+#endif
+			Leftdll.decode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
+			wait(1);
+			Leftdll.encode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
+			wait(1);
 
 #ifdef DEBUG
-DEBUG_OUT << std::endl << "----------   ### WRITING BUFFERS TO FILES ###   ----------" << std::endl;
+			DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:";
 #endif
+			Rightdll.decode(&inputRight, &movingLeft, &movingRight, &outputRight);
+			wait(1);
+			Rightdll.encode(&inputRight, &movingLeft, &movingRight, &outputRight);
+			wait(1);
 
-	//write output buffers to files. Results in "Assertion failed:" if buffer is empty, but executes anyway
-	while(true)
-		{
-			if(outputLeft.empty())
-			{
+			if(outputRight.size()>=(PACKET_SIZE+8) && outputLeft.size()>=(PACKET_SIZE+8))
 				break;
-			}
-			else
-			{
-				#ifdef DEBUG
-				DEBUG_OUT << "Writing datagram..." << outputLeft.front() << std::endl;
-				#endif
-				outputleft << (int)outputLeft.front() << std::endl;
-				outputLeft.pop_front();
-			}
 		}
+		time ( &timestampEnd );
 
-	while(true)
-		{
-			if(outputRight.empty())
-			{
-				break;
-			}
-			else
-			{
-				#ifdef DEBUG
-				DEBUG_OUT << "Writing datagram..." << outputRight.front() << std::endl;
-				#endif
-				outputright << (int)outputRight.front() << std::endl;
-				outputRight.pop_front();
-			}
-		}
+		report << "----------   ### REPORT ###   ----------" << std::endl;
+		report << "Four packets of " << PACKET_SIZE << " bytes transferred in " <<
+				(MAX_TIME_TO_REPLY-(timestampStart-timestampEnd)) << " seconds" << std::endl;
+		report << "Error percentage setting: " << ERROR_PERCENTAGE << "%" << std::endl;
+		report << "Number of errors generated. Left: " << Leftdll.generatedError << " Right: "
+				<< Rightdll.generatedError << ". Total: " << Leftdll.generatedError+Rightdll.generatedError << std::endl;
+		report << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
+		report << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
+		report << std::endl;
+		report << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
+		report << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
+		report << std::endl;
+		report << std::endl;
+
+#ifdef DEBUG
+		DEBUG_OUT << "----------   ### REPORT ###   ----------" << std::endl;
+		DEBUG_OUT << "Four packets of " << PACKET_SIZE << " bytes transferred in " <<
+				(MAX_TIME_TO_REPLY-(timestampStart-timestampEnd)) << " seconds" << std::endl;
+		DEBUG_OUT << "Error percentage setting: " << ERROR_PERCENTAGE << "%" << std::endl;
+		DEBUG_OUT << "Number of errors generated. Left: " << Leftdll.generatedError << " Right: "
+				<< Rightdll.generatedError << ". Total: " << Leftdll.generatedError+Rightdll.generatedError << std::endl;
+		DEBUG_OUT << "Right data link layer discarded " << Rightdll.lostFrameCount << " frames." << std::endl;
+		DEBUG_OUT << "Right data link layer transferred " << Rightdll.successFrameCount << " frames." << std::endl;
+		DEBUG_OUT << std::endl;
+		DEBUG_OUT << "Left data link layer discarded " << Leftdll.lostFrameCount << " frames." << std::endl;
+		DEBUG_OUT << "Left data link layer transferred " << Leftdll.successFrameCount << " frames." << std::endl;
+		DEBUG_OUT << std::endl;
+		DEBUG_OUT << std::endl;
+#endif
+	}
+
+
 	return 0;
 }
 
-//End Of File
+	//End Of File
