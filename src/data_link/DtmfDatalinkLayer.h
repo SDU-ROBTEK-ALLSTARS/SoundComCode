@@ -37,14 +37,14 @@
 //defines needed for data link layer
 //#define MY_ADDRESS 1
 #define STARTS_WITH_TOKEN
-#define MAX_TIME_WITH_TOKEN 30
-#define MAX_TIME_OFFERING_TOKEN 10
-#define MAX_TIME_TO_REPLY 15
+#define MAX_TIME_WITH_TOKEN 5
+#define MAX_TIME_OFFERING_TOKEN 1
+#define MAX_TIME_TO_REPLY 1
 
 //testing and debugging
 #define GENERATE_ERRORS
-#define ERROR_PERCENTAGE 5
-//#define	DEBUG
+//#define ERROR_PERCENTAGE 5
+#define	DEBUG
 #define DEBUG_OUT std::cout //output for debug info
 
 //***** INCLUDES *****
@@ -145,9 +145,12 @@ boost::circular_buffer< unsigned int >*);
 
 bool needsAttention(); //returns 1 if a timer is due and 0 if not
 bool canTransmit(); //returns 1 if hasToken = 1 and 0 if hasToken = 0
+bool awaitsReply();
 
 double lostFrameCount; //increase on discard frame
 double successFrameCount; //increase on accept frame
+double generatedError;
+int ERROR_PERCENTAGE;
 };
 #endif /* DATALINKLAYER_H_ */
 

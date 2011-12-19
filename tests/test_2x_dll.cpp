@@ -39,9 +39,10 @@
 #define 	INPUTDOWN 		"inputLeft.dat"
 #define 	OUTPUTUP 		"outputRight.dat"
 #define 	OUTPUTDOWN 		"outputLeft.dat"
-#define		COUNTER			20000000
-#define		PACKET_SIZE		50
+#define		COUNTER			10000000
+#define		PACKET_SIZE		17
 #define		MAX_ITERATIONS	300
+#define		DEBUG
 
 //*****     INCLUDES     *****
 //general
@@ -146,7 +147,7 @@ int main()
 	DtmfDataLinkLayer Leftdll(1,1); //addr = 1, has token
 	DtmfDataLinkLayer Rightdll(0,0); //addr = 0, has no token
 
-	for(int l=0;l<=60;l++)
+	for(int l=0;l<=81;l++)
 	{
 		ERROR_PERCENTAGE = l;
 		Leftdll.ERROR_PERCENTAGE = ERROR_PERCENTAGE;
@@ -159,7 +160,7 @@ int main()
 		for(k=0;k<MAX_ITERATIONS;k++)
 		{
 #ifdef DEBUG
-			DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:";
+			DEBUG_OUT << std::endl << " LEFT DATA LINK LAYER:" << std::endl;
 #endif
 			Leftdll.decode(&inputLeft, &movingRight, &movingLeft, &outputLeft);
 			wait(1);
@@ -167,7 +168,7 @@ int main()
 			wait(1);
 
 #ifdef DEBUG
-			DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:";
+			DEBUG_OUT << std::endl << " RIGHT DATA LINK LAYER:" << std::endl;
 #endif
 			Rightdll.decode(&inputRight, &movingLeft, &movingRight, &outputRight);
 			wait(1);
@@ -177,6 +178,8 @@ int main()
 			if(outputRight.size()>=(PACKET_SIZE+8) && outputLeft.size()>=(PACKET_SIZE+8))
 				break;
 		}
+		outputRight.clear();
+		outputLeft.clear();
 		time ( &timestampEnd );
 
 		report << "----------   ### REPORT ###   ----------" << std::endl;

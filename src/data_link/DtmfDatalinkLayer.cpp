@@ -61,7 +61,7 @@ DtmfDataLinkLayer::DtmfDataLinkLayer(int addr,bool tok)
 	clearFrameReceiveList();
 	clearFrameSendList();
 	receiverNeedsUpdate = 1;
-	nextInSendSequence = datagramIterator = lostFrameCount = successFrameCount = awaitsReply = 0;
+	nextInSendSequence = datagramIterator = lostFrameCount = successFrameCount = awaitsReply = generatedError = 0;
 }
 //*****
 void DtmfDataLinkLayer::encode(  boost::circular_buffer< Packet > *downIn,
@@ -357,6 +357,12 @@ void DtmfDataLinkLayer::processFrame(Frame incoming)
 		discardFrame();
 	}
 }
+//*****
+bool DtmfDataLinkLayer::awaitsReply()
+{
+	return awaitsReply;
+}
+
 //*****
 void DtmfDataLinkLayer::makeFrame(unsigned char header,unsigned char data)
 {
@@ -755,6 +761,7 @@ void DtmfDataLinkLayer::simulateError()
 		Frame temp = frameDown->back();
 		frameDown->pop_back();
 
+		generatedError++;
 		//re-push altered frame
 		frameDown->push_back(Frame(temp.byte1,temp.byte2,temp.byte0 + random));
 	}
