@@ -42,9 +42,10 @@
 #define MAX_TIME_TO_REPLY 15
 
 //testing and debugging
-//#define GENERATE_ERRORS
+#define GENERATE_ERRORS
 #define ERROR_PERCENTAGE 5
-//#define DEBUG_OUT std::cout //output for debug info
+#define	DEBUG
+#define DEBUG_OUT std::cout //output for debug info
 
 //***** INCLUDES *****
 #include <stdio.h>
@@ -108,6 +109,7 @@ time_t timestampToken; //system time when token was received
 //network
 bool hasToken; //1 means have token, 0 means have no token
 int nextStation; //next station to be offered the token
+bool eotReceived;
 void tokenOffered(); //receives token
 bool checkToken(); //returns 0 if token is OK and 1 if time to pass token
 void offerToken(); //offer token to next station

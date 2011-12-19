@@ -235,10 +235,13 @@ void DtmfDataLinkLayer::decode(
 	while(!frameUp->empty())
 	{
 		processFrame(frameUp->front());
+		if(frameUp->front().end == 1)
+			eotReceived = 1;
 		frameUp->pop_front();
 	}
-	//TODO: temporary hack!
-	if(replyGenerated == 0 && hasToken == 0 && noReply == 0)
+
+	//check list if EOT was received
+	if(replyGenerated == 0 && hasToken == 0 && eotReceived == 1)
 		checkFrameReceiveList();
 }
 //*****
