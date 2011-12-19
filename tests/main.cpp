@@ -1,4 +1,4 @@
-
+#define DEBUG
 #include "../src/api/DtmfApi.h"
 #include "../src/DtmfCallback.h"
 #include <iostream>

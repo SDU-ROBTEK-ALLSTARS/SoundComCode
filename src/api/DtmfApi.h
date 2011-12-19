@@ -35,7 +35,7 @@ public:
 	DtmfApi(unsigned char myAddress, bool hasToken);
 	~DtmfApi();
 	void servicePort(unsigned char port, DtmfCallback * callbackMethod);
-	DtmfApi::DtmfOutMessage * newMessage();
+	DtmfOutMessage * newMessage();
 	void sendMessage(unsigned char rcvAddress, unsigned char rcvPort, unsigned char * data, unsigned long dataLength);
 };
 

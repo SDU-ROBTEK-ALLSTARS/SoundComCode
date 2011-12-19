@@ -37,7 +37,7 @@
 //*****     DEFINES     *****
 //debugging
 //#define		DEBUG
-#define 	DEBUG_OUT			(std::cout)
+#define 	DEBUG_OUT			std::cout
 
 //frame definitions
 #define		TYPE				6
