@@ -136,7 +136,7 @@ public:
 #ifndef DEBUG
 public:
 #endif DEBUG
-	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp,boost::mutex ** callbackMainLoopMutex,bool &hasToken);
+	DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp,boost::mutex ** callbackMainLoopMutex,bool &hasToken,unsigned char thisAddress);
 	~DtmfBackbone();
 	
 };

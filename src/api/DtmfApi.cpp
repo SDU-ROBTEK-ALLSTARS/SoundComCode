@@ -4,8 +4,10 @@
 DtmfApi::DtmfApi(unsigned char myAddress, bool hasToken) : myAddress_(myAddress)
 {
 	// Start backbone
-	this->backboneThread_ = new DtmfBackbone(this,this->apiTransportDown_,this->transportApiUp_, &(this->callbackMainLoopMutex_),hasToken);
+	this->backboneThread_ = new DtmfBackbone(this,this->apiTransportDown_,this->transportApiUp_, &(this->callbackMainLoopMutex_),hasToken,myAddress);
 	this->callbackThread_ = new DtmfCallbackThread(this->transportApiUp_, this->callbackMainLoopMutex_);
+	this->backboneThread_->start();
+	this->callbackThread_->start();
 }
 DtmfApi::~DtmfApi()
 {

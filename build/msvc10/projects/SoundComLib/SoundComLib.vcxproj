@@ -38,6 +38,7 @@
     <ClCompile Include="..\..\..\..\src\buffers\packet.cpp" />
     <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfMsgBuffer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\DtmfPhysical.cpp" />

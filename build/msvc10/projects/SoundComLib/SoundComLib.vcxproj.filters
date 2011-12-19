@@ -110,5 +110,8 @@
     <ClCompile Include="..\..\..\..\src\transport\DtmfTransport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\DtmfMsgBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -35,13 +35,13 @@
 
 //The backbone instantiates the buffers and individual layers, and ends off with launching its own operator thread. 
 //Since the api constructs the backbone, a pointer to it, and its message buffers is given as well.
-DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp, boost::mutex ** callbackMainLoopMutex,bool &hasToken)
+DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp, boost::mutex ** callbackMainLoopMutex,bool &hasToken,unsigned char thisAddress)
 {
 	//Instantiate the layers, and threads.
 	callbackMainLoopMutex_ = callbackMainLoopMutex;
 	this->dtmfapi_ =  dtmfApi;
 	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
-	this->dtmfDatalink_ = new DtmfDataLinkLayer(ADRESS,hasToken);
+	this->dtmfDatalink_ = new DtmfDataLinkLayer(thisAddress,hasToken);
 	//this->dtmfPhysical_ = new DtmfPhysical(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	this->dtmfPhysical_ = new DtmfPhysical(paFloat32,2,OUTPUT_BUFFER_SIZE,OUTPUT_SAMPLE_RATE,paFloat32,2,INPUT_BUFFER_SIZE,INPUT_SAMPLE_RATE);
 	this->dtmfTransport_ = new DtmfTransport();
@@ -63,6 +63,9 @@ void DtmfBackbone::main()
 {
 	while(continueRunning_)
 	{	
+//#ifdef DEBUG
+		std::cout << "running" << std::endl;
+//#endif DEBUG
 		//----------Primary thresholds-----------
 		
 		//----------  Physical layer section ----
