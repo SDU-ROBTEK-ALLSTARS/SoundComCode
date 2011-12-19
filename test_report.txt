@@ -1,0 +1,440 @@
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 14 seconds
+Error percentage setting: 0%
+Number of errors generated. Left: 0 Right: 0. Total: 0
+Right data link layer discarded 2 frames.
+Right data link layer transferred 57 frames.
+
+Left data link layer discarded 0 frames.
+Left data link layer transferred 24 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 15 seconds
+Error percentage setting: 1%
+Number of errors generated. Left: 1 Right: 0. Total: 1
+Right data link layer discarded 6 frames.
+Right data link layer transferred 82 frames.
+
+Left data link layer discarded 0 frames.
+Left data link layer transferred 50 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 266 seconds
+Error percentage setting: 2%
+Number of errors generated. Left: 23 Right: 12. Total: 35
+Right data link layer discarded 127 frames.
+Right data link layer transferred 854 frames.
+
+Left data link layer discarded 16 frames.
+Left data link layer transferred 322 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 267 seconds
+Error percentage setting: 3%
+Number of errors generated. Left: 55 Right: 36. Total: 91
+Right data link layer discarded 260 frames.
+Right data link layer transferred 1613 frames.
+
+Left data link layer discarded 44 frames.
+Left data link layer transferred 727 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 266 seconds
+Error percentage setting: 4%
+Number of errors generated. Left: 90 Right: 65. Total: 155
+Right data link layer discarded 393 frames.
+Right data link layer transferred 2344 frames.
+
+Left data link layer discarded 78 frames.
+Left data link layer transferred 1090 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 129 seconds
+Error percentage setting: 5%
+Number of errors generated. Left: 108 Right: 77. Total: 185
+Right data link layer discarded 458 frames.
+Right data link layer transferred 2652 frames.
+
+Left data link layer discarded 96 frames.
+Left data link layer transferred 1267 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 264 seconds
+Error percentage setting: 6%
+Number of errors generated. Left: 163 Right: 105. Total: 268
+Right data link layer discarded 612 frames.
+Right data link layer transferred 3333 frames.
+
+Left data link layer discarded 130 frames.
+Left data link layer transferred 1589 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 58 seconds
+Error percentage setting: 7%
+Number of errors generated. Left: 173 Right: 116. Total: 289
+Right data link layer discarded 641 frames.
+Right data link layer transferred 3441 frames.
+
+Left data link layer discarded 145 frames.
+Left data link layer transferred 1656 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 63 seconds
+Error percentage setting: 8%
+Number of errors generated. Left: 186 Right: 122. Total: 308
+Right data link layer discarded 674 frames.
+Right data link layer transferred 3553 frames.
+
+Left data link layer discarded 157 frames.
+Left data link layer transferred 1719 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 67 seconds
+Error percentage setting: 9%
+Number of errors generated. Left: 205 Right: 137. Total: 342
+Right data link layer discarded 712 frames.
+Right data link layer transferred 3679 frames.
+
+Left data link layer discarded 178 frames.
+Left data link layer transferred 1798 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 101 seconds
+Error percentage setting: 10%
+Number of errors generated. Left: 234 Right: 165. Total: 399
+Right data link layer discarded 773 frames.
+Right data link layer transferred 3880 frames.
+
+Left data link layer discarded 210 frames.
+Left data link layer transferred 1917 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 29 seconds
+Error percentage setting: 11%
+Number of errors generated. Left: 242 Right: 174. Total: 416
+Right data link layer discarded 786 frames.
+Right data link layer transferred 3919 frames.
+
+Left data link layer discarded 225 frames.
+Left data link layer transferred 1968 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 60 seconds
+Error percentage setting: 12%
+Number of errors generated. Left: 261 Right: 188. Total: 449
+Right data link layer discarded 821 frames.
+Right data link layer transferred 4013 frames.
+
+Left data link layer discarded 244 frames.
+Left data link layer transferred 2027 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 39 seconds
+Error percentage setting: 13%
+Number of errors generated. Left: 272 Right: 194. Total: 466
+Right data link layer discarded 841 frames.
+Right data link layer transferred 4052 frames.
+
+Left data link layer discarded 257 frames.
+Left data link layer transferred 2066 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 94 seconds
+Error percentage setting: 14%
+Number of errors generated. Left: 311 Right: 217. Total: 528
+Right data link layer discarded 909 frames.
+Right data link layer transferred 4210 frames.
+
+Left data link layer discarded 286 frames.
+Left data link layer transferred 2132 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 53 seconds
+Error percentage setting: 15%
+Number of errors generated. Left: 332 Right: 233. Total: 565
+Right data link layer discarded 939 frames.
+Right data link layer transferred 4254 frames.
+
+Left data link layer discarded 314 frames.
+Left data link layer transferred 2192 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 103 seconds
+Error percentage setting: 16%
+Number of errors generated. Left: 382 Right: 255. Total: 637
+Right data link layer discarded 1017 frames.
+Right data link layer transferred 4422 frames.
+
+Left data link layer discarded 344 frames.
+Left data link layer transferred 2288 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 182 seconds
+Error percentage setting: 17%
+Number of errors generated. Left: 475 Right: 311. Total: 786
+Right data link layer discarded 1168 frames.
+Right data link layer transferred 4773 frames.
+
+Left data link layer discarded 403 frames.
+Left data link layer transferred 2422 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 157 seconds
+Error percentage setting: 18%
+Number of errors generated. Left: 562 Right: 361. Total: 923
+Right data link layer discarded 1300 frames.
+Right data link layer transferred 5035 frames.
+
+Left data link layer discarded 465 frames.
+Left data link layer transferred 2559 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 47 seconds
+Error percentage setting: 19%
+Number of errors generated. Left: 581 Right: 371. Total: 952
+Right data link layer discarded 1330 frames.
+Right data link layer transferred 5099 frames.
+
+Left data link layer discarded 481 frames.
+Left data link layer transferred 2591 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 44 seconds
+Error percentage setting: 20%
+Number of errors generated. Left: 597 Right: 398. Total: 995
+Right data link layer discarded 1353 frames.
+Right data link layer transferred 5134 frames.
+
+Left data link layer discarded 515 frames.
+Left data link layer transferred 2639 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 164 seconds
+Error percentage setting: 21%
+Number of errors generated. Left: 696 Right: 441. Total: 1137
+Right data link layer discarded 1498 frames.
+Right data link layer transferred 5436 frames.
+
+Left data link layer discarded 564 frames.
+Left data link layer transferred 2671 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 137 seconds
+Error percentage setting: 22%
+Number of errors generated. Left: 777 Right: 499. Total: 1276
+Right data link layer discarded 1614 frames.
+Right data link layer transferred 5626 frames.
+
+Left data link layer discarded 634 frames.
+Left data link layer transferred 2787 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 42 seconds
+Error percentage setting: 23%
+Number of errors generated. Left: 801 Right: 531. Total: 1332
+Right data link layer discarded 1643 frames.
+Right data link layer transferred 5664 frames.
+
+Left data link layer discarded 677 frames.
+Left data link layer transferred 2868 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 58 seconds
+Error percentage setting: 24%
+Number of errors generated. Left: 823 Right: 570. Total: 1393
+Right data link layer discarded 1674 frames.
+Right data link layer transferred 5707 frames.
+
+Left data link layer discarded 723 frames.
+Left data link layer transferred 2945 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 76 seconds
+Error percentage setting: 25%
+Number of errors generated. Left: 862 Right: 604. Total: 1466
+Right data link layer discarded 1726 frames.
+Right data link layer transferred 5774 frames.
+
+Left data link layer discarded 765 frames.
+Left data link layer transferred 2985 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 43 seconds
+Error percentage setting: 26%
+Number of errors generated. Left: 883 Right: 636. Total: 1519
+Right data link layer discarded 1753 frames.
+Right data link layer transferred 5819 frames.
+
+Left data link layer discarded 802 frames.
+Left data link layer transferred 3060 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 122 seconds
+Error percentage setting: 27%
+Number of errors generated. Left: 984 Right: 696. Total: 1680
+Right data link layer discarded 1879 frames.
+Right data link layer transferred 5978 frames.
+
+Left data link layer discarded 868 frames.
+Left data link layer transferred 3141 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 49 seconds
+Error percentage setting: 28%
+Number of errors generated. Left: 1018 Right: 740. Total: 1758
+Right data link layer discarded 1919 frames.
+Right data link layer transferred 6034 frames.
+
+Left data link layer discarded 921 frames.
+Left data link layer transferred 3217 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 61 seconds
+Error percentage setting: 29%
+Number of errors generated. Left: 1040 Right: 786. Total: 1826
+Right data link layer discarded 1952 frames.
+Right data link layer transferred 6076 frames.
+
+Left data link layer discarded 975 frames.
+Left data link layer transferred 3279 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 75 seconds
+Error percentage setting: 30%
+Number of errors generated. Left: 1089 Right: 842. Total: 1931
+Right data link layer discarded 2017 frames.
+Right data link layer transferred 6184 frames.
+
+Left data link layer discarded 1036 frames.
+Left data link layer transferred 3355 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 121 seconds
+Error percentage setting: 31%
+Number of errors generated. Left: 1162 Right: 907. Total: 2069
+Right data link layer discarded 2119 frames.
+Right data link layer transferred 6338 frames.
+
+Left data link layer discarded 1114 frames.
+Left data link layer transferred 3421 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 80 seconds
+Error percentage setting: 32%
+Number of errors generated. Left: 1205 Right: 987. Total: 2192
+Right data link layer discarded 2168 frames.
+Right data link layer transferred 6389 frames.
+
+Left data link layer discarded 1210 frames.
+Left data link layer transferred 3531 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 163 seconds
+Error percentage setting: 33%
+Number of errors generated. Left: 1328 Right: 1080. Total: 2408
+Right data link layer discarded 2328 frames.
+Right data link layer transferred 6549 frames.
+
+Left data link layer discarded 1309 frames.
+Left data link layer transferred 3616 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 82 seconds
+Error percentage setting: 34%
+Number of errors generated. Left: 1387 Right: 1145. Total: 2532
+Right data link layer discarded 2398 frames.
+Right data link layer transferred 6599 frames.
+
+Left data link layer discarded 1392 frames.
+Left data link layer transferred 3675 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 119 seconds
+Error percentage setting: 35%
+Number of errors generated. Left: 1484 Right: 1209. Total: 2693
+Right data link layer discarded 2521 frames.
+Right data link layer transferred 6741 frames.
+
+Left data link layer discarded 1462 frames.
+Left data link layer transferred 3753 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 82 seconds
+Error percentage setting: 36%
+Number of errors generated. Left: 1548 Right: 1287. Total: 2835
+Right data link layer discarded 2592 frames.
+Right data link layer transferred 6793 frames.
+
+Left data link layer discarded 1560 frames.
+Left data link layer transferred 3845 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 202 seconds
+Error percentage setting: 37%
+Number of errors generated. Left: 1750 Right: 1401. Total: 3151
+Right data link layer discarded 2839 frames.
+Right data link layer transferred 7023 frames.
+
+Left data link layer discarded 1684 frames.
+Left data link layer transferred 3937 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 148 seconds
+Error percentage setting: 38%
+Number of errors generated. Left: 1877 Right: 1488. Total: 3365
+Right data link layer discarded 2997 frames.
+Right data link layer transferred 7203 frames.
+
+Left data link layer discarded 1775 frames.
+Left data link layer transferred 4026 frames.
+
+
+----------   ### REPORT ###   ----------
+Four packets of 17 bytes transferred in 70 seconds
+Error percentage setting: 39%
+Number of errors generated. Left: 1940 Right: 1559. Total: 3499
+Right data link layer discarded 3069 frames.
+Right data link layer transferred 7258 frames.
+
+Left data link layer discarded 1849 frames.
+Left data link layer transferred 4078 frames.
+
+
