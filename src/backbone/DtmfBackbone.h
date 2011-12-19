@@ -40,26 +40,7 @@
  
 //Default values for buffers, these will be adjusted during testing, 
 #ifdef DEBUG
-const unsigned int T_PFRAME_MAX=				(10);
-const unsigned int T_PFRAME_MIN=				(20);
-const unsigned int FRAME_BUFFER_IN_SIZE=		(1000);
-const unsigned int FRAME_BUFFER_OUT_SIZE=		(1000);
-const unsigned int T_FRAME_MAX=					(5);
-const unsigned int T_FRAME_MIN=					(10);
-const unsigned int DATAGRAM_BUFFER_IN_SIZE=		(200);
-const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	(200);
-const unsigned int T_DGRAM_MAX=					(2);
-const unsigned int T_DGRAM_MIN=					(5);
-//const unsigned int SLEEPTIME=					(10);
-const unsigned int SLEEPTIME_MSEC =				(1);
-const unsigned int MAX_FRAMES_PR_DATAGRAM =				(8);
-const unsigned int MAX_DATAGRAM_PR_MESSAGE =				(10);
-const unsigned int OUTPUT_BUFFER_SIZE =         500;
-const unsigned int OUTPUT_SAMPLE_RATE =		    8000;
-const unsigned int INPUT_BUFFER_SIZE =			250;
-const unsigned int INPUT_SAMPLE_RATE =			8000;
-#endif DEBUG
-#ifndef DEBUG
+
 //Put final values here
 const unsigned int T_PFRAME_MAX=				(10);	
 const unsigned int T_PFRAME_MIN=				(1);	// Just make sure there is "something" ...
@@ -75,12 +56,12 @@ const unsigned int T_DGRAM_MAX=					45;
 const unsigned int T_DGRAM_MIN=					1;
 
 const unsigned int SLEEPTIME_MSEC =				1;
-const unsigned int MAX_FRAMES_PR_DATAGRAM =		
-const unsigned int MAX_DATAGRAM_PR_MESSAGE =	
-const unsigned int OUTPUT_BUFFER_SIZE =         
-const unsigned int OUTPUT_SAMPLE_RATE =		    
-const unsigned int INPUT_BUFFER_SIZE =			
-const unsigned int INPUT_SAMPLE_RATE =			
+const unsigned int MAX_FRAMES_PR_DATAGRAM =		100;
+const unsigned int MAX_DATAGRAM_PR_MESSAGE =	100;
+const unsigned int OUTPUT_BUFFER_SIZE =          500;
+const unsigned int OUTPUT_SAMPLE_RATE =		    8000;
+const unsigned int INPUT_BUFFER_SIZE =			250;
+const unsigned int INPUT_SAMPLE_RATE =			8000;
 #endif DEBUG
 
 

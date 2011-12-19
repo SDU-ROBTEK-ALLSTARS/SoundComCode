@@ -71,6 +71,8 @@ void DtmfBackbone::main()
 		//----------Primary thresholds-----------
 		#ifdef DEBUG
 			std::cout << "Running" << std::endl;
+			std::cout << "Can send ?: " << this->dtmfDatalink_->canTransmit() << std::endl;
+			std::cout << std::endl;
 		#endif DEBUG
 		//----------  Physical layer section ----
 		//The goal here is to ensure that the physical layer
@@ -83,7 +85,7 @@ void DtmfBackbone::main()
 		{
 			
 			#ifdef DEBUG
-			std::cout << "moving frame in" << std::endl;
+			std::cout << "moving frame in                                   " << std::endl;
 			#endif DEBUG
 			moveFrameIn();
 		}
@@ -93,7 +95,7 @@ void DtmfBackbone::main()
 		{
 			moveFrameOut();
 			#ifdef DEBUG
-			std::cout << "moving frame out" << std::endl;
+			std::cout << "moving frame out                                  " << std::endl << std::endl;
 			#endif DEBUG
 		}
 
@@ -114,6 +116,9 @@ void DtmfBackbone::main()
 		else if((this->dtmfBuffer_->physicalDllUp->size() > T_FRAME_MAX)&& //Too many input frames waiting.
 			   (this->hasRoomForDatalinkAction()))
 		{
+			#ifdef DEBUG
+			std::cout << "Datalink action, because too many input frames" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
@@ -123,6 +128,10 @@ void DtmfBackbone::main()
 				)
 
 		{
+			
+			#ifdef DEBUG
+			std::cout << "Datalink action, because too few output frames" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
