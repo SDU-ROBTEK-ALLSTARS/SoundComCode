@@ -60,20 +60,34 @@ DtmfBackbone::~DtmfBackbone()
 	delete dtmfTransport_;
 }
 
+#ifdef DEBUG
+#include <time.h>
+#endif DEBUG
+
+int counter = 0;
+
 //Main dispatching loop
 void DtmfBackbone::main()
 {
+	this->dtmfPhysical_->startDataStream();
 	while(continueRunning_)
 	{	
 
 		//----------Primary thresholds-----------
 		#ifdef DEBUG
-		
 			debugBackboneBuffers(this->dtmfBuffer_,this->dtmfPhysical_);
 			std::cout << "Running" << std::endl;
 			std::cout << "Can send ?: " << this->dtmfDatalink_->canTransmit() << std::endl;
 			std::cout << "Has token?: " << this->dtmfDatalink_->hasToken << std::endl;
+			std::cout << "Can transmit?: " << this->dtmfDatalink_->canTransmit() << std::endl;
+			std::cout << "Awaits reply?: " << this->dtmfDatalink_->awaitsReplys() << std::endl;
+			clock_t endwait;
+			endwait = clock ();
+			std::cout << "Timestamp: " << endwait << std::endl;
+			std::cout << "attention: " << counter << std::endl;
+			
 			std::cout << std::endl;
+
 		#endif DEBUG
 		//----------  Physical layer section ----
 		//The goal here is to ensure that the physical layer
@@ -107,6 +121,7 @@ void DtmfBackbone::main()
 		//it must always call decode then encode, in that order. This means that 
 		else if(this->dtmfDatalink_->needsAttention()&&this->hasRoomForDatalinkAction())
 		{
+			counter++;
 			#ifdef DEBUG
 			std::cout << "Datalink action, because needs attention                              " << std::endl;
 			#endif DEBUG
@@ -127,7 +142,6 @@ void DtmfBackbone::main()
 		else if((this->dtmfBuffer_->dllPhysicalDown->size() < T_FRAME_MIN)&&  //The physical layer will soon need more output frames.
 				(!this->dtmfBuffer_->transportDllDown->empty()) &&			  //and there is atleast 1 datagram ready to be encoded
 				(this->hasRoomForDatalinkAction())&&
-				
 				this->dtmfDatalink_->canTransmit()
 				)
 

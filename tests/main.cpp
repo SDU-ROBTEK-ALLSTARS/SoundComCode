@@ -22,6 +22,7 @@ class MyPort1 : public DtmfCallback
 		std::cout << std::endl;
 	}
 };
+
 class MyPort2 : public DtmfCallback
 {
 	virtual void callbackMethod(DtmfInMessage * message)
