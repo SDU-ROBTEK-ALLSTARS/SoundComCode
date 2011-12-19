@@ -41,7 +41,7 @@
 #include "../../src/buffers/frame.h"
 
 #define SAMPLE_RATE					(8000)
-#define NUMBER_OF_OUTPUT_SAMPLES	(1000)
+#define NUMBER_OF_OUTPUT_SAMPLES	(300)
 #define NUMBER_OF_INPUT_SAMPLES		(NUMBER_OF_OUTPUT_SAMPLES/2)
 #define BUFFER_SIZE					(100)
 

@@ -116,6 +116,7 @@ BufferedSoundIO::~BufferedSoundIO(void)
 /****************************************************************************************************************/
 void BufferedSoundIO::initializeHack (void)
 {
+	this -> isOutputStreamRunning_ = false;
 	this -> frameBuffer = new boost::circular_buffer<Frame>(100);
 }
 
