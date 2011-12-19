@@ -1,24 +1,24 @@
 /*******************************************************************************
 # DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
 #
-# Copyright (c) 2011    Alexander Adelholm Brandbyge    <abran09@student.sdu.dk>
-#                       Frederik Hagelskjær             <frhag10@student.sdu.dk>
-#                       Kent Stark Olsen                <keols09@student.sdu.dk>
-#                       Kim Lindberg Schwaner           <kschw10@student.sdu.dk>
-#                       Leon Bonde Larsen               <lelar09@student.sdu.dk>
-#                       Rudi Hansen                     <rudha10@student.sdu.dk>
+# Copyright (c) 2011 Alexander Adelholm Brandbyge <abran09@student.sdu.dk>
+# Frederik Hagelskjær <frhag10@student.sdu.dk>
+# Kent Stark Olsen <keols09@student.sdu.dk>
+# Kim Lindberg Schwaner <kschw10@student.sdu.dk>
+# Leon Bonde Larsen <lelar09@student.sdu.dk>
+# Rudi Hansen <rudha10@student.sdu.dk>
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:       packet.h
-# Project:    DtmfProject
+# File: packet.h
+# Project: DtmfProject
 # Version:
-# Platform:   PC/Mac/Linux
-# Author:     Kim Lindberg Schwaner            <kschw10@student.sdu.dk>
-# Created:    2011-06-12
+# Platform: PC/Mac/Linux
+# Author: Kim Lindberg Schwaner <kschw10@student.sdu.dk>
+# Created: 2011-06-12
 ********************************************************************************
 # Description
 #
@@ -35,27 +35,28 @@
 #include <boost/circular_buffer.hpp>
 #include "../buffers/packet.h"
 #include "../buffers/DtmfOutMessage.h"
+#include "../buffers/DtmfInMessage.h"
 #include "../DtmfMsgBuffer.h"
 
 // Connection status aliases
-#define TRANSPORT_STATUS_SYNC_WAIT     1
-#define TRANSPORT_STATUS_CONNECTED     2
-#define TRANSPORT_STATUS_DISCONNECTED  3
-#define TRANSPORT_STATUS_RESET         4
+#define TRANSPORT_STATUS_SYNC_WAIT 1
+#define TRANSPORT_STATUS_CONNECTED 2
+#define TRANSPORT_STATUS_DISCONNECTED 3
+#define TRANSPORT_STATUS_RESET 4
 
-#define TRANSPORT_NUM_PORTS            256  // Max number of ports. Warning:
-                                            // Packet object not compatible with more than 256.
-#define TRANSPORT_NUM_RES_PORTS        20   // Number of reserved ports ranging
+#define TRANSPORT_NUM_PORTS 256 // Max number of ports. Warning:
+// Packet object not compatible with more than 256.
+#define TRANSPORT_NUM_RES_PORTS 20 // Number of reserved ports ranging
                                             // from 0 to TRANSPORT_NUM_RES_PORTS-1.
 
 class DtmfTransport {
  private:
     static bool sPortsInUse_[TRANSPORT_NUM_PORTS];
     unsigned char port_;
-    unsigned int connStatus_;  // Connection status I.D.
+    unsigned int connStatus_; // Connection status I.D.
 
-    unsigned char lastInSequence_;   // Last received packet that was in sequence.
-    unsigned int maxNumOutstanding;  // Max number of packet which will be sent
+    unsigned char lastInSequence_; // Last received packet that was in sequence.
+    unsigned int maxNumOutstanding; // Max number of packet which will be sent
                                      // without getting an acknowledgment.
     unsigned int retransmissionTimeout;
     unsigned int nullTimeout; //Timeout value (in millisecs) for sending a
@@ -110,9 +111,10 @@ class DtmfTransport {
 
     // Public data I/O
     void decode(boost::circular_buffer<unsigned int> *DllTransportUp,
-                boost::circular_buffer<unsigned char> *TransportApiUp);
+                DtmfMsgBuffer *TransportApiUp);
 
     void encode(DtmfMsgBuffer *ApiTransportDown,
                 boost::circular_buffer<Packet> *TransportDllDown);
 };
 #endif //TRANSPORT_H
+

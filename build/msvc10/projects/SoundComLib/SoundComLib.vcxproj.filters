@@ -45,9 +45,6 @@
     <ClInclude Include="..\..\..\..\src\buffers\DtmfBuffer.h">
       <Filter>Header Files\buffers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h">
-      <Filter>Header Files\buffers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\src\buffers\frame.h">
       <Filter>Header Files\buffers</Filter>
     </ClInclude>
@@ -67,6 +64,9 @@
       <Filter>Header Files\buffers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\buffers\DtmfOutMessage.h">
+      <Filter>Header Files\buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\DtmfMsgBuffer.h">
       <Filter>Header Files\buffers</Filter>
     </ClInclude>
   </ItemGroup>

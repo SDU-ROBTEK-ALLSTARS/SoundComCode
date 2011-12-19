@@ -42,7 +42,7 @@
 
 #include <boost/circular_buffer.hpp>
 #include "frame.h"
-#include "../dummyMsgBuffer.h"
+#include "../DtmfMsgBuffer.h"
 #include "packet.h"
 class DtmfBuffer
 {

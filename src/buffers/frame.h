@@ -37,7 +37,7 @@
 //*****     DEFINES     *****
 //debugging
 //#define		DEBUG
-#define 	DEBUG_OUT			std::cout
+#define 	DEBUG_OUT			(std::cout)
 
 //frame definitions
 #define		TYPE				6
@@ -46,9 +46,10 @@
 #define 	EOT					0
 
 //enum {NONE,HEADER};
-
+class test{};
 //*****     INCLUDES     *****
 #include 	<fstream>
+
 
 //*****     CLASS DECLARATION     *****
 class Frame

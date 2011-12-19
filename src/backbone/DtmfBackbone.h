@@ -50,9 +50,8 @@ const unsigned int DATAGRAM_BUFFER_IN_SIZE=		(200);
 const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	(200);
 const unsigned int T_DGRAM_MAX=					(2);
 const unsigned int T_DGRAM_MIN=					(5);
-const unsigned int SLEEPTIME=					(10);
+//const unsigned int SLEEPTIME=					(10);
 const unsigned int SLEEPTIME_MSEC =				(1);
-const unsigned int ADRESS =								(5);
 const unsigned int MAX_FRAMES_PR_DATAGRAM =				(8);
 const unsigned int MAX_DATAGRAM_PR_MESSAGE =				(10);
 const unsigned int OUTPUT_BUFFER_SIZE =         500;
@@ -67,17 +66,15 @@ const unsigned int T_PFRAME_MIN=				(1);	// Just make sure there is "something" 
 
 const unsigned int FRAME_BUFFER_IN_SIZE=		100;
 const unsigned int FRAME_BUFFER_OUT_SIZE=		100;
-const unsigned int T_FRAME_MAX=					
-const unsigned int T_FRAME_MIN=					
+const unsigned int T_FRAME_MAX=					80;
+const unsigned int T_FRAME_MIN=					2;
 
-const unsigned int DATAGRAM_BUFFER_IN_SIZE=		
-const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	
-const unsigned int T_DGRAM_MAX=					
-const unsigned int T_DGRAM_MIN=					
+const unsigned int DATAGRAM_BUFFER_IN_SIZE=		50;
+const unsigned int DATAGRAM_BUFFER_OUT_SIZE=	50;
+const unsigned int T_DGRAM_MAX=					45;
+const unsigned int T_DGRAM_MIN=					1;
 
-const unsigned int SLEEPTIME=					
-const unsigned int SLEEPTIME_MSEC =				
-const unsigned int ADRESS =						
+const unsigned int SLEEPTIME_MSEC =				1;
 const unsigned int MAX_FRAMES_PR_DATAGRAM =		
 const unsigned int MAX_DATAGRAM_PR_MESSAGE =	
 const unsigned int OUTPUT_BUFFER_SIZE =         
