@@ -36,7 +36,6 @@
 #include "BufferedSoundIO.h"
 #include "../buffers/frame.h"
 
-#define DEBUG
 #define NUMBER_OF_NIBBLES_PER_FRAME	(6)
 #define MAX_NIBBLES_PER_FRAME		(13)
 #define FRAME_SIZE					(3)		//	[bytes]

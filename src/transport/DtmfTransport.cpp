@@ -1,24 +1,24 @@
 /*******************************************************************************
 # DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
 #
-# Copyright (c) 2011    Alexander Adelholm Brandbyge    <abran09@student.sdu.dk>
-#                       Frederik Hagelskjær             <frhag10@student.sdu.dk>
-#                       Kent Stark Olsen                <keols09@student.sdu.dk>
-#                       Kim Lindberg Schwaner           <kschw10@student.sdu.dk>
-#                       Leon Bonde Larsen               <lelar09@student.sdu.dk>
-#                       Rudi Hansen                     <rudha10@student.sdu.dk>
+# Copyright (c) 2011 Alexander Adelholm Brandbyge <abran09@student.sdu.dk>
+# Frederik Hagelskjær <frhag10@student.sdu.dk>
+# Kent Stark Olsen <keols09@student.sdu.dk>
+# Kim Lindberg Schwaner <kschw10@student.sdu.dk>
+# Leon Bonde Larsen <lelar09@student.sdu.dk>
+# Rudi Hansen <rudha10@student.sdu.dk>
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:       packet.h
-# Project:    DtmfProject
+# File: packet.h
+# Project: DtmfProject
 # Version:
-# Platform:   PC/Mac/Linux
-# Author:     Kim Lindberg Schwaner            <kschw10@student.sdu.dk>
-# Created:    2011-06-12
+# Platform: PC/Mac/Linux
+# Author: Kim Lindberg Schwaner <kschw10@student.sdu.dk>
+# Created: 2011-06-12
 ********************************************************************************
 # Description
 #
@@ -28,11 +28,12 @@
 #include <ctime>
 #include <queue>
 #include <boost/circular_buffer.hpp>
-#include "exception.h"
+#include "../common/exception.h"
 #include "DtmfTransport.h"
-#include "packet.h"
-#include "DtmfOutMessage.h"
-#include "DtmfMsgBuffer.h"
+#include "../buffers/packet.h"
+#include "../buffers/DtmfOutMessage.h"
+#include "../buffers/DtmfInMessage.h"
+#include "../DtmfMsgBuffer.h"
 
 // Table of reserved ports.
 bool DtmfTransport::sPortsInUse_[TRANSPORT_NUM_PORTS] = {false};
@@ -59,7 +60,7 @@ void DtmfTransport::toPacketFromApi(DtmfOutMessage *msg) {
         Packet packetOut;
         packetOut.setDestPort(msg->rcvPort_);
         packetOut.setRecvAddr(msg->rcvAddress_);
-        packetOut.insertData(msg->data_, (unsigned char)msg->dataLength_, false);  // no need to checksum it _yet_
+        packetOut.insertData(msg->data_, (unsigned char)msg->dataLength_, false); // no need to checksum it _yet_
         outQueue_.push_back(&packetOut);
     }
     else if (msg->dataLength_ > (PACKET_TLEN - PACKET_HLEN)) {
@@ -75,18 +76,18 @@ void DtmfTransport::toPacketFromApi(DtmfOutMessage *msg) {
 
             int dataOffset = i*(PACKET_TLEN - PACKET_HLEN);
 
-            if (i == (numPacketsNeeded-1)) {  // Last packet of the set
+            if (i == (numPacketsNeeded-1)) { // Last packet of the set
                 packetOut.insertData(&msg->data_[dataOffset], lengthLast, false);
                 outQueue_.push_back(&packetOut);
             }
             else {
-                packetOut.insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);  // no need to checksum it _yet_
+                packetOut.insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false); // no need to checksum it _yet_
                 outQueue_.push_back(&packetOut);
             }
         }
     }
     else {
-        return;  // There was no data in message.
+        return; // There was no data in message.
     }
 }
 
@@ -114,7 +115,7 @@ Packet DtmfTransport::packetFromCharBuffer(boost::circular_buffer<unsigned int> 
             unsigned char dataLength = header[3]-PACKET_HLEN;
             data = new unsigned char[dataLength];
             for (unsigned char i=0; i<dataLength; i++) {
-                data[i] = (unsigned char)buffer->at(i+PACKET_HLEN);  // Data is off-set by PACKET_HLEN.
+                data[i] = (unsigned char)buffer->at(i+PACKET_HLEN); // Data is off-set by PACKET_HLEN.
             }
         }
         else {
@@ -130,7 +131,7 @@ Packet DtmfTransport::packetFromCharBuffer(boost::circular_buffer<unsigned int> 
     }
     else {
         throw Exception("assemblePacketFromCharBuffer() Buffer does not contain a complete header");
-        return packet;  // Empty packet.
+        return packet; // Empty packet.
     }
 }
 
@@ -184,21 +185,21 @@ void DtmfTransport::setPort(const unsigned int newPort) {
         throw Exception("Transport.setPort() No ports available.");
         return;
     }
-    init();  // Initializes certain vars.
+    init(); // Initializes certain vars.
 }
 
 // Opens a connection by sending a SYN packet.
 void DtmfTransport::connect(const unsigned char destPort) {
     if (destPort && port_) {
         Packet synPacket;
-        bool flags[8] = {false};  // IMPORTANT: Init to false
+        bool flags[8] = {false}; // IMPORTANT: Init to false
         flags[PACKET_FLAG_SYN] = true;
         flags[PACKET_FLAG_CHK] = true;
-        synPacket.make(port_,     // sourceport (send from self)
-                       destPort,  // destport
+        synPacket.make(port_, // sourceport (send from self)
+                       destPort, // destport
                        flags,
-                       0,         // seq nr not filled for SYN
-                       0);        // ack nr not filled for SYN
+                       0, // seq nr not filled for SYN
+                       0); // ack nr not filled for SYN
 
         outQueue_.push_back(&synPacket);
     }
@@ -207,8 +208,8 @@ void DtmfTransport::connect(const unsigned char destPort) {
 
 // UNDONE Initializes variable parameters.
 void DtmfTransport::init() {
-    retransTimeout = 5;  // Seconds.
-    maxRetrans = 3;      // Max number of times.
+    retransTimeout = 5; // Seconds.
+    maxRetrans = 3; // Max number of times.
 }
 
 // Returns this instances port number.
@@ -249,87 +250,34 @@ int DtmfTransport::connStatus() const {
 // Main public up-stream packet processing interface. This is called by the
 // backbone when there is incoming data available to Transport from
 // the underlying layer.
-//
-// TODO
-// * Negotiable parameters sent with the SYN package in it's otherwise empty data field
-// * Time-out
-// * Connection reset
-// * Out-of-sequence handling: Discard? Queue for later?
-// * Max un-ack packets counter before reset
 void DtmfTransport::decode(boost::circular_buffer<unsigned int> *DllTransportUp,
-                       boost::circular_buffer<unsigned char> *TransportApiUp) {
+                           DtmfMsgBuffer *TransportApiUp) {
     if (DllTransportUp->empty()) {
         // If the buffer is empty, why are we here? :o
         return;
     }
-
     Packet packIn = packetFromCharBuffer(DllTransportUp); // THIS MAY HAVE TO FILTER OUT STUFFING IF THATS NEEDED
-
-
-    if ((port_ == packIn.destPort()) && (packIn.checksumValid()) && (!packIn.totalLength())) {  // note dest port check
-
-        if (packIn.flagSet(PACKET_FLAG_SYN)) {
-            // A SYN packet has been received: Someone is
-            // establishing a connection with us.
-            lastInSequence_ = packIn.seqNumber();  // tjek?
-            connStatus_ = TRANSPORT_STATUS_CONNECTED;
-
-            // The answer is an ACK packet; lets make that. Currently we don't know if
-            // there is data to put in it, so we fill in the rest and queue it for sending.
-            Packet packOut;
-            bool flags[8];
-            flags[PACKET_FLAG_ACK] = true;
-            flags[PACKET_FLAG_CHK] = true;
-            packOut.make(port_, packIn.sourcePort(), flags, lastInSequence_++, lastInSequence_);
-
-            outQueue_.push_back(&packOut);
-        }
-
-        if (packIn.flagSet(PACKET_FLAG_ACK)) {
-
-            // TODO
-        }
-
-        // We have prepared an answer for next out-going packet, but we
-        // still need to pass data (if any) on to the upper layer
-        if (packIn.data()) {
-            unsigned char *data = packIn.data();
-            for (int i=0; i<packIn.dataLength(); i++ ) {
-                TransportApiUp->push_back(data[i]);  // THIS HAS NO ADDRESS IN IT
-            }
-        }
-    }
-    //else package is not for us, checksum wrong or length=0 (invalid packet)
+    DtmfInMessage msgToApi(0, packIn.sourcePort(), packIn.dataLength(), packIn.data()); // I don't know the sender address?
+    TransportApiUp->pushMsg((char *) &msgToApi); //? ???
+    return;
 }
 
 // Main public down-stream processing interface. This is called by the
 // backbone when there is incoming data available to Transport from
 // the above layer.
 void DtmfTransport::encode(DtmfMsgBuffer *ApiTransportDown,
-                       boost::circular_buffer<Packet> *TransportDllDown) {
-    if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
+                           boost::circular_buffer<Packet> *TransportDllDown) {
 
-
-        while (ApiTransportDown->queueSize() > 0) {
-            DtmfOutMessage *msg = (DtmfOutMessage*) ApiTransportDown->pullMsg();
-            toPacketFromApi(msg);
-        }  // while (ApiTransportDown->queueSize() > 0)
-
-    }  // connStatus_ == TRANSPORT_STATUS_CONNECTED
-    else if (connStatus_ == TRANSPORT_STATUS_SYNC_WAIT) {
-
+    while (ApiTransportDown->queueSize() > 0) {
+        DtmfOutMessage *msg = (DtmfOutMessage*) ApiTransportDown->pullMsg();
+        toPacketFromApi(msg);
     }
-    else if (connStatus_ == TRANSPORT_STATUS_DISCONNECTED) {
-        // If we're disconnected, see if a SYN packet is queued for sending
-        if (!outQueue_.size() > 1) {
-            outQueue_.front()->flagSet(PACKET_FLAG_SYN);
 
-        }
+    while (!outQueue_.empty()) {
+        TransportDllDown->push_back(*outQueue_.front());
+        outQueue_.pop_front();
     }
-    else {
-        return;
-    }
+    return;
 }
 
 
-// API -> DtmfMsgBuffer -> TRANSPORT -> outQueue_(Packet) -> DLL

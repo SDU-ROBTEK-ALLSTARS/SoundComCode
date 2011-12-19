@@ -12,18 +12,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\src\api\DtmfApi.h" />
-    <ClInclude Include="..\..\..\..\src\api\DtmfInMessage.h" />
-    <ClInclude Include="..\..\..\..\src\api\DtmfOutMessage.h" />
     <ClInclude Include="..\..\..\..\src\backbone\DtmfBackbone.h" />
     <ClInclude Include="..\..\..\..\src\buffers\DtmfBuffer.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfInMessage.h" />
+    <ClInclude Include="..\..\..\..\src\buffers\DtmfOutMessage.h" />
     <ClInclude Include="..\..\..\..\src\buffers\frame.h" />
     <ClInclude Include="..\..\..\..\src\buffers\packet.h" />
     <ClInclude Include="..\..\..\..\src\common\exception.h" />
     <ClInclude Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.h" />
     <ClInclude Include="..\..\..\..\src\DtmfCallback.h" />
     <ClInclude Include="..\..\..\..\src\DtmfCallbackThread.h" />
+    <ClInclude Include="..\..\..\..\src\DtmfMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\DtmfThread.h" />
-    <ClInclude Include="..\..\..\..\src\dummyMsgBuffer.h" />
     <ClInclude Include="..\..\..\..\src\physical\BufferedSoundIO.h" />
     <ClInclude Include="..\..\..\..\src\physical\DtmfPhysical.h" />
     <ClInclude Include="..\..\..\..\src\transport\DtmfTransport.h" />
@@ -38,6 +38,7 @@
     <ClCompile Include="..\..\..\..\src\buffers\packet.cpp" />
     <ClCompile Include="..\..\..\..\src\data_link\DtmfDatalinkLayer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfCallbackThread.cpp" />
+    <ClCompile Include="..\..\..\..\src\DtmfMsgBuffer.cpp" />
     <ClCompile Include="..\..\..\..\src\DtmfThread.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\BufferedSoundIO.cpp" />
     <ClCompile Include="..\..\..\..\src\physical\DtmfPhysical.cpp" />

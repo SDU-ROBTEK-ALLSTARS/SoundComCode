@@ -45,10 +45,11 @@
 #define		SEQUENCE			1
 #define 	EOT					0
 
-enum {NONE,HEADER};
-
+//enum {NONE,HEADER};
+class test{};
 //*****     INCLUDES     *****
 #include 	<fstream>
+
 
 //*****     CLASS DECLARATION     *****
 class Frame

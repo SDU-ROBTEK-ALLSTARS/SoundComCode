@@ -4,7 +4,7 @@
 //#include "DtmfApi.h"
 #include "DtmfThread.h"
 #include <map>
-#include "dummyMsgBuffer.h"
+#include "DtmfMsgBuffer.h"
 
 // Forward declarations
 //class DtmfMsgBuffer;

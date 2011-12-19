@@ -30,18 +30,21 @@
 # Implementation of the class DtmfBackbone
 #
 *******************************************************************************/
-
 #include "DtmfBackbone.h"
+#ifdef DEBUG
+void debugBackboneBuffers(DtmfBuffer * buffer);
+#endif DEBUG
+
 
 //The backbone instantiates the buffers and individual layers, and ends off with launching its own operator thread. 
 //Since the api constructs the backbone, a pointer to it, and its message buffers is given as well.
-DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp, boost::mutex ** callbackMainLoopMutex,bool &hasToken)
+DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,DtmfMsgBuffer *& msgBufferUp, boost::mutex ** callbackMainLoopMutex,bool &hasToken,unsigned char thisAddress)
 {
 	//Instantiate the layers, and threads.
 	callbackMainLoopMutex_ = callbackMainLoopMutex;
 	this->dtmfapi_ =  dtmfApi;
 	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
-	this->dtmfDatalink_ = new DtmfDataLinkLayer(ADRESS,hasToken);
+	this->dtmfDatalink_ = new DtmfDataLinkLayer(thisAddress,hasToken);
 	//this->dtmfPhysical_ = new DtmfPhysical(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	this->dtmfPhysical_ = new DtmfPhysical(paFloat32,2,OUTPUT_BUFFER_SIZE,OUTPUT_SAMPLE_RATE,paFloat32,2,INPUT_BUFFER_SIZE,INPUT_SAMPLE_RATE);
 	this->dtmfTransport_ = new DtmfTransport();
@@ -63,8 +66,14 @@ void DtmfBackbone::main()
 {
 	while(continueRunning_)
 	{	
+		debugBackboneBuffers(this->dtmfBuffer_);
+
 		//----------Primary thresholds-----------
-		
+		#ifdef DEBUG
+			std::cout << "Running" << std::endl;
+			std::cout << "Can send ?: " << this->dtmfDatalink_->canTransmit() << std::endl;
+			std::cout << std::endl;
+		#endif DEBUG
 		//----------  Physical layer section ----
 		//The goal here is to ensure that the physical layer
 		//has enough samples, so it never stops playing before all data is "out".
@@ -74,12 +83,20 @@ void DtmfBackbone::main()
 		if((this->dtmfPhysical_->receiveBufferSize()> T_PFRAME_MAX)&&
 		   (!this->dtmfBuffer_->physicalDllUp->full()))
 		{
+			
+			#ifdef DEBUG
+			std::cout << "moving frame in                                   " << std::endl;
+			#endif DEBUG
 			moveFrameIn();
 		}
 		else if((this->dtmfPhysical_->sendBufferSize() < T_PFRAME_MIN)&&
-				(!this->dtmfBuffer_->dllPhysicalDown->empty()))
+				(!this->dtmfBuffer_->dllPhysicalDown->empty())&&
+				this->dtmfDatalink_->canTransmit())
 		{
 			moveFrameOut();
+			#ifdef DEBUG
+			std::cout << "moving frame out                                  " << std::endl << std::endl;
+			#endif DEBUG
 		}
 
 
@@ -88,6 +105,9 @@ void DtmfBackbone::main()
 		//it must always call decode then encode, in that order. This means that 
 		else if(this->dtmfDatalink_->needsAttention()&&this->hasRoomForDatalinkAction())
 		{
+			#ifdef DEBUG
+			std::cout << "Datalink action, because needs attention" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
@@ -96,6 +116,9 @@ void DtmfBackbone::main()
 		else if((this->dtmfBuffer_->physicalDllUp->size() > T_FRAME_MAX)&& //Too many input frames waiting.
 			   (this->hasRoomForDatalinkAction()))
 		{
+			#ifdef DEBUG
+			std::cout << "Datalink action, because too many input frames" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
@@ -105,6 +128,10 @@ void DtmfBackbone::main()
 				)
 
 		{
+			
+			#ifdef DEBUG
+			std::cout << "Datalink action, because too few output frames" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
@@ -130,6 +157,9 @@ void DtmfBackbone::main()
 		
 		else
 		{
+#ifdef DEBUG
+			std::cout << "Went to general work" << std::endl;
+#endif DEBUG
 			i++;
 			i %= 6;
 			int j = 0;
@@ -148,7 +178,7 @@ void DtmfBackbone::main()
 					}
 					break;
 				case 1:
-					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && ROOM_FOR_PFRAME_DOWN)
+					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && this->dtmfPhysical_->receiveBufferSize() == 0&&this->dtmfDatalink_->canTransmit())
 					{
 						workDone = true;
 						moveFrameOut();
@@ -162,8 +192,7 @@ void DtmfBackbone::main()
 					}
 					break;
 				case 3:
-					if(this->
-						UP_PFRAME_AVAILABLE && !this->dtmfBuffer_->physicalDllUp->full())
+					if(this->dtmfPhysical_->receiveBufferSize() > 0 && !this->dtmfBuffer_->physicalDllUp->full())
 					{
 						workDone = true;
 						moveFrameIn();
@@ -211,7 +240,7 @@ void DtmfBackbone::dataLinkAction()
 		this->dtmfBuffer_->dllTransportUp);
 }
 
-#ifdef DEBUG
+
 void DtmfBackbone::moveFrameIn()
 {
 	this->dtmfPhysical_->receive(this->dtmfBuffer_->physicalDllUp);
@@ -221,6 +250,7 @@ void DtmfBackbone::moveFrameIn()
 
 void DtmfBackbone::decodeDatagram()
 {
+
 	this->dtmfTransport_->decode(this->dtmfBuffer_->dllTransportUp,this->dtmfBuffer_->transportApiUp);
 	//this->dtmfBuffer_->
 
@@ -245,5 +275,33 @@ bool DtmfBackbone::hasRoomForDatalinkAction()
 bool DtmfBackbone::hasRoomForMessageEncode()
 {
 	return true;
+}
+
+
+
+#ifdef DEBUG
+#include <windows.h>
+using namespace std;
+void gotoxy(short,short);
+void debugBackboneBuffers(DtmfBuffer * buffer)
+{
+	//Message buffers
+	gotoxy(0,0);
+	cout << "Top layer buffers, Api <-> Transport" << endl;
+	cout << "\tapiTransportDown.queueSize: " << buffer->apiTransportDown->queueSize() << " messages" << endl;
+	cout << "\ttransportApiUp.queueSize:   " << buffer->transportApiUp->queueSize() << " messages" << endl<<endl;
+	cout << "Medium layer buffers, Transport <-> Datalink " << endl;
+	cout << "\tdllTransportUp.size:        "   << buffer->dllTransportUp->size() << " char32_t's" << endl;
+	cout <<	"\ttransportDllDown.size:      " << buffer->transportDllDown->size() << " packets " << endl<<endl;
+	cout << "Low layer buffers, datalink <-> physical " << endl;
+	cout << "\tphysicalDllUp.size:         " << buffer->physicalDllUp->size() << " frames" <<endl;
+	cout << "\tdllPhysicalDown.size:       " << buffer->dllPhysicalDown->size() << " frames" << endl<<endl;
+	
+}
+void gotoxy( short x, short y )
+{
+	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD position = { x, y }; 
+	SetConsoleCursorPosition( hStdout, position );
 }
 #endif DEBUG

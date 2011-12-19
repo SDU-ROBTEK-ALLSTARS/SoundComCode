@@ -37,6 +37,7 @@
 #include "DtmfDatalinkLayer.h"
 
 
+#undef DEBUG
 //***** CLASS IMPLEMENTATION *****
 DtmfDataLinkLayer::DtmfDataLinkLayer(int addr,bool tok)
 {
@@ -235,10 +236,13 @@ void DtmfDataLinkLayer::decode(
 	while(!frameUp->empty())
 	{
 		processFrame(frameUp->front());
+		if(frameUp->front().end == 1)
+			eotReceived = 1;
 		frameUp->pop_front();
 	}
-	//TODO: temporary hack!
-	if(replyGenerated == 0 && hasToken == 0 && noReply == 0)
+
+	//check list if EOT was received
+	if(replyGenerated == 0 && hasToken == 0 && eotReceived == 1)
 		checkFrameReceiveList();
 }
 //*****
@@ -248,21 +252,21 @@ bool DtmfDataLinkLayer::needsAttention()
 	time (&nowClock);
 
 	//check timestamps
-	if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+	if(tokenAlreadyOffered == 1 && (nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to re-offer token..." << std::endl;
 #endif
 		return 1;
 	}
-	if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+	if(awaitsReply == 1 && (nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to resend data..." << std::endl;
 #endif
 		return 1;
 	}
-	if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+	if(hasToken == 1 && (nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to pass token..." << std::endl;
@@ -275,7 +279,7 @@ bool DtmfDataLinkLayer::needsAttention()
 //*****
 bool DtmfDataLinkLayer::canTransmit()
 {
-	return hasToken;
+	return hasToken || eotReceived;
 }
 //*****
 void DtmfDataLinkLayer::processFrame(Frame incoming)
@@ -640,7 +644,7 @@ void DtmfDataLinkLayer::checkFrameReceiveList()
 	}
 
 	//pass upwards if list is complete
-	if(request == (pow(2,listLength)-1) && listLength > 0)
+	if(request == (pow(2.,listLength)-1) && listLength > 0)
 		passDataUpwards(listLength);
 	else
 		//request resends
@@ -758,3 +762,4 @@ void DtmfDataLinkLayer::simulateError()
 #endif
 //End Of File
 
+#define DEBUG
