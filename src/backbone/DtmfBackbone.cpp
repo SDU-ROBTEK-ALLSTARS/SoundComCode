@@ -88,7 +88,8 @@ void DtmfBackbone::main()
 			moveFrameIn();
 		}
 		else if((this->dtmfPhysical_->sendBufferSize() < T_PFRAME_MIN)&&
-				(!this->dtmfBuffer_->dllPhysicalDown->empty()))
+				(!this->dtmfBuffer_->dllPhysicalDown->empty())&&
+				this->dtmfDatalink_->canTransmit())
 		{
 			moveFrameOut();
 			#ifdef DEBUG
@@ -168,7 +169,7 @@ void DtmfBackbone::main()
 					}
 					break;
 				case 1:
-					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && this->dtmfPhysical_->receiveBufferSize() == 0)
+					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && this->dtmfPhysical_->receiveBufferSize() == 0&&this->dtmfDatalink_->canTransmit())
 					{
 						workDone = true;
 						moveFrameOut();
