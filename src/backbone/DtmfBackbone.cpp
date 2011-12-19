@@ -32,7 +32,7 @@
 *******************************************************************************/
 #include "DtmfBackbone.h"
 #ifdef DEBUG
-void debugBackboneBuffers(DtmfBuffer * buffer);
+void debugBackboneBuffers(DtmfBuffer * buffer,DtmfPhysical * phys);
 #endif DEBUG
 
 
@@ -45,7 +45,6 @@ DtmfBackbone::DtmfBackbone(DtmfApi * dtmfApi, DtmfMsgBuffer *& msgBufferDown,Dtm
 	this->dtmfapi_ =  dtmfApi;
 	this->dtmfBuffer_ = new DtmfBuffer(DATAGRAM_BUFFER_IN_SIZE,DATAGRAM_BUFFER_OUT_SIZE,FRAME_BUFFER_IN_SIZE,FRAME_BUFFER_OUT_SIZE);
 	this->dtmfDatalink_ = new DtmfDataLinkLayer(thisAddress,hasToken);
-	//this->dtmfPhysical_ = new DtmfPhysical(paFloat32, 2, 500, 8000, paFloat32, 2, 250, 8000);
 	this->dtmfPhysical_ = new DtmfPhysical(paFloat32,2,OUTPUT_BUFFER_SIZE,OUTPUT_SAMPLE_RATE,paFloat32,2,INPUT_BUFFER_SIZE,INPUT_SAMPLE_RATE);
 	this->dtmfTransport_ = new DtmfTransport();
 	this->i = 0;
@@ -66,12 +65,14 @@ void DtmfBackbone::main()
 {
 	while(continueRunning_)
 	{	
-		debugBackboneBuffers(this->dtmfBuffer_);
 
 		//----------Primary thresholds-----------
 		#ifdef DEBUG
+		
+			debugBackboneBuffers(this->dtmfBuffer_,this->dtmfPhysical_);
 			std::cout << "Running" << std::endl;
 			std::cout << "Can send ?: " << this->dtmfDatalink_->canTransmit() << std::endl;
+			std::cout << "Has token?: " << this->dtmfDatalink_->hasToken << std::endl;
 			std::cout << std::endl;
 		#endif DEBUG
 		//----------  Physical layer section ----
@@ -93,10 +94,11 @@ void DtmfBackbone::main()
 				(!this->dtmfBuffer_->dllPhysicalDown->empty())&&
 				this->dtmfDatalink_->canTransmit())
 		{
-			moveFrameOut();
 			#ifdef DEBUG
 			std::cout << "moving frame out                                  " << std::endl << std::endl;
 			#endif DEBUG
+			moveFrameOut();
+			
 		}
 
 
@@ -139,12 +141,21 @@ void DtmfBackbone::main()
 		//------------ Network layer section ------------
 		else if(this->dtmfBuffer_->dllTransportUp->size() > T_DGRAM_MAX) //Too many datagrams waiting (the dll is about to clog itself)
 		{
+			
+			#ifdef DEBUG
+			std::cout << "decoding datagram, because Too many datagrams waiting" << std::endl;
+			#endif DEBUG
 			decodeDatagram();
 		}
 
 		//Messages are waiting to be sent, and the dll is about to run out of work.
 		else if((this->dtmfBuffer_->transportDllDown->size() < T_DGRAM_MIN)&&(!this->dtmfBuffer_->apiTransportDown->empty()))
 		{
+			#ifdef DEBUG
+			std::cout << "encoding message, because too few packets" << std::endl;
+			#endif DEBUG
+			
+
 			encodeMessage();
 		}
 		
@@ -157,9 +168,9 @@ void DtmfBackbone::main()
 		
 		else
 		{
-#ifdef DEBUG
+			#ifdef DEBUG
 			std::cout << "Went to general work" << std::endl;
-#endif DEBUG
+			#endif DEBUG
 			i++;
 			i %= 6;
 			int j = 0;
@@ -172,7 +183,10 @@ void DtmfBackbone::main()
 				case 0:
 					if(!this->dtmfBuffer_->apiTransportDown->empty()
 						&& hasRoomForMessageEncode())
-					{
+					{	
+						#ifdef DEBUG
+						std::cout << "case 0" << std::endl;
+						#endif DEBUG
 						workDone = true;
 						encodeMessage();
 					}
@@ -180,6 +194,9 @@ void DtmfBackbone::main()
 				case 1:
 					if(!this->dtmfBuffer_->dllPhysicalDown->empty() && this->dtmfPhysical_->receiveBufferSize() == 0&&this->dtmfDatalink_->canTransmit())
 					{
+						#ifdef DEBUG
+						std::cout << "case 1" << std::endl;
+						#endif DEBUG
 						workDone = true;
 						moveFrameOut();
 					}
@@ -187,13 +204,19 @@ void DtmfBackbone::main()
 				case 2:
 					if(!this->dtmfBuffer_->physicalDllUp->empty() && hasRoomForDatalinkAction())
 					{
-						workDone = true;
+						#ifdef DEBUG
+						std::cout << "case 2" << std::endl;
+						#endif DEBUG	
+					workDone = true;
 						dataLinkAction();
 					}
 					break;
 				case 3:
 					if(this->dtmfPhysical_->receiveBufferSize() > 0 && !this->dtmfBuffer_->physicalDllUp->full())
 					{
+						#ifdef DEBUG
+						std::cout << "case 3" << std::endl;
+						#endif DEBUG
 						workDone = true;
 						moveFrameIn();
 					}
@@ -201,6 +224,9 @@ void DtmfBackbone::main()
 				case 4:
 					if(!this->dtmfBuffer_->dllTransportUp->empty())
 					{
+						#ifdef DEBUG
+						std::cout << "case 4" << std::endl;
+						#endif DEBUG
 						workDone = true;
 						decodeDatagram();
 					}
@@ -208,6 +234,9 @@ void DtmfBackbone::main()
 				default: //case 5:
 					if(!this->dtmfBuffer_->transportDllDown->empty() && hasRoomForDatalinkAction())
 					{
+						#ifdef DEBUG
+						std::cout << "case 5" << std::endl;
+						#endif DEBUG
 						dataLinkAction();
 					}
 					break;
@@ -215,6 +244,9 @@ void DtmfBackbone::main()
 				//else sleep
 				if(!workDone)
 				{
+					#ifdef DEBUG
+					std::cout << "sleeping" << std::endl;
+					#endif DEBUG
 					boost::this_thread::sleep(boost::posix_time::milliseconds(SLEEPTIME_MSEC));
 				}
 			}
@@ -263,8 +295,15 @@ void DtmfBackbone::encodeMessage()
 	//pull message
 }
 
+#ifdef DEBUG
+#include "../buffers/frame.h"
+#endif DEBUG
+
 void DtmfBackbone::moveFrameOut()
 {
+	//boost::circular_buffer<Frame> skank(*(this->dtmfBuffer_->dllPhysicalDown));
+
+	//this->dtmfPhysical_->send(&skank);
 	this->dtmfPhysical_->send(this->dtmfBuffer_->dllPhysicalDown);
 }
 
@@ -283,7 +322,7 @@ bool DtmfBackbone::hasRoomForMessageEncode()
 #include <windows.h>
 using namespace std;
 void gotoxy(short,short);
-void debugBackboneBuffers(DtmfBuffer * buffer)
+void debugBackboneBuffers(DtmfBuffer * buffer,DtmfPhysical * phys)
 {
 	//Message buffers
 	gotoxy(0,0);
@@ -296,7 +335,9 @@ void debugBackboneBuffers(DtmfBuffer * buffer)
 	cout << "Low layer buffers, datalink <-> physical " << endl;
 	cout << "\tphysicalDllUp.size:         " << buffer->physicalDllUp->size() << " frames" <<endl;
 	cout << "\tdllPhysicalDown.size:       " << buffer->dllPhysicalDown->size() << " frames" << endl<<endl;
-	
+	cout << "Physical buffers" << endl;
+	cout << "\tDown:                       " << phys->sendBufferSize() << endl;
+	cout << "\tUp:                         " << phys->receiveBufferSize() << endl << endl;
 }
 void gotoxy( short x, short y )
 {

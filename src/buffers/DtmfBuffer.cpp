@@ -40,6 +40,7 @@ DtmfBuffer::DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int fram
 	transportDllDown = new boost::circular_buffer<Packet>(datagramInCapacity);
 	physicalDllUp    = new boost::circular_buffer<Frame>(frameInCapacity);
 	dllPhysicalDown  = new boost::circular_buffer<Frame>(frameOutCapacity);
+
 	apiTransportDown = new DtmfMsgBuffer();
 	transportApiUp   = new DtmfMsgBuffer();
 }

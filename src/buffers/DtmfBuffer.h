@@ -55,6 +55,7 @@ public:
 	boost::circular_buffer<unsigned int>	     * dllTransportUp;
 	DtmfMsgBuffer * apiTransportDown;
 	DtmfMsgBuffer * transportApiUp;
+	
 	DtmfBuffer(int datagramInCapacity, int datagramOutCapacity, int frameInCapacity, int frameOutCapacity);
 	~DtmfBuffer();
 };

@@ -107,7 +107,6 @@ time_t timestampTokenOffered; //system time when token was offered
 time_t timestampToken; //system time when token was received
 
 //network
-bool hasToken; //1 means have token, 0 means have no token
 int nextStation; //next station to be offered the token
 bool eotReceived;
 void tokenOffered(); //receives token
@@ -148,6 +147,8 @@ bool canTransmit(); //returns 1 if hasToken = 1 and 0 if hasToken = 0
 
 double lostFrameCount; //increase on discard frame
 double successFrameCount; //increase on accept frame
+
+bool hasToken; //1 means have token, 0 means have no token
 };
 #endif /* DATALINKLAYER_H_ */
 
