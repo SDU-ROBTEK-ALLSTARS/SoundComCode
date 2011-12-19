@@ -37,6 +37,7 @@
 #include "DtmfDatalinkLayer.h"
 
 
+#undef DEBUG
 //***** CLASS IMPLEMENTATION *****
 DtmfDataLinkLayer::DtmfDataLinkLayer(int addr,bool tok)
 {
@@ -761,3 +762,4 @@ void DtmfDataLinkLayer::simulateError()
 #endif
 //End Of File
 
+#define DEBUG

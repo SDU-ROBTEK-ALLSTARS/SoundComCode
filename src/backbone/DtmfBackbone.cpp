@@ -30,8 +30,11 @@
 # Implementation of the class DtmfBackbone
 #
 *******************************************************************************/
-
 #include "DtmfBackbone.h"
+#ifdef DEBUG
+void debugBackboneBuffers(DtmfBuffer * buffer);
+#endif DEBUG
+
 
 //The backbone instantiates the buffers and individual layers, and ends off with launching its own operator thread. 
 //Since the api constructs the backbone, a pointer to it, and its message buffers is given as well.
@@ -63,11 +66,12 @@ void DtmfBackbone::main()
 {
 	while(continueRunning_)
 	{	
-//#ifdef DEBUG
-		std::cout << "running" << std::endl;
-//#endif DEBUG
+		debugBackboneBuffers(this->dtmfBuffer_);
+
 		//----------Primary thresholds-----------
-		
+		#ifdef DEBUG
+			std::cout << "Running" << std::endl;
+		#endif DEBUG
 		//----------  Physical layer section ----
 		//The goal here is to ensure that the physical layer
 		//has enough samples, so it never stops playing before all data is "out".
@@ -77,12 +81,19 @@ void DtmfBackbone::main()
 		if((this->dtmfPhysical_->receiveBufferSize()> T_PFRAME_MAX)&&
 		   (!this->dtmfBuffer_->physicalDllUp->full()))
 		{
+			
+			#ifdef DEBUG
+			std::cout << "moving frame in" << std::endl;
+			#endif DEBUG
 			moveFrameIn();
 		}
 		else if((this->dtmfPhysical_->sendBufferSize() < T_PFRAME_MIN)&&
 				(!this->dtmfBuffer_->dllPhysicalDown->empty()))
 		{
 			moveFrameOut();
+			#ifdef DEBUG
+			std::cout << "moving frame out" << std::endl;
+			#endif DEBUG
 		}
 
 
@@ -91,6 +102,9 @@ void DtmfBackbone::main()
 		//it must always call decode then encode, in that order. This means that 
 		else if(this->dtmfDatalink_->needsAttention()&&this->hasRoomForDatalinkAction())
 		{
+			#ifdef DEBUG
+			std::cout << "Datalink action, because needs attention" << std::endl;
+			#endif DEBUG
 			dataLinkAction();
 		}
 
@@ -133,6 +147,9 @@ void DtmfBackbone::main()
 		
 		else
 		{
+#ifdef DEBUG
+			std::cout << "Went to general work" << std::endl;
+#endif DEBUG
 			i++;
 			i %= 6;
 			int j = 0;
@@ -213,7 +230,7 @@ void DtmfBackbone::dataLinkAction()
 		this->dtmfBuffer_->dllTransportUp);
 }
 
-#ifdef DEBUG
+
 void DtmfBackbone::moveFrameIn()
 {
 	this->dtmfPhysical_->receive(this->dtmfBuffer_->physicalDllUp);
@@ -248,5 +265,33 @@ bool DtmfBackbone::hasRoomForDatalinkAction()
 bool DtmfBackbone::hasRoomForMessageEncode()
 {
 	return true;
+}
+
+
+
+#ifdef DEBUG
+#include <windows.h>
+using namespace std;
+void gotoxy(short,short);
+void debugBackboneBuffers(DtmfBuffer * buffer)
+{
+	//Message buffers
+	gotoxy(0,0);
+	cout << "Top layer buffers, Api <-> Transport" << endl;
+	cout << "\tapiTransportDown.queueSize: " << buffer->apiTransportDown->queueSize() << " messages" << endl;
+	cout << "\ttransportApiUp.queueSize:   " << buffer->transportApiUp->queueSize() << " messages" << endl<<endl;
+	cout << "Medium layer buffers, Transport <-> Datalink " << endl;
+	cout << "\tdllTransportUp.size:        "   << buffer->dllTransportUp->size() << " char32_t's" << endl;
+	cout <<	"\ttransportDllDown.size:      " << buffer->transportDllDown->size() << " packets " << endl<<endl;
+	cout << "Low layer buffers, datalink <-> physical " << endl;
+	cout << "\tphysicalDllUp.size:         " << buffer->physicalDllUp->size() << " frames" <<endl;
+	cout << "\tdllPhysicalDown.size:       " << buffer->dllPhysicalDown->size() << " frames" << endl<<endl;
+	
+}
+void gotoxy( short x, short y )
+{
+	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+	COORD position = { x, y }; 
+	SetConsoleCursorPosition( hStdout, position );
 }
 #endif DEBUG

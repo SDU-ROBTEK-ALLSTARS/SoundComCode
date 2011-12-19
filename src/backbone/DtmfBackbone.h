@@ -101,7 +101,6 @@ const unsigned int INPUT_SAMPLE_RATE =
 
 
 
-
 #include <boost/thread.hpp>
 #include "../buffers/DtmfBuffer.h"
 #include "../data_link/DtmfDatalinkLayer.h"
@@ -119,12 +118,13 @@ private:
 	DtmfTransport * dtmfTransport_;
 	DtmfDataLinkLayer * dtmfDatalink_;
 	DtmfPhysical * dtmfPhysical_;
-	DtmfBuffer * dtmfBuffer_;
+	
 	boost::mutex ** callbackMainLoopMutex_;
 	void main();
 #ifdef DEBUG
 public:
 #endif
+	DtmfBuffer * dtmfBuffer_;
 	bool hasRoomForDatalinkAction();
 	bool hasRoomForMessageEncode();
 	void moveFrameIn();
