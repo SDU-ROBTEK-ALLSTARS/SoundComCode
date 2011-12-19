@@ -252,21 +252,21 @@ bool DtmfDataLinkLayer::needsAttention()
 	time (&nowClock);
 
 	//check timestamps
-	if((nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
+	if(tokenAlreadyOffered == 1 && (nowClock-timestampTokenOffered)>MAX_TIME_OFFERING_TOKEN)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to re-offer token..." << std::endl;
 #endif
 		return 1;
 	}
-	if((nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
+	if(awaitsReply == 1 && (nowClock-timestampAwaitsReply)>MAX_TIME_TO_REPLY)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to resend data..." << std::endl;
 #endif
 		return 1;
 	}
-	if((nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
+	if(hasToken == 1 && (nowClock-timestampToken)>MAX_TIME_WITH_TOKEN)
 	{
 #ifdef DEBUG
 		DEBUG_OUT << "Time to pass token..." << std::endl;
@@ -279,7 +279,7 @@ bool DtmfDataLinkLayer::needsAttention()
 //*****
 bool DtmfDataLinkLayer::canTransmit()
 {
-	return hasToken;
+	return hasToken || eotReceived;
 }
 //*****
 void DtmfDataLinkLayer::processFrame(Frame incoming)
