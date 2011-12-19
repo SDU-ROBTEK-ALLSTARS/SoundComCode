@@ -4,6 +4,7 @@
 #include <cstring>
 
 class DtmfInMessage{
+    friend class DtmfTransport;
 protected:
 	unsigned char senderAddress_;
 	unsigned char senderPort_;

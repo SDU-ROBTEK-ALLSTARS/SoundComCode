@@ -35,6 +35,7 @@
 #include <boost/circular_buffer.hpp>
 #include "../buffers/packet.h"
 #include "../buffers/DtmfOutMessage.h"
+#include "../buffers/DtmfInMessage.h"
 #include "../DtmfMsgBuffer.h"
 
 // Connection status aliases
@@ -110,7 +111,7 @@ class DtmfTransport {
 
     // Public data I/O
     void decode(boost::circular_buffer<unsigned int> *DllTransportUp,
-                boost::circular_buffer<unsigned char> *TransportApiUp);
+                DtmfMsgBuffer *TransportApiUp);
 
     void encode(DtmfMsgBuffer *ApiTransportDown,
                 boost::circular_buffer<Packet> *TransportDllDown);

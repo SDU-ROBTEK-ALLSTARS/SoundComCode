@@ -32,6 +32,7 @@
 #include "DtmfTransport.h"
 #include "../buffers/packet.h"
 #include "../buffers/DtmfOutMessage.h"
+#include "../buffers/DtmfInMessage.h"
 #include "../DtmfMsgBuffer.h"
 
 // Table of reserved ports.
@@ -249,87 +250,32 @@ int DtmfTransport::connStatus() const {
 // Main public up-stream packet processing interface. This is called by the
 // backbone when there is incoming data available to Transport from
 // the underlying layer.
-//
-// TODO
-// * Negotiable parameters sent with the SYN package in it's otherwise empty data field
-// * Time-out
-// * Connection reset
-// * Out-of-sequence handling: Discard? Queue for later?
-// * Max un-ack packets counter before reset
 void DtmfTransport::decode(boost::circular_buffer<unsigned int> *DllTransportUp,
-                       boost::circular_buffer<unsigned char> *TransportApiUp) {
+                           DtmfMsgBuffer *TransportApiUp) {
     if (DllTransportUp->empty()) {
         // If the buffer is empty, why are we here? :o
         return;
     }
-
     Packet packIn = packetFromCharBuffer(DllTransportUp); // THIS MAY HAVE TO FILTER OUT STUFFING IF THATS NEEDED
-
-
-    if ((port_ == packIn.destPort()) && (packIn.checksumValid()) && (!packIn.totalLength())) {  // note dest port check
-
-        if (packIn.flagSet(PACKET_FLAG_SYN)) {
-            // A SYN packet has been received: Someone is
-            // establishing a connection with us.
-            lastInSequence_ = packIn.seqNumber();  // tjek?
-            connStatus_ = TRANSPORT_STATUS_CONNECTED;
-
-            // The answer is an ACK packet; lets make that. Currently we don't know if
-            // there is data to put in it, so we fill in the rest and queue it for sending.
-            Packet packOut;
-            bool flags[8];
-            flags[PACKET_FLAG_ACK] = true;
-            flags[PACKET_FLAG_CHK] = true;
-            packOut.make(port_, packIn.sourcePort(), flags, lastInSequence_++, lastInSequence_);
-
-            outQueue_.push_back(&packOut);
-        }
-
-        if (packIn.flagSet(PACKET_FLAG_ACK)) {
-
-            // TODO
-        }
-
-        // We have prepared an answer for next out-going packet, but we
-        // still need to pass data (if any) on to the upper layer
-        if (packIn.data()) {
-            unsigned char *data = packIn.data();
-            for (int i=0; i<packIn.dataLength(); i++ ) {
-                TransportApiUp->push_back(data[i]);  // THIS HAS NO ADDRESS IN IT
-            }
-        }
-    }
-    //else package is not for us, checksum wrong or length=0 (invalid packet)
+    DtmfInMessage msgToApi(0, packIn.sourcePort(), packIn.dataLength(), packIn.data());  // I don't know the sender address?
+    TransportApiUp->pushMsg((char *) &msgToApi); //? ???
+    return;
 }
 
 // Main public down-stream processing interface. This is called by the
 // backbone when there is incoming data available to Transport from
 // the above layer.
 void DtmfTransport::encode(DtmfMsgBuffer *ApiTransportDown,
-                       boost::circular_buffer<Packet> *TransportDllDown) {
-    if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
+                           boost::circular_buffer<Packet> *TransportDllDown) {
 
-
-        while (ApiTransportDown->queueSize() > 0) {
-            DtmfOutMessage *msg = (DtmfOutMessage*) ApiTransportDown->pullMsg();
-            toPacketFromApi(msg);
-        }  // while (ApiTransportDown->queueSize() > 0)
-
-    }  // connStatus_ == TRANSPORT_STATUS_CONNECTED
-    else if (connStatus_ == TRANSPORT_STATUS_SYNC_WAIT) {
-
+    while (ApiTransportDown->queueSize() > 0) {
+        DtmfOutMessage *msg = (DtmfOutMessage*) ApiTransportDown->pullMsg();
+        toPacketFromApi(msg);
     }
-    else if (connStatus_ == TRANSPORT_STATUS_DISCONNECTED) {
-        // If we're disconnected, see if a SYN packet is queued for sending
-        if (!outQueue_.size() > 1) {
-            outQueue_.front()->flagSet(PACKET_FLAG_SYN);
 
-        }
+    while (!outQueue_.empty()) {
+        TransportDllDown->push_back(*outQueue_.front());
+        outQueue_.pop_front();
     }
-    else {
-        return;
-    }
+    return;
 }
-
-
-// API -> DtmfMsgBuffer -> TRANSPORT -> outQueue_(Packet) -> DLL
