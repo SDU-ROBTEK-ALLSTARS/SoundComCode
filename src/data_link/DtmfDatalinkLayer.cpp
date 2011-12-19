@@ -358,7 +358,7 @@ void DtmfDataLinkLayer::processFrame(Frame incoming)
 	}
 }
 //*****
-bool DtmfDataLinkLayer::awaitsReply()
+bool DtmfDataLinkLayer::awaitsReplys()
 {
 	return awaitsReply;
 }

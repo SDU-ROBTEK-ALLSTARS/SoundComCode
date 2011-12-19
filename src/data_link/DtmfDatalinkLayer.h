@@ -144,8 +144,7 @@ boost::circular_buffer< unsigned int >*);
 
 bool needsAttention(); //returns 1 if a timer is due and 0 if not
 bool canTransmit(); //returns 1 if hasToken = 1 and 0 if hasToken = 0
-bool awaitsReply();
-
+bool awaitsReplys();
 double lostFrameCount; //increase on discard frame
 double successFrameCount; //increase on accept frame
 

@@ -108,7 +108,7 @@ void DtmfBackbone::main()
 		else if(this->dtmfDatalink_->needsAttention()&&this->hasRoomForDatalinkAction())
 		{
 			#ifdef DEBUG
-			std::cout << "Datalink action, because needs attention" << std::endl;
+			std::cout << "Datalink action, because needs attention                              " << std::endl;
 			#endif DEBUG
 			dataLinkAction();
 		}
@@ -119,14 +119,16 @@ void DtmfBackbone::main()
 			   (this->hasRoomForDatalinkAction()))
 		{
 			#ifdef DEBUG
-			std::cout << "Datalink action, because too many input frames" << std::endl;
+			std::cout << "Datalink action, because too many input frames                    " << std::endl;
 			#endif DEBUG
 			dataLinkAction();
 		}
 
 		else if((this->dtmfBuffer_->dllPhysicalDown->size() < T_FRAME_MIN)&&  //The physical layer will soon need more output frames.
 				(!this->dtmfBuffer_->transportDllDown->empty()) &&			  //and there is atleast 1 datagram ready to be encoded
-				(this->hasRoomForDatalinkAction())
+				(this->hasRoomForDatalinkAction())&&
+				
+				this->dtmfDatalink_->canTransmit()
 				)
 
 		{
