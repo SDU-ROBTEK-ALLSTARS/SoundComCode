@@ -113,7 +113,7 @@ class DtmfTransport {
     void processReceivedPacket(Packet *);
 
     // Processes packets for sending
-    void processSendingPacket(Packet *);
+    void processOutgoingPacket(Packet *);
 
     // To open a connection one must use
     void connect(const unsigned char destPort);

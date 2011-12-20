@@ -73,19 +73,19 @@ void DtmfTransport::toPacketsFromApi(DtmfOutMessage *msg) {
 
         for (unsigned int i=0; i<numPacketsNeeded; i++) {
 
-            Packet packetOut;
-            packetOut.setDestPort(msg->rcvPort_);
-            packetOut.setRecvAddr(msg->rcvAddress_);
+            Packet *packetOut = new Packet;
+            packetOut->setDestPort(msg->rcvPort_);
+            packetOut->setRecvAddr(msg->rcvAddress_);
 
             int dataOffset = i*(PACKET_TLEN - PACKET_HLEN);
 
             if (i == (numPacketsNeeded-1)) {  // Last packet of the set
-                packetOut.insertData(&msg->data_[dataOffset], lengthLast, false);
-                outQueue_.push_back(&packetOut);
+                packetOut->insertData(&msg->data_[dataOffset], lengthLast, false);
+                outQueue_.push_back(packetOut);
             }
             else {
-                packetOut.insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);  // no need to checksum it _yet_
-                outQueue_.push_back(&packetOut);
+                packetOut->insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);  // no need to checksum it _yet_
+                outQueue_.push_back(packetOut);
             }
         }
     }
@@ -184,17 +184,17 @@ void DtmfTransport::setPort(const unsigned int newPort) {
 // Opens a connection by sending a SYN packet.
 void DtmfTransport::connect(const unsigned char destPort) {
     if (destPort && port_) {
-        Packet synPacket;
+        Packet *synPacket = new Packet;
         bool flags[8] = {false};  // IMPORTANT: Init to false
         flags[PACKET_FLAG_SYN] = true;
         flags[PACKET_FLAG_CHK] = true;
-        synPacket.make(port_,     // sourceport (send from self)
-                       destPort,  // destport
-                       flags,
-                       0,         // seq nr not filled for SYN
-                       0);        // ack nr not filled for SYN
+        synPacket->make(port_,     // sourceport (send from self)
+                        destPort,  // destport
+                        flags,
+                        0,         // seq nr not filled for SYN
+                        0);        // ack nr not filled for SYN
 
-        outQueue_.push_front(&synPacket);  // We always want it in front of queue
+        outQueue_.push_front(synPacket);  // We always want it in front of queue
     }
 }
 
@@ -215,16 +215,20 @@ unsigned char DtmfTransport::port() const {
 // the instance's own port number is checked.
 bool DtmfTransport::isPortSet(const unsigned int enteredPort) const {
     if ((enteredPort) && (enteredPort < TRANSPORT_NUM_PORTS)) {
-        if (sPortsInUse_[enteredPort])
+        if (sPortsInUse_[enteredPort]) {
             return true;
-        else
+        }
+        else {
             return false;
+        }
     }
     else {
-        if ((port_) && (sPortsInUse_[port_]))
+        if ((port_) && (sPortsInUse_[port_])) {
             return true;
-        else
+        }
+        else {
             return false;
+        }
     }
 }
 
@@ -260,10 +264,10 @@ void DtmfTransport::decode(boost::circular_buffer<unsigned int> *DllTransportUp,
             std::map<unsigned char,Packet *>::iterator it;
             if ((*recvUnAckPackets_.begin()).first == (lastSeqToApi_+1)) {
                 for (it = recvUnAckPackets_.begin(); it != recvUnAckPackets_.end(); it++) {
-                    // HACK we make one DtmfInMessage per Packet, altough making just
+                    // HACK ? we make one DtmfInMessage per Packet, altough making just
                     // one big message would perhaps be smarter.
-                    DtmfInMessage msgToApi(0, (*it).second->sourcePort(), (*it).second->dataLength(), (*it).second->data()); // I don't know the sender address?
-                    TransportApiUp->pushMsg((char *) &msgToApi);  // TODO is this correct? ask rudi
+                    DtmfInMessage *msgToApi = new DtmfInMessage(0, (*it).second->sourcePort(), (*it).second->dataLength(), (*it).second->data()); // I don't know the sender address?
+                    TransportApiUp->pushMsg((char *) msgToApi);  // TODO is this correct? ask rudi
                     lastSeqToApi_ = (*it).second->seqNumber();  // Set the last sequence nr that was passed to API
                 }
             }
@@ -304,6 +308,7 @@ void DtmfTransport::encode(DtmfMsgBuffer *ApiTransportDown, //change buffer type
         #endif
         TransportDllDown->push_back(*outQueue_.front());
         outQueue_.pop_front();
+        // TODO free mem
     }
 }
 
@@ -315,7 +320,7 @@ void DtmfTransport::encode(DtmfMsgBuffer *ApiTransportDown, //change buffer type
 // DOES NOT CHECK PACKET VALIDITY
 void DtmfTransport::processReceivedPacket(Packet *packIn) {
     #ifdef DEBUG
-        DEBUG_OUT << std::endl << "***TRANSPORT: Packet being processed" << std::endl;
+        DEBUG_OUT << std::endl << "***TRANSPORT: Received packet being processed" << std::endl;
         DEBUG_OUT << "Source:" << (char)9 << (int)packIn->sourcePort() << std::endl;
         DEBUG_OUT << "Dest:" << (char)9 << (int)packIn->destPort() << std::endl;
         DEBUG_OUT << "SYN:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_SYN) << std::endl;
