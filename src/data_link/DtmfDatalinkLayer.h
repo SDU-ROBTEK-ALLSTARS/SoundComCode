@@ -37,9 +37,9 @@
 //defines needed for data link layer
 //#define MY_ADDRESS 1
 #define STARTS_WITH_TOKEN
-#define MAX_TIME_WITH_TOKEN 5
-#define MAX_TIME_OFFERING_TOKEN 1
-#define MAX_TIME_TO_REPLY 1
+#define MAX_TIME_WITH_TOKEN 20
+#define MAX_TIME_OFFERING_TOKEN 20
+#define MAX_TIME_TO_REPLY 20
 
 //testing and debugging
 #define GENERATE_ERRORS

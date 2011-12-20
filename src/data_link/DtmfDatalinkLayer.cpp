@@ -246,6 +246,7 @@ void DtmfDataLinkLayer::decode(
 		checkFrameReceiveList();
 }
 //*****
+#define DEBUG
 bool DtmfDataLinkLayer::needsAttention()
 {
 	time_t nowClock;
@@ -276,6 +277,7 @@ bool DtmfDataLinkLayer::needsAttention()
 	return 0;
 
 }
+#undef DEBUG
 //*****
 bool DtmfDataLinkLayer::canTransmit()
 {
