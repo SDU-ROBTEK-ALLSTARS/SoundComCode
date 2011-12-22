@@ -17,12 +17,13 @@
 # Project:    DtmfProject
 # Version:
 # Platform:   PC/Mac/Linux
-# Author:     Kim Lindberg Schwaner            <kschw10@student.sdu.dk>
+# Author:     Kim Lindberg Schwaner <kschw10@student.sdu.dk>
 # Created:    2011-06-12
 ********************************************************************************
 # Description
 #
 ********************************************************************************/
+
 #ifndef PACKET_H
 #define PACKET_H
 
@@ -37,8 +38,9 @@
 #define PACKET_HLEN      8    // Header length (in bytes).
 #define PACKET_TLEN      128  // Total length (in bytes).
 
-class Packet {
- private:
+class Packet
+{
+private:
     // Receiver address to pass to the data link layer.
     unsigned char recvAddr_;
 
@@ -56,7 +58,7 @@ class Packet {
     // Calculates and returns checksum value based on the current data members.
     unsigned short int calcChecksum() const;
 
- public:
+public:
     Packet();
     ~Packet();
 
@@ -66,8 +68,8 @@ class Packet {
               const bool          flagArray[8],  // Bool array of 8, each representing a flag
               const unsigned char seqNumber,
               const unsigned char ackNumber,
-              const unsigned char dataLength=0,  // Max 
-                    unsigned char data[]=0);
+              const unsigned char dataLength=0,  // Max
+              unsigned char data[]=0);
 
     // DEPRECATED Make Packet from char arrays.
     void makeFromArrays(unsigned char header[PACKET_HLEN],
@@ -77,8 +79,8 @@ class Packet {
     void setRecvAddr(const unsigned char recvAddr);
     void setDestPort(const unsigned char destPort);
     void insertData(       unsigned char data[],
-                     const unsigned char dataLength,
-                     const bool          checksum=true);
+                           const unsigned char dataLength,
+                           const bool          checksum=true);
     void setFlag(const int);  // Sets one flag
 
     // Packet sorting by sequence number (intended for use with priority_queue).
@@ -92,7 +94,7 @@ class Packet {
 
     // Accessor methods:
     unsigned char operator[](const unsigned char) const;  // Get one byte from packet
-                                                          // as if it was a char array.
+    // as if it was a char array.
     unsigned char recvAddr() const;
     unsigned char totalLength() const;
     unsigned char sourcePort() const;

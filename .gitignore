@@ -51,12 +51,13 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 
 #etc.
-/*.project
-/*.cproject
-/.settings
+*.project
+*.cproject
+.settings
 /[Dd]efault
 /*.dat
 *~
+*.save
 
 # Office Temp Files
 ~$*

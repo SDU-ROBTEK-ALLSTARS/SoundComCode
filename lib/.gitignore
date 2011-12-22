@@ -1,2 +1,4 @@
 portaudio/
 boost/
+/portaudio
+/boost

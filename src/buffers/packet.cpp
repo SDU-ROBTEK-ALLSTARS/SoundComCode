@@ -13,11 +13,11 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 ********************************************************************************
-# File:       packet.h
+# File:       packet.cpp
 # Project:    DtmfProject
 # Version:
 # Platform:   PC/Mac/Linux
-# Author:     Kim Lindberg Schwaner            <kschw10@student.sdu.dk>
+# Author:     Kim Lindberg Schwaner <kschw10@student.sdu.dk>
 # Created:    2011-06-12
 ********************************************************************************
 # Description
@@ -31,11 +31,15 @@
 #include "exception.h"
 #include "packet.h"
 
-Packet::Packet() {
+#include <iostream>
+
+Packet::Packet()
+{
     length_ = 0;  // Length is used to test if the packet is "made"; make sure it's 0 initially.
 }
 
-Packet::~Packet() {
+Packet::~Packet()
+{
 }
 
 // Calculates the 16-bit checksum based on the
@@ -43,7 +47,8 @@ Packet::~Packet() {
 // If the CHK flag is set, data is also included
 // in the checksum calculation. If CHK is NOT
 // set, checksum is only calculated for the header.
-unsigned short int Packet::calcChecksum() const {
+unsigned short int Packet::calcChecksum() const
+{
     boost::crc_ccitt_type crc;
     crc.process_byte(sourcePort_);
     crc.process_byte(destPort_);
@@ -66,7 +71,8 @@ void Packet::make(const unsigned char sourcePort,
                   const unsigned char seqNumber,
                   const unsigned char ackNumber,
                   const unsigned char dataLength,
-                  unsigned char data[]) {
+                  unsigned char data[])
+{
     // Flag array to bitset for easier manipulation.
     std::bitset<8> flags;
     for (int i=0; i<8; i++) {
@@ -85,8 +91,7 @@ void Packet::make(const unsigned char sourcePort,
     // Length.
     if (data) {
         length_ = dataLength + PACKET_HLEN;
-    }
-    else {
+    } else {
         length_ = PACKET_HLEN;
     }
 
@@ -95,8 +100,7 @@ void Packet::make(const unsigned char sourcePort,
         std::srand((unsigned)time(0));
         unsigned char randSeq = std::rand() % 255;
         seqNumber_ = randSeq;
-    }
-    else {
+    } else {
         seqNumber_ = seqNumber;
     }
 
@@ -110,14 +114,16 @@ void Packet::make(const unsigned char sourcePort,
     checksum_ = calcChecksum();
 }
 
-void Packet::setRecvAddr(const unsigned char recvAddr) {
+void Packet::setRecvAddr(const unsigned char recvAddr)
+{
     if (recvAddr) {
         recvAddr_ = recvAddr;
         checksum_ = calcChecksum();
     }
 }
 
-void Packet::setDestPort(const unsigned char destPort) {
+void Packet::setDestPort(const unsigned char destPort)
+{
     if (destPort) {
         destPort_ = destPort;
         checksum_ = calcChecksum();
@@ -132,12 +138,12 @@ void Packet::setDestPort(const unsigned char destPort) {
 // Packet checksum will be re-calculated
 void Packet::insertData(unsigned char data[],
                         const unsigned char dataLength,
-                        const bool checksum) {
+                        const bool checksum)
+{
     if (dataLength > (PACKET_TLEN-PACKET_HLEN)) {
         throw Exception("insertData() Incorrect data array length");
         return;
-    }
-    else {
+    } else {
         data_ = data;
         length_ = dataLength + PACKET_HLEN;
         if (checksum) {
@@ -149,12 +155,12 @@ void Packet::insertData(unsigned char data[],
 // Sets the flag supplied through the argument. If, for example,
 // we have 0b00001000 and setFlag(2) is called, the result will
 // be 0b00001100. Checksum is re-calculated.
-void Packet::setFlag(const int flagToSet) {
+void Packet::setFlag(const int flagToSet)
+{
     if (flagToSet > 7) {
         throw Exception("setFlag() Incorrect flag bit");
         return;
-    }
-    else {
+    } else {
         std::bitset<8> flags (flags_);
         flags.set(flagToSet);
         checksum_ = calcChecksum();
@@ -162,14 +168,16 @@ void Packet::setFlag(const int flagToSet) {
 }
 
 // UNDONE
-bool Packet::orderBySeq::operator()(const Packet& p1, const Packet& p2) const {
+bool Packet::orderBySeq::operator()(const Packet& p1, const Packet& p2) const
+{
     return p1.seqNumber_ > p2.seqNumber_;
 }
 
 // As make() this function will construct a use-able packet.
 // Here, no parameters are specified automatically: They are
 // all passed as an array of chars.
-void Packet::makeFromArrays(unsigned char header[PACKET_HLEN], unsigned char data[]) {
+void Packet::makeFromArrays(unsigned char header[PACKET_HLEN], unsigned char data[])
+{
     sourcePort_ = header[0];
     destPort_ = header[1];
     flags_ = header[2];
@@ -181,7 +189,8 @@ void Packet::makeFromArrays(unsigned char header[PACKET_HLEN], unsigned char dat
 }
 
 // Outputs the instance of Packet as (pointer to) a char array.
-unsigned char *Packet::getAsArray() const {
+unsigned char *Packet::getAsArray() const
+{
     if (length_) {
         unsigned char *output = new unsigned char[length_];
         output[0] = sourcePort_;
@@ -198,100 +207,105 @@ unsigned char *Packet::getAsArray() const {
             }
         }
         return output;
-    }
-    else {
+    } else {
         return 0;
     }
 }
 
 // Returns the i'th byte as if Packet was a byte array
-unsigned char Packet::operator[](const unsigned char i) const {
+unsigned char Packet::operator[](const unsigned char i) const
+{
     if ((i >= 0) && (i < PACKET_HLEN)) {
         //We want a header byte
         switch (i) {
-            case 0:
-                return sourcePort_;
-            case 1:
-                return destPort_;
-            case 2:
-                return flags_;
-            case 3:
-                return length_;
-            case 4:
-                return seqNumber_;
-            case 5:
-                return ackNumber_;
-            case 6:
-                return (unsigned char)(checksum_>>8);
-            case 7:
-                return (unsigned char)(checksum_);
-            default:
-                return 0;
+        case 0:
+            return sourcePort_;
+        case 1:
+            return destPort_;
+        case 2:
+            return flags_;
+        case 3:
+            return length_;
+        case 4:
+            return seqNumber_;
+        case 5:
+            return ackNumber_;
+        case 6:
+            return (unsigned char)(checksum_>>8);
+        case 7:
+            return (unsigned char)(checksum_);
+        default:
+            return 0;
         }
-    }
-    else if ((i >= PACKET_HLEN) && (i < (PACKET_TLEN - PACKET_HLEN))) {
+    } else if ((i >= PACKET_HLEN) && (i < (PACKET_TLEN - PACKET_HLEN))) {
         return data_[i-PACKET_HLEN];
-    }
-    else {
+    } else {
         return 0;
     }
 }
 
 // Returns the receiver address for the data included.
 // in this packet
-unsigned char Packet::recvAddr() const {
+unsigned char Packet::recvAddr() const
+{
     return recvAddr_;
 }
 
 // Return this packets total length.
-unsigned char Packet::totalLength() const {
+unsigned char Packet::totalLength() const
+{
     return length_;
 }
 
 // Return this packets source port.
-unsigned char Packet::sourcePort() const {
+unsigned char Packet::sourcePort() const
+{
     return sourcePort_;
 }
 
 // Return this packets destination port.
-unsigned char Packet::destPort() const {
+unsigned char Packet::destPort() const
+{
     return destPort_;
 }
 
 // Return this packets sequence number.
-unsigned char Packet::seqNumber() const {
+unsigned char Packet::seqNumber() const
+{
     return seqNumber_;
 }
 
 // Return this packets acknowledgment number.
-unsigned char Packet::ackNumber() const {
+unsigned char Packet::ackNumber() const
+{
     return ackNumber_;
 }
 
 // Tests if a specific flag is set. Returns true
 // if it's set (the bit is 1).
-bool Packet::flagSet(const int test) const {
+bool Packet::flagSet(const int test) const
+{
     std::bitset<8> flags (flags_);
     if (flags.test(test)) {
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
 
 // Return this packets flags as a char (1 byte).
-unsigned char Packet::flags() const {
+unsigned char Packet::flags() const
+{
     return flags_;
 }
 
 // If this packet contains data, it is returned
 // as (a pointer to) a char array.
-unsigned char *Packet::data() const {
+unsigned char *Packet::data() const
+{
     if (length_ > PACKET_HLEN) {
         return data_;
-    }
-    else {
+    } else {
         return 0;
     }
 }
@@ -302,18 +316,17 @@ unsigned char Packet::dataLength() const
 {
     if ((length_ > PACKET_HLEN) && (data_)) {
         return (length_-PACKET_HLEN);
-    }
-    else {
+    } else {
         return 0;
     }
 }
 
 // Returns true if this packets checksum is valid.
-bool Packet::checksumValid() const {
+bool Packet::checksumValid() const
+{
     if ((length_) && (checksum_ == calcChecksum())) {
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
