@@ -19,4 +19,4 @@ public:
 	unsigned long getMessageLength();
 	unsigned char getSenderPort();
 };
-#endif DTMFINMESSAGE_H;
+#endif //DTMFINMESSAGE_H;

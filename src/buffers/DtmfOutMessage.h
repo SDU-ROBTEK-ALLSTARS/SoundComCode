@@ -26,4 +26,4 @@ public:
 	void setAddress(unsigned char rcvAddress, unsigned char rcvPort);
 	void dispose(); // Can be used only on non send messages.
 };
-#endif DTMFOUTMESSAGE_H
+#endif //DTMFOUTMESSAGE_H

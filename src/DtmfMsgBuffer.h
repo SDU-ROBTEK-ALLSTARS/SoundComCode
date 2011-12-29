@@ -16,4 +16,4 @@ public:
 	void pushMsg(char * inChar);
 	char * pullMsg();
 };
-#endif DTMFMSGBUFFER_H
+#endif //DTMFMSGBUFFER_H
