@@ -23,13 +23,20 @@
 # Description
 #
 #
+#
+# General shortcomings/Todo
+#
+# - One DtmfTransport will only correctly function while communication
+#   with ONE DtmfTransport (meaning throwing it packets to different
+#   ports will screw things up. A solution would be to outsource i/o
+#   packet handling/decision making to another class, and then instantiate
+#   one per target being sent to.
+#
 ********************************************************************************/
 
 #include <ctime>
 #include <queue>
 #include <map>
-#include <algorithm>
-#include <iostream>
 #include <boost/circular_buffer.hpp>
 #include "exception.h"
 #include "DtmfTransport.h"
@@ -38,11 +45,11 @@
 #include "DtmfInMessage.h"
 #include "DtmfMsgBuffer.h"
 
-/*******************************************************************************
-# general
-#
-#
-********************************************************************************/
+/****************************************
+#                                       #
+#          Core functionality           #
+#                                       #
+*****************************************/
 
 // Table of reserved ports.
 bool DtmfTransport::sPortsInUse_[TRANSPORT_NUM_PORTS] = {false};
@@ -52,6 +59,7 @@ DtmfTransport::DtmfTransport()
 {
     port_ = 0;
     connStatus_ = TRANSPORT_STATUS_DISCONNECTED;
+    maxNumUnack_ = 5;
 }
 
 DtmfTransport::~DtmfTransport()
@@ -83,16 +91,8 @@ void DtmfTransport::setPort(const unsigned int newPort)
         throw Exception("Transport.setPort() No ports available.");
         return;
     }
-    init();  // Initializes certain vars.
 }
 
-
-// UNDONE Initializes variable parameters.
-void DtmfTransport::init()
-{
-    retransTimeout = 5;  // Seconds.
-    maxRetrans = 3;      // Max number of times.
-}
 
 // Returns this instances port number.
 unsigned char DtmfTransport::port() const
@@ -129,215 +129,272 @@ bool *DtmfTransport::getPortTable() const
 }
 
 // Returns current connection status.
-int DtmfTransport::connStatus() const
+int DtmfTransport::status() const
 {
     return connStatus_;
 }
 
-/*******************************************************************************
-# packet layer
-#
-#
-********************************************************************************/
-/*
-void DtmfTransport::decodePacket(std::deque<Packet *> *DllTransportUp,
-                                 std::deque<Packet *> *TransportApiUp)
+//
+//
+//
+//
+//
+void DtmfTransport::processOutgoingPacket(std::deque<Packet *> *inQueue,
+                                          std::deque<Packet *> *outQueue)
 {
-//    if (DllTransportUp->empty()) {
-//        // If the buffer is empty, why are we here? :o
-//        return;
-//    }
-//    Packet packIn = packetFromCharBuffer(DllTransportUp); // THIS MAY HAVE TO FILTER OUT STUFFING IF THATS NEEDED
-
-    if (DllTransportUp->empty()) {
+    // NOTE we may want to call this so sync or whatnot without
+    // actually sending data....
+    /*if (inQueue->empty()) {
+    #ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" <<  (int)port_ << ")  ERROR: down() called with no data." << std::endl;
+    #endif
         return;
-    }
-
-    Packet packIn = DllTransportUp->front();
-//    DllTransportUp->pop_front();
-
-    if ((port_ == packIn.destPort()) && (packIn.checksumValid()) && (packIn.totalLength())) {  // check validity
-        processReceivedPacket(&packIn);
-        if (!recvUnAckPackets_.empty()) {
-            std::map<unsigned char,Packet *>::iterator it;
-            if ((*recvUnAckPackets_.begin()).first == (lastSeqToApi_+1)) {
-//                for (it = recvUnAckPackets_.begin(); it != recvUnAckPackets_.end(); it++) {
-//                    // HACK ? we make one DtmfInMessage per Packet, altough making just
-//                    // one big message would perhaps be smarter.
-//                    DtmfInMessage *msgToApi = new DtmfInMessage(0,  // I don't know the sender address?
-//                                                                (*it).second->sourcePort(),
-//                                                                (*it).second->dataLength(),
-//                                                                (*it).second->data());
-//                    TransportApiUp->pushMsg((char *) msgToApi);  // TODO is this correct? ask rudi
-//                    lastSeqToApi_ = (*it).second->seqNumber();   // Set the last sequence nr that was passed to API
-//                }
-            }
-            // Some packets must be out of sequence. Wait for the rest to fill the hole(s)
-        }
-        // There are no packets mapped to recvUnAckPackets_
-    }
-#ifdef DEBUG
-    else {
-        DEBUG_OUT << "***TRANSPORT: Invalid packet discarded";
-    }
-#endif
-}
-*/
-
-
-
-void DtmfTransport::encodePacket(std::deque<Packet *> *ApiTransportDown,
-                                 std::deque<Packet *> *TransportDllDown)
-{
-    if (ApiTransportDown->empty()) {
-        return;
-    }
+    }*/
     if (connStatus_ == TRANSPORT_STATUS_DISCONNECTED) {
         // We're disconnected and must open a connection
-        // by sending a SYN packet.
-        unsigned char destPort = ApiTransportDown->front()->destPort();
-        Packet synPacket;
+        // by sending a SYN packet (1st step of handshake).
+        unsigned char destPort = inQueue->front()->destPort();
+        Packet *synPacket = new Packet; // TODO de-alloc
         bool flags[8] = {false};  // IMPORTANT: Init to false
         flags[PACKET_FLAG_SYN] = true;
-        flags[PACKET_FLAG_CHK] = true;
-        synPacket.make(port_,
-                       destPort,
-                       flags,
-                       0,
-                       0); // seq#, ack# and data are not supplied for SYN
-        TransportDllDown->push_back(&synPacket);
+        synPacket->make(port_,
+                        destPort,
+                        flags,
+                        0,
+                        0); // seq#, ack# and data are not supplied for SYN
+        outQueue->push_front(synPacket);
+        connStatus_ = TRANSPORT_STATUS_SYNC_MASTER;
+        lastSeqNumber_ = synPacket->seqNumber();
+        sentUnAckPackets_.clear();
+        sentUnAckPackets_[synPacket->seqNumber()] = synPacket;
+        //sentUnAckPackets_.insert(std::pair<unsigned char,Packet *>(synPacket->seqNumber(),synPacket));
 #ifdef DEBUG
-        DEBUG_OUT << "***TRANSPORT: Attempting connection with " << (int)destPort << std::endl;
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Initiating connection with "
+                  << (int)synPacket->destPort()
+                  << " (seq: " << (int)synPacket->seqNumber() << ")..." << std::endl;
 #endif
-    } else if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
-
-    }
-}
-
-
-// Called when an incoming packet object is ready for
-// processing.
-// This function will check against maps
-// for unacknowledged sequence numbers and delete and
-// create new entries as needed.
-// DOES NOT CHECK PACKET VALIDITY
-void DtmfTransport::processReceivedPacket(Packet *packIn)
-{
+        return;
+    } else if (connStatus_ == TRANSPORT_STATUS_SYNC_MASTER) {
+        // We are waiting for an acknowledgment of a recently sent SYN
+        // packet and do not do anything.
 #ifdef DEBUG
-    DEBUG_OUT << std::endl << "***TRANSPORT: Received packet being processed" << std::endl;
-    DEBUG_OUT << "Source:" << (char)9 << (int)packIn->sourcePort() << std::endl;
-    DEBUG_OUT << "Dest:" << (char)9 << (int)packIn->destPort() << std::endl;
-    DEBUG_OUT << "SYN:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_SYN) << std::endl;
-    DEBUG_OUT << "ACK:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_ACK) << std::endl;
-    DEBUG_OUT << "NUL:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_NUL) << std::endl;
-    DEBUG_OUT << "RST:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_RST) << std::endl;
-    DEBUG_OUT << "EAK:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_EAK) << std::endl;
-    DEBUG_OUT << "CHK:" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_CHK) << std::endl;
-    DEBUG_OUT << "Seq#:" << (char)9 << (int)packIn->seqNumber() << std::endl;
-    DEBUG_OUT << "Ack#:" << (char)9 << (int)packIn->sourcePort() << std::endl;
-    DEBUG_OUT << "Length:" << (char)9 << (int)packIn->totalLength() << std::endl;
-    DEBUG_OUT << "CRC ok:" << (char)9 << (int)packIn->checksumValid() << std::endl;
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Cannot process out-packet (waiting for sync)..." << std::endl;
 #endif
-    //
-    // SYN packet
-    //
-    if (packIn->flagSet(PACKET_FLAG_SYN)) {
-        if (connStatus_ == TRANSPORT_STATUS_DISCONNECTED) {
-            // Someone else is initiating a connection with us.
-            recvUnAckPackets_.clear();
-            recvUnAckPackets_.insert(std::pair<unsigned char,Packet *>(packIn->seqNumber(),packIn));
-            connStatus_ = TRANSPORT_STATUS_SYNC_WAIT;
-            //remoteSeq_ = packIn->seqNumber();  // TODO ?
-            //lastInSequence_ = packIn->seqNumber();
-            //sentUnAckPackets_.insert(std::pair<unsigned char,Packet *>(packIn->seqNumber(),packIn));//d
-            //std::map<unsigned char,Packet *>::iterator it = sentUnAckPackets_.find(packIn->seqNumber());//d
-            //DEBUG_OUT << (int) (*it).second->destPort();//d
+        return;
+    } else if (connStatus_ == TRANSPORT_STATUS_SYNC_SLAVE) {
+        // A SYN packet has been received and we must acknowledge
+        // it. Note no data gets attached in order to establish
+        // connections quickly.
+        if (recvUnAckPackets_.size() == 1) {
+            Packet *ackSynPacket = new Packet;  // TODO de-alloc
+            bool flags[8] = {false};
+            flags[PACKET_FLAG_SYN] = true;
+            flags[PACKET_FLAG_ACK] = true;
+            ackSynPacket->make(port_,
+                               (*recvUnAckPackets_.begin()).second->sourcePort(),
+                               flags,
+                               0,
+                               (*recvUnAckPackets_.begin()).first);
+            lastSeqNumber_ = ackSynPacket->seqNumber();
+            outQueue->push_front(ackSynPacket);
 #ifdef DEBUG
-            DEBUG_OUT << "***TRANSPORT: Incoming connection from " << (int)packIn->sourcePort() << std::endl;
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Acknowledging connection with "
+                      << (int)(*recvUnAckPackets_.begin()).second->sourcePort()
+                      << " (seq: " << (int)ackSynPacket->seqNumber() << ")..." << std::endl;
+#endif
+            sentUnAckPackets_[ackSynPacket->seqNumber()] = ackSynPacket;
+            recvUnAckPackets_.erase(recvUnAckPackets_.begin());
+            return;
+        } else {
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ")  ERROR: hurr" << std::endl;
 #endif
             return;
-        } else if (connStatus_ == TRANSPORT_STATUS_SYNC_WAIT) {
-            // We have recently sent a SYN packet ourselves
-            // and this is the response.
-            if (packIn->flagSet(PACKET_FLAG_ACK)) {
-                std::map<unsigned char,Packet *>::iterator it = sentUnAckPackets_.find(packIn->ackNumber());
-                if (it != sentUnAckPackets_.end()) {
-                    sentUnAckPackets_.erase(it);
-                    recvUnAckPackets_.insert(std::pair<unsigned char,Packet *>(packIn->seqNumber(),packIn));
-                    //connStatus_ = TRANSPORT_STATUS_CONNECTED;
-                    //remoteSeq_ = packIn->seqNumber();  // TODO ?
-#ifdef DEBUG
-                    DEBUG_OUT << "***TRANSPORT: Handshaking (1) with " << (int)packIn->sourcePort() << std::endl;
-#endif
-                }
-                // ACK number sent with packet is not a key in the un-ack map
-            }
-            // ACK invalid or incoming ack-number does not fit with any in our map.
         }
-        // SYN flag set, but packet not valid in some way.
-    }
-    //
-    // ACK packet
-    //
-    else if (packIn->flagSet(PACKET_FLAG_ACK)) {
-        if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
-            // A "normal" ACK packet has been received.
-            std::map<unsigned char,Packet *>::iterator it = sentUnAckPackets_.find(packIn->ackNumber());
-            if (it != sentUnAckPackets_.end()) {
-                sentUnAckPackets_.erase(it);
-                recvUnAckPackets_.insert(std::pair<unsigned char,Packet *>(packIn->seqNumber(),packIn));
-#ifdef DEBUG
-                DEBUG_OUT << "***TRANSPORT: ACK packet (Seq: " << (int)packIn->seqNumber() << ", Ack: " << (int)packIn->ackNumber() << ") from " << (int)packIn->sourcePort() << std::endl;
-#endif
-                return;
+    } else if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
+        // TODO
+        if (recvUnAckPackets_.size() >= maxNumUnack_) {
+            // We have too many unacknowledged packets and
+            // must send an EAK packet.
+            Packet *eakPacket = new Packet; // TODO de-alloc mem
+            bool flags[8] = {false};
+            flags[PACKET_FLAG_EAK] = true;
+            flags[PACKET_FLAG_CHK] = true;
+            unsigned char dataLength = (unsigned char)recvUnAckPackets_.size();
+            unsigned char *data = new unsigned char[dataLength]; // TODO de-alloc memory
+            std::map<unsigned char,Packet *>::iterator it = recvUnAckPackets_.begin();
+            int i = 0;
+            while(it != recvUnAckPackets_.end()) {
+                data[i] = (*it).first;
+                i++;
+                it++;
             }
-            // ACK number sent with packet is not a key in the un-ack map
+            eakPacket->make(port_,
+                            (*recvUnAckPackets_.begin()).second->sourcePort(),
+                            flags,
+                            (lastSeqNumber_ + 1),
+                            0,
+                            dataLength,
+                            data);
+            lastSeqNumber_ = lastSeqNumber_+1;
+            outQueue->push_back(eakPacket);
+            sentUnAckPackets_[eakPacket->seqNumber()] = eakPacket;
+            recvUnAckPackets_.clear();
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Sending EAK packet acknowledging ";
+            for (int j=0; j<dataLength; j++) {
+                DEBUG_OUT << (int)data[i] << ", ";
+            }
+            DEBUG_OUT << std::endl;
+#endif
+            return;
+        } else if (!inQueue->empty()) {
+            // Send a completely normal ACK+data
+            Packet *packetOut = inQueue->front();
+            inQueue->pop_front();
+            packetOut->setFlag(PACKET_FLAG_CHK);
+            packetOut->setSourcePort(port_);
+            if (!recvUnAckPackets_.empty()) {
+                packetOut->setFlag(PACKET_FLAG_ACK);
+                packetOut->setAckNumber((*recvUnAckPackets_.begin()).first);
+                recvUnAckPackets_.erase(recvUnAckPackets_.begin());
+            }
+            packetOut->setSeqNumber(lastSeqNumber_+1);
+            lastSeqNumber_ = lastSeqNumber_+1;
+            sentUnAckPackets_[packetOut->seqNumber()] = packetOut;
+            outQueue->push_back(packetOut);
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" <<  (int)port_ << ") Sending data packet "
+                      << "(seq: " << (int)packetOut->seqNumber() << ", ack: " << (int)packetOut->ackNumber() << ")..." << std::endl;
+#endif
+            return;
+        } else {
+            //
+            return;
         }
-        // status is not CONNECTED :(
+    } else {
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ")  ERROR: Status unknown!" << std::endl;
+#endif
     }
-    //
-    // - packet
-    //
 }
 
 //
-void DtmfTransport::processOutgoingPacket(Packet *packOut)
+//
+//
+//
+//
+void DtmfTransport::processReceivedPacket(std::deque<Packet *> *inQueue,
+                                          std::deque<Packet *> *outQueue)
 {
+    if (inQueue->empty()) {
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ")  ERROR: up() called with no data." << std::endl;
+#endif
+        return;
+    }
+    Packet *packIn = inQueue->front();
+    inQueue->pop_front();  // TODO place elsewhere?
+/*
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" <<  (int)port_ << ") Received packet being processed:" << std::endl;
+        DEBUG_OUT << "Source" << (char)9 << (int)packIn->sourcePort()    << (char)9 << (char)9 << "SYN" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_SYN) << std::endl;
+        DEBUG_OUT << "Dest" << (char)9 << (int)packIn->destPort()        << (char)9 << (char)9 << "ACK" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_ACK) << std::endl;
+        DEBUG_OUT << "Seq#" << (char)9 << (int)packIn->seqNumber()       << (char)9 << (char)9 << "NUL" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_NUL) << std::endl;
+        DEBUG_OUT << "Ack#" << (char)9 << (int)packIn->ackNumber()       << (char)9 << (char)9 << "RST" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_RST) << std::endl;
+        DEBUG_OUT << "Length" << (char)9 << (int)packIn->totalLength()   << (char)9 << (char)9 << "EAK" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_EAK) << std::endl;
+        DEBUG_OUT << "CRC ok" << (char)9 << (int)packIn->checksumValid() << (char)9 << (char)9 << "CHK" << (char)9 << (int)packIn->flagSet(PACKET_FLAG_CHK) << std::endl;
+#endif
+*/
+    if ((!packIn->checksumValid()) || (packIn->destPort() != port_)) {
+        // Discard silently
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Packet discarded." << std::endl;
+#endif
+        return;
+    }
+    if (connStatus_ == TRANSPORT_STATUS_DISCONNECTED) {
+        if (packIn->flagSet(PACKET_FLAG_SYN)) {
+            // Someone else is initiating a connection with us (2nd step
+            // of handshake).
+            connStatus_ = TRANSPORT_STATUS_SYNC_SLAVE;
+            recvUnAckPackets_.clear();
+            recvUnAckPackets_[packIn->seqNumber()] = packIn;
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") " << (int)packIn->sourcePort() << " is initiating a connection with me..." << std::endl;
+#endif
+            return;
+        } else {
+            // If we do not receive a SYN packet first, to open
+            // a connection, we ignore whatéver comes our way.
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Packet from " << (int)packIn->sourcePort() << " ignored (connection not sync'd)." << std::endl;
+#endif
+            return;
+        }
+    } else if (connStatus_ == TRANSPORT_STATUS_SYNC_MASTER) {
+        // This packet should contain the acknowledgment number
+        // of the SYN packet initially sent. Additionally it
+        // should contain the other node's randomly chosen sequence nr.
+        if (packIn->flagSet(PACKET_FLAG_SYN)) {
+            // 3rd step of handshake.
+            connStatus_ = TRANSPORT_STATUS_CONNECTED;
+            recvUnAckPackets_[packIn->seqNumber()] = packIn;
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Connection established with " << (int)packIn->sourcePort() << "." << std::endl;
+#endif
+            return;
+        } else {
+            // If we do not receive a SYN packet first, to open
+            // a connection, we ignore whatéver comes our way.
+#ifdef DEBUG
+            DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Packet from " << (int)packIn->sourcePort() << " ignored (connection not sync'd)." << std::endl;
+#endif
+            return;
+        }
+        return;
+    } else if (connStatus_ == TRANSPORT_STATUS_SYNC_SLAVE) {
+        // This packet should acknowledge the step 2 SYN packet
+        // sent by SLAVE. Other than that it's a normal ACK packet.
+        // TODO
+        recvUnAckPackets_[packIn->seqNumber()] = packIn;
 
+        connStatus_ = TRANSPORT_STATUS_CONNECTED;
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ") Connection established with " << (int)packIn->sourcePort() << std::endl;
+#endif
+        return;
+    } else if (connStatus_ == TRANSPORT_STATUS_CONNECTED) {
+        //TODO
+        return;
+    } else {
+#ifdef DEBUG
+        DEBUG_OUT << "***TRANSPORT (" << (int)port_ << ")  ERROR: Status unknown!" << std::endl;
+#endif
+    }
 }
 
-/*******************************************************************************
-# public interface
-#
-#
-********************************************************************************/
 
-
-
-
-
-/*******************************************************************************
-# compability
-#
-#
-********************************************************************************/
-
+/****************************************
+#                                       #
+#             Compatibility             #
+#                                       #
+*****************************************/
 
 // Converts a DtmfOutMessage object (from API) to Packet
-// objects, and places them in the outQueue_.
+// objects, and places them in a queue.
 // When receiving a message object from the API, there exists
 // two scenarios: The data may just fit into one Packet, or
 // it will have to be split up between several packets.
 // We create as many packets as needed to move the data.
-void DtmfTransport::toPacketsFromApi(DtmfOutMessage *msg)
+void DtmfTransport::toPacketsFromApi(DtmfOutMessage *msg, std::deque<Packet *> *outQueue)
 {
-
     if ((msg->dataLength_ > 0) && (msg->dataLength_ <= (PACKET_TLEN - PACKET_HLEN))) {
-        Packet packetOut;
-        packetOut.setDestPort(msg->rcvPort_);
-        packetOut.setRecvAddr(msg->rcvAddress_);
-        packetOut.insertData(msg->data_, (unsigned char)msg->dataLength_, false);  // no need to checksum it _yet_
-        outQueue_.push_back(&packetOut);
+        Packet *packetOut = new Packet;
+        packetOut->setDestPort(msg->rcvPort_);
+        packetOut->setRecvAddr(msg->rcvAddress_);
+        packetOut->insertData(msg->data_, (unsigned char)msg->dataLength_, false);  // no need to checksum it _yet_
+        outQueue->push_back(packetOut);
     } else if (msg->dataLength_ > (PACKET_TLEN - PACKET_HLEN)) {
 
         unsigned int numPacketsNeeded = msg->dataLength_ / (PACKET_TLEN - PACKET_HLEN) + 1;
@@ -353,10 +410,10 @@ void DtmfTransport::toPacketsFromApi(DtmfOutMessage *msg)
 
             if (i == (numPacketsNeeded-1)) {  // Last packet of the set
                 packetOut->insertData(&msg->data_[dataOffset], lengthLast, false);
-                outQueue_.push_back(packetOut);
+                outQueue->push_back(packetOut);
             } else {
                 packetOut->insertData(&msg->data_[dataOffset], (PACKET_TLEN - PACKET_HLEN), false);  // no need to checksum it _yet_
-                outQueue_.push_back(packetOut);
+                outQueue->push_back(packetOut);
             }
         }
     } else {
@@ -421,10 +478,6 @@ void DtmfTransport::packetToCharBuffer(boost::circular_buffer<unsigned char> *bu
         throw Exception("packetToCharBuffer() not enough available space in buffer");
     }
 }
-
-
-
-
 
 
 

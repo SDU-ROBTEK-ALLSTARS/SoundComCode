@@ -79,12 +79,14 @@ public:
     void setRecvAddr(const unsigned char recvAddr);
     void setDestPort(const unsigned char destPort);
     void insertData(       unsigned char data[],
-                           const unsigned char dataLength,
-                           const bool          checksum=true);
+                     const unsigned char dataLength,
+                     const bool          checksum=true);
     void setFlag(const int);  // Sets one flag
+    void setSourcePort(const unsigned char);
+    void setSeqNumber(const unsigned char);
+    void setAckNumber(const unsigned char);
 
-    // Packet sorting by sequence number (intended for use with priority_queue).
-    // UNDONE
+    // UNDONE Packet sorting by sequence number (intended for use with priority_queue).
     struct orderBySeq {
         bool operator()(const Packet&, const Packet&) const;
     };

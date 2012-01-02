@@ -40,90 +40,49 @@
 #include "DtmfInMessage.h"
 #include "DtmfMsgBuffer.h"
 
-// temp
-#include <iostream>
-#define DEBUG //out comment for no debug info
-#define DEBUG_OUT std::cout //output for debug info
-
 // Connection status aliases
-#define TRANSPORT_STATUS_SYNC_WAIT     1
-#define TRANSPORT_STATUS_CONNECTED     2
-#define TRANSPORT_STATUS_DISCONNECTED  3
-#define TRANSPORT_STATUS_RESET         4
+#define TRANSPORT_STATUS_SYNC_MASTER     1
+#define TRANSPORT_STATUS_SYNC_MASTER_S2  6
+#define TRANSPORT_STATUS_SYNC_SLAVE      2
+#define TRANSPORT_STATUS_CONNECTED       3
+#define TRANSPORT_STATUS_DISCONNECTED    4
+#define TRANSPORT_STATUS_RESET           5
 
-#define TRANSPORT_NUM_PORTS            256  // Max number of ports. Warning:
-// Packet object not compatible with more than 256.
-#define TRANSPORT_NUM_RES_PORTS        20   // Number of reserved ports ranging
-// from 0 to TRANSPORT_NUM_RES_PORTS-1.
+// Max number of ports. Warning: Packet object not compatible with more than 255.
+#define TRANSPORT_NUM_PORTS            255
+
+// Number of reserved ports ranging from 0 to TRANSPORT_NUM_RES_PORTS-1.
+#define TRANSPORT_NUM_RES_PORTS        20
 
 class DtmfTransport
 {
 private:
     static bool sPortsInUse_[TRANSPORT_NUM_PORTS];
     unsigned char port_;
-    unsigned int connStatus_;  // Connection status I.D.
+    unsigned int connStatus_;
 
-    //unsigned char remoteSeq_;
-    //unsigned char localSeq_;
-    unsigned char lastSeqToApi_;
-    //unsigned char sentSeqCount_;
+    // Maximum number of unacknowledged packets that
+    // will be accumulated before an EAK packet is sent
+    unsigned char maxNumUnack_;
 
-    unsigned int maxNumOutstanding;  // Max number of packet which will be sent
-    // without getting an acknowledgment.
-    unsigned int retransmissionTimeout;
-    unsigned int nullTimeout; //Timeout value (in millisecs) for sending a
-    // NUL packet (data-less) if there is nothing else to send
+    // The sequence number last used
+    unsigned char lastSeqNumber_;
 
-
-
-    // Retransmission
-    double retransTimeout; //Timeout value (in millisecs) before retransmission of an un-acknowledged packet
-    unsigned int maxRetrans; //Max number of consecutive retransmissions that will be attempted
-    unsigned char timedPacketSeq_; //The sequence number of a timed packet
-    std::time_t timedPacketStamp_; //Timestamp of timed packet
-
-    // Map containers for unacknowledged sent- or received
-    // packets. They are mapped as a pair of sequence
-    // number and packet object pointer address.
-    std::map<unsigned char,Packet *> sentUnAckPackets_;
-    std::map<unsigned char,Packet *> recvUnAckPackets_;
-
-    //struct dataCont_ {
-    //    unsigned char *dataPointer_;
-    //    unsigned int length_;
-    //    unsigned char seqNr_;
-    //};
-
-    ////Buffered to API
-    //std::deque<dataCont_ *> dataToApi_;
-    std::deque<Packet *> outQueue_;
-
-
-    std::deque<Packet *> DllTransportUp_;
-    std::deque<Packet *> TransportApiUp_;
-    std::deque<Packet *> ApiTransportDown_;
-    std::deque<Packet *> TransportDllDown_;
-
+    // Re-send time out settings
+    double retransTimeout;
+    unsigned int maxRetrans;
+    struct timedPacket {
+        Packet* packet__;
+        std::time_t timedPacketStamp__;
+    };
 
     // For compability with the API layer (DtmfOutMessage
     // are friends with us)
-    void toPacketsFromApi(DtmfOutMessage *);
+    void toPacketsFromApi(DtmfOutMessage *, std::deque<Packet *> *);
 
     // To/from char-array buffer and Packet object
     Packet packetFromCharBuffer(boost::circular_buffer<unsigned int> *);
     void packetToCharBuffer(boost::circular_buffer<unsigned char> *, Packet);
-
-    // TODO initializes certain vars
-    void init();
-
-    // Received packet processing. This function decides
-    // what happens when a packet is received depending
-    // on it's flags, etc.
-    void processReceivedPacket(Packet *);
-
-    // Processes packets for sending
-    void processOutgoingPacket(Packet *);
-
 
 
 public:
@@ -138,17 +97,24 @@ public:
     unsigned char port() const;
     bool isPortSet(const unsigned int enteredPort=0) const;
     bool *getPortTable() const;
-    int connStatus() const;
+    int status() const;
 
     // Public data I/O
 
 
-    // TODO make private
-    void decodePacket(std::deque<Packet *> *DllTransportUp,
-                      std::deque<Packet *> *TransportApiUp);
+    std::map<unsigned char,Packet *> packsToApi_;
+    // Map containers for unacknowledged sent- or received
+    // packets. They are mapped as a pair of sequence
+    // number and packet object pointer address.
+    std::map<unsigned char,Packet *> sentUnAckPackets_;
+    std::map<unsigned char,Packet *> recvUnAckPackets_;
 
-    void encodePacket(std::deque<Packet *> *ApiTransportDown,
-                      std::deque<Packet *> *TransportDllDown);
+    // TODO make private
+    void processOutgoingPacket(std::deque<Packet *> *inQueue,
+                               std::deque<Packet *> *outQueue);
+    void processReceivedPacket(std::deque<Packet *> *inQueue,
+                               std::deque<Packet *> *outQueue);
+
 
 };
 #endif //DTMFTRANSPORT_H

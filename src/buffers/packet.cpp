@@ -2,7 +2,7 @@
 # DtmfProject - 3rd term Robot Systems Engineering, Fall 2011, SDU
 #
 # Copyright (c) 2011    Alexander Adelholm Brandbyge    <abran09@student.sdu.dk>
-#                       Frederik Hagelskjær             <frhag10@student.sdu.dk>
+#                       Frederik HagelskjÃ¦r             <frhag10@student.sdu.dk>
 #                       Kent Stark Olsen                <keols09@student.sdu.dk>
 #                       Kim Lindberg Schwaner           <kschw10@student.sdu.dk>
 #                       Leon Bonde Larsen               <lelar09@student.sdu.dk>
@@ -56,7 +56,7 @@ unsigned short int Packet::calcChecksum() const
     crc.process_byte(length_);
     crc.process_byte(seqNumber_);
     crc.process_byte(ackNumber_);
-    if ((flagSet(PACKET_FLAG_CHK)) && (data_)) {
+    if ((flagSet(PACKET_FLAG_CHK)) && (length_ > PACKET_HLEN)) {
         crc.process_bytes(data_, (length_-PACKET_HLEN));
     }
     return crc.checksum();
@@ -89,7 +89,7 @@ void Packet::make(const unsigned char sourcePort,
     flags_ = (unsigned char) flags.to_ulong();
 
     // Length.
-    if (data) {
+    if (dataLength && data) {
         length_ = dataLength + PACKET_HLEN;
     } else {
         length_ = PACKET_HLEN;
@@ -99,7 +99,7 @@ void Packet::make(const unsigned char sourcePort,
     if (flags.test(PACKET_FLAG_SYN)) {
         std::srand((unsigned)time(0));
         unsigned char randSeq = std::rand() % 255;
-        seqNumber_ = randSeq;
+        seqNumber_ = randSeq + ackNumber;  // To make it more "random"
     } else {
         seqNumber_ = seqNumber;
     }
@@ -116,10 +116,8 @@ void Packet::make(const unsigned char sourcePort,
 
 void Packet::setRecvAddr(const unsigned char recvAddr)
 {
-    if (recvAddr) {
-        recvAddr_ = recvAddr;
-        checksum_ = calcChecksum();
-    }
+    recvAddr_ = recvAddr;
+    checksum_ = calcChecksum();
 }
 
 void Packet::setDestPort(const unsigned char destPort)
@@ -165,6 +163,24 @@ void Packet::setFlag(const int flagToSet)
         flags.set(flagToSet);
         checksum_ = calcChecksum();
     }
+}
+
+void Packet::setSourcePort(const unsigned char port)
+{
+    sourcePort_ = port;
+    checksum_ = calcChecksum();
+}
+
+void Packet::setSeqNumber(const unsigned char seqNumber)
+{
+    seqNumber_ = seqNumber;
+    checksum_ = calcChecksum();
+}
+
+void Packet::setAckNumber(const unsigned char ackNumber)
+{
+    ackNumber_ = ackNumber;
+    checksum_ = calcChecksum();
 }
 
 // UNDONE
